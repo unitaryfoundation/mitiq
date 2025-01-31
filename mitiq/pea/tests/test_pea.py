@@ -62,7 +62,6 @@ def test_precision_option_used_in_num_samples(precision):
         noise_model="global_depolarizing",
         epsilon=0.02,
         precision=precision,
-        full_output=True,
         random_state=1,
     )
     # we expect num_samples = 1/precision^2:
@@ -82,7 +81,6 @@ def test_precision_ignored_when_num_samples_present():
         epsilon=0.02,
         precision=0.1,
         num_samples=num_expected_circuits,
-        full_output=True,
         random_state=1,
     )
     assert all([len(c) == num_expected_circuits for c in scaled_circuits])
@@ -122,7 +120,6 @@ def test_scale_factors(scale_factors):
         noise_model="global_depolarizing",
         epsilon=0.02,
         num_samples=50,
-        full_output=True,
         random_state=1,
     )
     assert len(scaled_circuits) == len(scale_factors)
