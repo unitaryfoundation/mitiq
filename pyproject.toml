@@ -35,11 +35,17 @@ no_implicit_optional = true
 warn_redundant_casts = true
 warn_unused_configs = true
 
-[project.dependencies]
-numpy = ">=1.22.0,<2.0.0"
-scipy = ">=1.10.1,<=1.15.2"
-cirq-core = ">=1.4.0,<1.5.0"
-tabulate = ""
+[project]
+name = "Mitiq"
+# version = 
+description = "Mitiq is an open source toolkit for implementing error mitigation techniques on most current intermediate-scale quantum computers." 
+# readme = 
+dependencies = [
+    "numpy>=1.22.0,<2.0.0",
+    "scipy>=1.10.1,<=1.15.2",
+    "cirq-core>=1.4.0,<1.5.0",
+    "tabulate",
+]
 
 [project.optional-dependencies]
 braket = [
