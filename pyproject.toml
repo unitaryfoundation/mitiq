@@ -1,45 +1,25 @@
-[tool.ruff]
-exclude = ["__init__.py"]
-line-length = 79
-target-version = 'py312'
-
-[tool.ruff.lint]
-select = [
-    # pycodestyle
-    "E",
-    # pyflakes
-    "F",
-    # isort
-    "I",
-]
-
-[tool.pytest.ini_options]
-addopts = "--color=yes"
-filterwarnings = [
-    # TODO: these are probably too restrictive
-    'ignore::UserWarning',
-    'ignore::DeprecationWarning',
-]
-
-[tool.mypy]
-exclude = 'mitiq.*.tests*'
-ignore_missing_imports = true
-
-# Enable a subset of strict options
-check_untyped_defs = true
-disallow_any_generics = true
-disallow_incomplete_defs = true
-disallow_subclassing_any = true
-disallow_untyped_defs = true
-no_implicit_optional = true
-warn_redundant_casts = true
-warn_unused_configs = true
-
 [project]
 name = "Mitiq"
 # version = 
+dynamic = ["version"]
+readme="README.md"
 description = "Mitiq is an open source toolkit for implementing error mitigation techniques on most current intermediate-scale quantum computers." 
-# readme = 
+authors = [ 
+    {name="Unitary Foundation", email="info@unitary.foundation"},
+]
+requires-ptyhon=">=3.10,<3.13"
+license="GPL v3.0"
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Programming Language :: Python :: 3",
+    "License :: OSI Approved :: GNU General Public License v3 (GPLv3)",
+    "Operating System :: MacOS",
+    "Operating System :: POSIX :: Linux",
+    "Operating System :: Microsoft :: Windows",
+    "Topic :: Scientific/Engineering",
+    "Topic :: Software Development :: Compilers",
+    "Typing :: Typed",
+]
 dependencies = [
     "numpy>=1.22.0,<2.0.0",
     "scipy>=1.10.1,<=1.15.2",
@@ -102,3 +82,52 @@ qiskit = [
     "qiskit-ibm-runtime~=0.37.0",
     "ply==3.11",
 ]
+
+[project.urls]
+Homepage = "https://unitary.foundation"
+Documentation = "https://mitiq.readthedocs.io/en/stable/"
+Repository = "https://github.com/unitaryfoundation/mitiq/"
+Issues = "https://github.com/unitaryfoundation/mitiq/issues/"
+
+[tool.ruff]
+exclude = ["__init__.py"]
+line-length = 79
+target-version = 'py312'
+
+[tool.ruff.lint]
+select = [
+    # pycodestyle
+    "E",
+    # pyflakes
+    "F",
+    # isort
+    "I",
+]
+
+[tool.pytest.ini_options]
+addopts = "--color=yes"
+filterwarnings = [
+    # TODO: these are probably too restrictive
+    'ignore::UserWarning',
+    'ignore::DeprecationWarning',
+]
+
+[tool.mypy]
+exclude = 'mitiq.*.tests*'
+ignore_missing_imports = true
+
+# Enable a subset of strict options
+check_untyped_defs = true
+disallow_any_generics = true
+disallow_incomplete_defs = true
+disallow_subclassing_any = true
+disallow_untyped_defs = true
+no_implicit_optional = true
+warn_redundant_casts = true
+warn_unused_configs = true
+
+[tool.setuptools.packages.find]
+namespace = false
+
+[tool.setuptools.dynamic]
+version = {file = "VERSION.txt"}
