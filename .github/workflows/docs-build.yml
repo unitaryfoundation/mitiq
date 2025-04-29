@@ -55,12 +55,12 @@ jobs:
           export BQSKIT_DOC_CHECK_OVERRIDE=1
           export PYDEVD_DISABLE_FILE_VALIDATION=1
           export SKIP_PYQUIL=1
-          make docs
+          uv run make docs
 
       - name: Run linkcheck on 'release' PRs
         if: github.event_name == 'pull_request'
         run: |
           pr_title_lower=$(echo "${{ github.event.pull_request.title }}" | tr '[:upper:]' '[:lower:]')
           if [[ "$pr_title_lower" == *"release"* ]]; then
-            make linkcheck
+            uv run make linkcheck
           fi

@@ -32,10 +32,10 @@ jobs:
         run: uv sync --all-extras
 
       - name: Check types with mypy
-        run: make check-types
+        run: uv run make check-types
 
       - name: Check code style/formatting
-        run: make check-format
+        run: uv run make check-format
 
 
   # This is to make sure Mitiq works without optional 3rd party packages like Qiskit, pyQuil, etc.
@@ -57,12 +57,12 @@ jobs:
       - name: Install Mitiq
         # Since requirements.txt includes cirq, which in turn has pyquil as dependency,
         # we explicitly remove pyquil from the installed packages after installing mitiq
-        run: uv sync --no-default-groups
+        run: uv sync --no-dev
 
       - name: Test without 3rd party packages
         run: |
           uv run pip install pytest
-          pytest mitiq/tests/test_without_third_party_packages.py
+          uv run pytest mitiq/tests/test_without_third_party_packages.py
 
   test:
     strategy:
@@ -96,7 +96,7 @@ jobs:
           docker run --rm -idt -p 5555:5555 rigetti/quilc -R
           
       - name: Run all the unit tests
-        run: ${{ matrix.os == 'ubuntu-latest' && 'make test-all' || 'make test' }}
+        run: uv run ${{ matrix.os == 'ubuntu-latest' && 'make test-all' || 'make test' }}
 
       - name: Submit coverage report to Codecov
         # Only submit to Codecov once.
