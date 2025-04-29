@@ -11,7 +11,7 @@ authors = [
     { name = "Unitary Foundation", email = "info@unitary.foundation" },
 ]
 requires-python = ">=3.10,<3.13"
-license = "GPL v3.0"
+license = { text = "GPL v3.0" }
 classifiers = [
     "Development Status :: 4 - Beta",
     "Programming Language :: Python :: 3",
