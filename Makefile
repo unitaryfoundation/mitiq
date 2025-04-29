@@ -48,7 +48,7 @@ linkcheck:
 
 .PHONY: install
 install:
-	pip install -e .[development]
+	uv sync --all-extras
 
 .PHONY: install-hooks
 install-hooks:
