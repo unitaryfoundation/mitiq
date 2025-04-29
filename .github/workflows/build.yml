@@ -57,7 +57,7 @@ jobs:
       - name: Install Mitiq
         # Since requirements.txt includes cirq, which in turn has pyquil as dependency,
         # we explicitly remove pyquil from the installed packages after installing mitiq
-        run: uv sync --no-default-group
+        run: uv sync --no-default-groups
 
       - name: Test without 3rd party packages
         run: |
