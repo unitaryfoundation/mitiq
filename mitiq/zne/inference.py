@@ -226,7 +226,14 @@ class Factory(ABC):
         """Returns the scale factors at which the factory has computed
         expectation values.
         """
-        return [params.get("scale_factor", 0.0) for params in self._instack]
+        ret_scale_factors = [
+            params.get("scale_factor", 0.0) for params in self._instack
+        ]
+        if not ret_scale_factors and hasattr(self, "_scale_factors"):
+            return [
+                float(scale_factor) for scale_factor in self._scale_factors
+            ]
+        return ret_scale_factors
 
     def get_expectation_values(self) -> List[float]:
         """Returns the expectation values computed by the factory."""
