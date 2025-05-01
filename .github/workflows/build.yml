@@ -32,10 +32,10 @@ jobs:
         run: uv sync --all-extras
 
       - name: Check types with mypy
-        run: uv run make check-types
+        run: make check-types
 
       - name: Check code style/formatting
-        run: uv run make check-format
+        run: make check-format
 
 
   # This is to make sure Mitiq works without optional 3rd party packages like Qiskit, pyQuil, etc.
@@ -96,7 +96,7 @@ jobs:
           docker run --rm -idt -p 5555:5555 rigetti/quilc -R
           
       - name: Run all the unit tests
-        run: uv run ${{ matrix.os == 'ubuntu-latest' && 'make test-all' || 'make test' }}
+        run: ${{ matrix.os == 'ubuntu-latest' && 'make test-all' || 'make test' }}
 
       - name: Submit coverage report to Codecov
         # Only submit to Codecov once.
