@@ -35,16 +35,16 @@ dist:
 
 .PHONY: docs
 docs:
-	make -C docs html
+	uv run make -C docs html
 
 .PHONY: docs-clean
 docs-clean:
-	make -C docs clean
-	make -C docs html
+	uv run make -C docs clean
+	uv run make -C docs html
 
 .PHONY: linkcheck
 linkcheck:
-	make -C docs linkcheck
+	uv run make -C docs linkcheck
 
 .PHONY: install
 install:
