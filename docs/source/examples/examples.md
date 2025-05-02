@@ -30,6 +30,7 @@ ZNE with PennyLane + Cirq: Energy of molecular Hydrogen <molecular_hydrogen_penn
 ZNE with BQSKit compiled circuits <bqskit.md>
 ZNE on Stim backend with Cirq: Logical randomized benchmarking circuits <zne_logical_rb_cirq_stim.md>
 ZNE and Pauli Twirling with Cirq: ZNE with Noise Tailoring <pt_zne.md>
+ZNE with circuit compilation: UCC + Mitiq <ucc.md>
 LRE vs ZNE: comparing performance and overhead <lre-zne-comparison.md>
 PEC on a Braket simulator: Mirror circuits <pec_tutorial.md>
 PEC with Cirq: Learning representations <learning-depolarizing-noise.md>
