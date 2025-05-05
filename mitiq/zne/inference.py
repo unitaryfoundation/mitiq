@@ -223,16 +223,14 @@ class Factory(ABC):
         self._options: Dict[str, Optional[float]] = {}
 
     def get_scale_factors(self) -> List[float]:
-        """Returns the scale factors at which the factory has computed
-        expectation values.
+        """Returns the scale factors that were either passed in to the facotry
+        or at which the factory has computed expectation values.
         """
         ret_scale_factors = [
             params.get("scale_factor", 0.0) for params in self._instack
         ]
         if not ret_scale_factors and hasattr(self, "_scale_factors"):
-            return [
-                float(scale_factor) for scale_factor in self._scale_factors
-            ]
+            return [scale_factor for scale_factor in self._scale_factors]
         return ret_scale_factors
 
     def get_expectation_values(self) -> List[float]:
