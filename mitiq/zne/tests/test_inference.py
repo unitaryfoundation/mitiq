@@ -17,7 +17,7 @@ from pytest import mark, raises, warns
 
 from mitiq.zne.inference import (
     AdaExpFactory,
-    BatchedFactory,
+    AdaptiveFactory,
     ConvergenceWarning,
     ExpFactory,
     ExtrapolationError,
@@ -149,11 +149,11 @@ def test_get_scale_factors_static_factories(factory):
         fac = factory(scale_factors=scale_factors)
 
     # Expectation values haven't been computed at any scale factors yet
-    if isinstance(fac, BatchedFactory):
+    if isinstance(fac, AdaptiveFactory):
+        assert not fac.get_scale_factors()
+    else:
         assert isinstance(fac.get_scale_factors(), list)
         assert np.allclose(fac.get_scale_factors(), scale_factors)
-    else:
-        assert not fac.get_scale_factors()
 
     # Compute expectation values at all the scale factors
     fac.run_classical(apply_seed_to_func(f_lin, seed=1))
