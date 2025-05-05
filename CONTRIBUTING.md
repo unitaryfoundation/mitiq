@@ -12,19 +12,25 @@ The rest of this document describes the technical details of getting set up to d
 
 ## Development environment
 
-1. Ensure you have python 3.10 or greater installed. If not, you can find the downloads [here](https://www.python.org/downloads/).
-2. Set up a virtual environment to isolate dependencies. This can be done with many different tools including [Virtualenv](https://virtualenv.pypa.io/en/latest/), [Pipenv](https://pypi.org/project/pipenv/), [Poetry](https://python-poetry.org/), and [Anaconda](https://www.anaconda.com/download). In what follows we will use Anaconda, but if you're familiar with other tools feel free to use those.
-3. Set up a local version of the [Mitiq repository](https://github.com/unitaryfoundation/mitiq). To do this you will need to use `git` which is a version control system. If you're unfamiliar, check out the [docs](https://git-scm.com/), and learn about what the typical [`git` workflow](https://www.asmeurer.com/git-workflow/) looks like.
-4. Inside the Mitiq repository (`cd mitiq`), activate a virtual environment. With conda this is done using the following command.
-```
-conda create --name myenv python=3
-conda activate myenv
-```
-5. Install the dependencies. First, to get an updated version of [`pip`](https://pypi.org/project/pip/) inside the virtual environment run `conda install pip` followed by
-```
+Mitiq uses [uv](https://docs.astral.sh/uv/) for packaging and dependency management. It may also be used for managing the virtual environment. 
+
+1. Ensure you have [uv installed](https://docs.astral.sh/uv/getting-started/installation/), for example using `pip install uv`.
+2. Clone the [Mitiq repository](https://github.com/unitaryfoundation/mitiq). If you are unfamiliar with `git`, check out the [docs](https://git-scm.com/), and learn about what the typical [`git` workflow](https://www.asmeurer.com/git-workflow/) looks like.
+3. Inside the Mitiq directory (`cd mitiq`), use uv to create a virtual environment (/.venv) and install the dependencies by calling `make install`.
+
+```bash
+pip install uv
+git clone https://github.com/unitaryfoundation/mitiq.git
+cd mitiq
 make install
 ```
-6. You should now have a development environment set up to work on Mitiq! 🎉 To go forward with making the desired changes, please consult the ["Making changes" section](https://www.asmeurer.com/git-workflow/#making-changes) of the `git` workflow article. If you've encountered any problems thus far, please let us know by opening an issue! More information about workflow can be found below in the [lifecycle](#lifecycle) section.
+
+You should now have a development environment set up to work on Mitiq! 🎉 To go forward with making the desired changes, please consult the ["Making changes" section](https://www.asmeurer.com/git-workflow/#making-changes) of the `git` workflow article. If you've encountered any problems thus far, please let us know by opening an issue! More information about workflow can be found below in the [lifecycle](#lifecycle) section.
+
+> [!Note]
+> Since uv uses a virtual environment, any commands to be run inside the virtual environment will need to be prefaced with `uv run` or the uv [managed virtual environment](https://docs.astral.sh/uv/pip/environments/#using-a-virtual-environment) will need to be activated by running `source .venv/bin/activate` in your shell. 
+>
+> All commands using the Makefile do NOT require `uv run`.
 
 What follows are recommendations/requirements to keep in mind while contributing.
 
@@ -40,7 +46,7 @@ The only exception to this is that any tests requiring a QVM should be placed in
 ### Running tests
 
 After making changes, ensure your changes pass all the existing tests (and any new tests you've added).
-Use `pytest mitiq/$MODULE` to run the tests for the module you are working on.
+Use `uv run pytest mitiq/$MODULE` to run the tests for the module you are working on.
 Once they pass, you can run the entire test suite (excluding those that require the pyQuil QVM) by running the following command.
 
 ```bash
