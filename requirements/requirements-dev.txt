@@ -30,3 +30,4 @@ stim==1.14.0
 stimcirq==1.14.0
 pyqrack==1.32.27
 ucc==0.4.4
+pytket-cirq==0.39.0
