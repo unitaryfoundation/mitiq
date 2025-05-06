@@ -29,7 +29,7 @@ jobs:
           python-version: "3.12"
 
       - name: Install Python dependencies
-        run: uv sync --all-extras
+        run: make install
 
       # - name: Run the quilc & qvm Docker images
       #   run: |

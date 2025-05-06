@@ -48,7 +48,7 @@ linkcheck:
 
 .PHONY: install
 install:
-	uv sync --all-extras
+	uv sync --all-extras --all-groups
 
 .PHONY: install-hooks
 install-hooks:

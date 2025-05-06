@@ -1430,10 +1430,17 @@ qiskit = [
 
 [package.dev-dependencies]
 dev = [
+    { name = "mypy" },
+    { name = "pytest" },
+    { name = "pytest-cov" },
+    { name = "pytest-xdist", extra = ["psutil"] },
+    { name = "ruff" },
+    { name = "types-tabulate" },
+]
+docs = [
     { name = "bqskit" },
     { name = "jupytext" },
     { name = "matplotlib" },
-    { name = "mypy" },
     { name = "myst-nb" },
     { name = "myst-parser" },
     { name = "nbsphinx" },
@@ -1443,10 +1450,6 @@ dev = [
     { name = "pydata-sphinx-theme" },
     { name = "pyqrack" },
     { name = "pyscf", marker = "sys_platform != 'win32'" },
-    { name = "pytest" },
-    { name = "pytest-cov" },
-    { name = "pytest-xdist", extra = ["psutil"] },
-    { name = "ruff" },
     { name = "seaborn" },
     { name = "sphinx" },
     { name = "sphinx-autodoc-typehints" },
@@ -1457,7 +1460,6 @@ dev = [
     { name = "sphinxcontrib-bibtex" },
     { name = "stim" },
     { name = "stimcirq" },
-    { name = "types-tabulate" },
 ]
 
 [package.metadata]
@@ -1482,10 +1484,17 @@ provides-extras = ["braket", "pennylane", "pyquil", "qibo", "qiskit"]
 
 [package.metadata.requires-dev]
 dev = [
+    { name = "mypy", specifier = "==1.0.0" },
+    { name = "pytest", specifier = "==8.0.0" },
+    { name = "pytest-cov", specifier = "==6.0.0" },
+    { name = "pytest-xdist", extras = ["psutil"], specifier = "==3.0.2" },
+    { name = "ruff", specifier = "==0.3.1" },
+    { name = "types-tabulate" },
+]
+docs = [
     { name = "bqskit", specifier = "==1.1.1" },
     { name = "jupytext", specifier = "==1.16.1" },
     { name = "matplotlib", specifier = "==3.8.1" },
-    { name = "mypy", specifier = "==1.0.0" },
     { name = "myst-nb", specifier = "==1.1.1" },
     { name = "myst-parser", specifier = "==4.0.0" },
     { name = "nbsphinx", specifier = "==0.9.3" },
@@ -1495,10 +1504,6 @@ dev = [
     { name = "pydata-sphinx-theme", specifier = "==0.15.4" },
     { name = "pyqrack", specifier = "==1.32.27" },
     { name = "pyscf", marker = "sys_platform != 'win32'", specifier = "==2.8.0" },
-    { name = "pytest", specifier = "==8.0.0" },
-    { name = "pytest-cov", specifier = "==6.0.0" },
-    { name = "pytest-xdist", extras = ["psutil"], specifier = "==3.0.2" },
-    { name = "ruff", specifier = "==0.3.1" },
     { name = "seaborn", specifier = "==0.13.0" },
     { name = "sphinx", specifier = "==8.0.2" },
     { name = "sphinx-autodoc-typehints", specifier = "==2.0.0" },
@@ -1509,7 +1514,6 @@ dev = [
     { name = "sphinxcontrib-bibtex", specifier = "==2.6.2" },
     { name = "stim", specifier = "==1.14.0" },
     { name = "stimcirq", specifier = "==1.14.0" },
-    { name = "types-tabulate" },
 ]
 
 [[package]]

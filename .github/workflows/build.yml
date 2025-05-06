@@ -86,7 +86,7 @@ jobs:
         with:
           python-version: ${{ matrix.python-version }}
 
-      - name: Install Python dependencies
+      - name: Install Python dependencies except for docs
         run: uv sync --all-extras
 
       - name: Run the quilc & qvm Docker images
