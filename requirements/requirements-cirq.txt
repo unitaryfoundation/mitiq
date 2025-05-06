@@ -1,4 +1,4 @@
 # This file is redundant, since Cirq is the core internal representation
 # for quantum circuits in Mitiq.
 # Keeping this file anyway for consistency with other integrations.
-cirq-core>=1.4.0,<1.5.0
+cirq-core==1.5.0
