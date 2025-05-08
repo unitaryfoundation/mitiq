@@ -42,6 +42,10 @@ docs-clean:
 	make -C docs clean
 	make -C docs html
 
+.PHONY: docs-lite
+docs-clean:
+	DOCS_LITE=1 make -C docs html
+
 .PHONY: linkcheck
 linkcheck:
 	make -C docs linkcheck
