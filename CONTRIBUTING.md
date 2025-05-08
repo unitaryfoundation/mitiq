@@ -14,7 +14,7 @@ The rest of this document describes the technical details of getting set up to d
 
 Mitiq uses [uv](https://docs.astral.sh/uv/) for packaging and dependency management. It may also be used for managing the virtual environment. 
 
-1. Ensure you have [uv installed](https://docs.astral.sh/uv/getting-started/installation/), for example using `pip install uv`.
+1. Ensure you have [`uv` installed](https://docs.astral.sh/uv/getting-started/installation/).
 2. Clone the [Mitiq repository](https://github.com/unitaryfoundation/mitiq). If you are unfamiliar with `git`, check out the [docs](https://git-scm.com/), and learn about what the typical [`git` workflow](https://www.asmeurer.com/git-workflow/) looks like.
 3. Inside the Mitiq directory (`cd mitiq`), use uv to create a virtual environment (/.venv) and install the dependencies by calling `make install`.
 
