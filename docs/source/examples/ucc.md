@@ -5,14 +5,13 @@ jupytext:
     extension: .md
     format_name: myst
     format_version: 0.13
-    jupytext_version: 1.16.1
+    jupytext_version: 1.14.1
 kernelspec:
   display_name: Python 3
   name: python3
 ---
 
 ```{tags} ucc, zne, beginner
-
 ```
 
 # Using the UCC Compiler with Mitiq’s Error Mitigation
@@ -52,18 +51,16 @@ import ucc
 
 ## Step 2: Create a Testing Circuit
 
-For testing purposes we create a rotated randomized benchmarking circuit.
-Randomized benchmarking circuits are circuits that ultimately perform the identity operation, and hence when passed to a compiler like `ucc` are reduced to identity operations.
-To avoide this, a $R_Z$ gate is applied to the first qubit of the circuit in the circuits midpoint.
-In the code below we fix a $\theta$ which stumps the compiler enough for an interesting tutorial.
+For testing purposes we create a random clifford+$T$ circuit.
 
 ```{code-cell} ipython3
-num_qubits = 2
-depth = 40
-
-random_circuit = mitiq.benchmarks.generate_rotated_rb_circuits(
-    num_qubits, depth, theta=0.234, seed=20
-)[0]
+random_circuit = mitiq.benchmarks.generate_random_clifford_t_circuit(
+    num_qubits=2,
+    num_oneq_cliffords=100,
+    num_twoq_cliffords=50,
+    num_t_gates=50,
+    seed=90,
+)
 
 print(random_circuit)
 print("circuit depth:", len(random_circuit))
@@ -88,7 +85,7 @@ The dominant source of noise on modern devices is associated with two-qubit gate
 For simplicity, we define a simulator that adds depolarizing noise after each two-qubit gate, but no noise after single-qubit gates.
 
 ```{code-cell} ipython3
-def execute(circuit, noise_level=0.02):
+def execute(circuit, noise_level=0.05):
     noisy_circuit = cirq.Circuit()
     for op in circuit.all_operations():
         noisy_circuit.append(op)
@@ -96,8 +93,8 @@ def execute(circuit, noise_level=0.02):
             noisy_circuit.append(
                 cirq.depolarize(p=noise_level, n_qubits=2)(*op.qubits)
             )
-    result = cirq.DensityMatrixSimulator().simulate(noisy_circuit)
-    return result.final_density_matrix[0, 0].real  # Probability of |000⟩
+    result = cirq.DensityMatrixSimulator(seed=42).simulate(noisy_circuit)
+    return result.final_density_matrix[0, 0].real  # Probability of |00⟩
 ```
 
 ### Baseline: Ideal vs Noisy
@@ -121,21 +118,69 @@ mitigated_compiled = mitiq.zne.execute_with_zne(compiled_circuit, execute)
 
 ## Step 6: Compare the Results
 
-```{code-cell} ipython3
-header = "{:<15} {:<10} {:<10}"
-row = "{:<15} {:<10.4f} {:<10.4f}"
+We can now visualize the 4 methods of execution:
 
-print(header.format("", "Uncompiled", "Compiled"))
-print(row.format("Ideal", ideal_uncompiled, ideal_compiled))
-print(row.format("Noisy", noisy_uncompiled, noisy_compiled))
-print(row.format("Mitigated", mitigated_uncompiled, mitigated_compiled))
-print(
-    row.format(
-        "Mitigated Error",
-        abs(ideal_uncompiled - mitigated_uncompiled),
-        abs(ideal_compiled - mitigated_compiled),
-    )
+| compiled\mitigated | ❌                 | ✅                     |
+| ------------------ | ------------------ | ---------------------- |
+| ❌                 | `noisy_uncompiled` | `mitigated_uncompiled` |
+| ✅                 | `noisy_compiled`   | `mitigated_compiled`   |
+
+```{code-cell} ipython3
+:dropdown: true
+:tags: [hide-input]
+
+import matplotlib.pyplot as plt
+
+categories = ["Uncompiled", "Compiled"]
+noisy = [noisy_uncompiled, noisy_compiled]
+mitigated = [
+    mitigated_uncompiled - noisy_uncompiled,
+    mitigated_compiled - noisy_compiled,
+]  # Delta from noisy
+ideal = [ideal_uncompiled, ideal_compiled]
+
+fig, ax = plt.subplots(figsize=(6, 3))
+
+y = range(len(categories))
+bar_width = 0.6
+
+ax.barh(y, noisy, height=bar_width, color="lightgray", label="Noisy")
+
+ax.barh(
+    y,
+    mitigated,
+    left=noisy,
+    height=bar_width,
+    hatch="///",
+    edgecolor="black",
+    facecolor="none",
+    label="Mitigated",
 )
+
+ax.axvline(x=ideal_uncompiled, color="blue", linestyle="--", linewidth=1)
+ax.text(
+    ideal_uncompiled,
+    0.4,
+    "Ideal",
+    color="blue",
+    ha="right",
+)
+
+ax.set_yticks(y)
+ax.set_yticklabels(categories)
+ax.set_xlabel("Expectation Value")
+ax.set_title("Impact of Mitigation on pre- and post-compiled circuit")
+
+ax.legend()
+plt.show()
+```
+
+```{warning}
+The above plot is a single instance of a random circuit.
+Despite setting a random seed, non-deterministic behavior in the simulator means results vary from run to run.
+While mitigation on the uncompiled circuit is almost always an improvement, the same is unfortunately not true for the compiled circuit due to it's short depth.
+
+From inspection, the compiled circuit usually contains $< 5$ CNOT gates, which is where error is accrued.
 ```
 
 ## Conclusions
