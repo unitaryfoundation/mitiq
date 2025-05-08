@@ -30,7 +30,7 @@ You should now have a development environment set up to work on Mitiq! 🎉 To g
 > [!Note]
 > Since uv uses a virtual environment, any commands to be run inside the virtual environment will need to be prefaced with `uv run` or the uv [managed virtual environment](https://docs.astral.sh/uv/pip/environments/#using-a-virtual-environment) will need to be activated by running `source .venv/bin/activate` in your shell. 
 >
-> All commands using the Makefile do NOT require `uv run`.
+> Running `make` commands do NOT require prepending `uv run`.
 
 What follows are recommendations/requirements to keep in mind while contributing.
 
