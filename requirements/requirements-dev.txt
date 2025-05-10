@@ -27,5 +27,5 @@ openfermionpyscf==0.5; sys_platform != 'win32'
 bqskit==1.1.1
 seaborn==0.13.0
 stim==1.14.0
-stimcirq==1.14.0
+stimcirq==1.15.0
 pyqrack==1.32.27
