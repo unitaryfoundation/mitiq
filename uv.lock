@@ -1503,7 +1503,7 @@ docs = [
     { name = "pandas", specifier = "==2.1.3" },
     { name = "pydata-sphinx-theme", specifier = "==0.15.4" },
     { name = "pyqrack", specifier = "==1.32.27" },
-    { name = "pyscf", marker = "sys_platform != 'win32'", specifier = "==2.8.0" },
+    { name = "pyscf", marker = "sys_platform != 'win32'", specifier = "==2.9.0" },
     { name = "seaborn", specifier = "==0.13.0" },
     { name = "sphinx", specifier = "==8.0.2" },
     { name = "sphinx-autodoc-typehints", specifier = "==2.0.0" },
@@ -2336,7 +2336,7 @@ wheels = [
 
 [[package]]
 name = "pyscf"
-version = "2.8.0"
+version = "2.9.0"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "h5py" },
@@ -2344,12 +2344,12 @@ dependencies = [
     { name = "scipy" },
     { name = "setuptools" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/a1/f6/9b4d590865f56f56f6f3830921f1722be6367445a1446ecb9732a3bb9289/pyscf-2.8.0.tar.gz", hash = "sha256:db720372e7f7d1aa2df0fb90c07f483da363730197c937a6378952d34b6abf3d", size = 10047853 }
+sdist = { url = "https://files.pythonhosted.org/packages/bd/7e/a7766ba1961497f5ab341c6c3d9558eb02a3c34315f53f7710b365655e42/pyscf-2.9.0.tar.gz", hash = "sha256:821dc882f3a5485d8f202abb093330cf1497b26767ba2a1a63b7fa600ddc58a3", size = 10062186 }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/64/c8/e62b7e3fd08ba5bfa90dda7fe455ea02335ad984340cfa43405ab7ed7a17/pyscf-2.8.0-py3-none-macosx_10_9_x86_64.whl", hash = "sha256:1de361d6abde3a758767845b3c03775aa7f2b86959ae657cea6609e76f0afc04", size = 35565191 },
-    { url = "https://files.pythonhosted.org/packages/f0/0e/0419d1dbeaf516d3903677a586a2e7380e3e0fec8be5938ff91c24a0c35f/pyscf-2.8.0-py3-none-macosx_11_0_arm64.whl", hash = "sha256:36f346bf60c16173f616b1f3969807c4263d08466fdf85befe8895a1bec01325", size = 34743056 },
-    { url = "https://files.pythonhosted.org/packages/e4/d6/e8209da3f69d22969064da3fbb376600e7021e4a386f1419854fc9e3ae39/pyscf-2.8.0-py3-none-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:1babdd355603d4bdca5ce1fed045c1b98045912ff485eabf968b21954ff5355e", size = 44106364 },
-    { url = "https://files.pythonhosted.org/packages/e3/67/31cb0121a516aace831762d116bd1d0570c3d438362760b3658c2ed47dde/pyscf-2.8.0-py3-none-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:4baa59297de8a2992e8afa5b20a12164b6128c14ccc09431d05f73e3eefdf008", size = 50895853 },
+    { url = "https://files.pythonhosted.org/packages/31/34/0c76e1e8eb96ae998e70c08af76907e48df8e6e74745461eb559ca1a3971/pyscf-2.9.0-py3-none-macosx_10_9_x86_64.whl", hash = "sha256:cdce0684be3e71ad82e7885810a00214ddf153ba14f300bbcb40741e76bc3e31", size = 35586690 },
+    { url = "https://files.pythonhosted.org/packages/6b/f4/25f257056c88eac008a3bca83d07cf48b847ee1e7672f7ce951a9fa4e298/pyscf-2.9.0-py3-none-macosx_11_0_arm64.whl", hash = "sha256:231f99463d134a65e919882d27db5663ba01471ffee772a821e496803b507a83", size = 34763812 },
+    { url = "https://files.pythonhosted.org/packages/27/6c/72c1f46f6596f55c27ee1911120e77f237caa157681ba035630518f3eec7/pyscf-2.9.0-py3-none-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:bb204d651061fe1137601de9d32e34db24fe2548b5745992bcf4003acd5e05f3", size = 44126719 },
+    { url = "https://files.pythonhosted.org/packages/09/01/b1dbec508c7d2fe451def7bf3ccd28246e8a312df90402ddc4a509d5b2ac/pyscf-2.9.0-py3-none-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:b1da9781ce25db2c34f4d1f844e87f22802e99b75f085bd1ee7a20aad1a33bb6", size = 50917207 },
 ]
 
 [[package]]
