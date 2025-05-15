@@ -5,7 +5,7 @@ jupytext:
     extension: .md
     format_name: myst
     format_version: 0.13
-    jupytext_version: 1.14.1
+    jupytext_version: 1.16.1
 kernelspec:
   display_name: Python 3
   name: python3
@@ -32,7 +32,7 @@ pip install cirq
 
 We’ll:
 
-1. Generate a quantum circuit using Mitiq's benchmarking library.
+1. Define a quantum circuit.
 2. Compile it with UCC.
 3. Simulate it under a simple noise model.
 4. Apply error mitigation using ZNE.
@@ -51,19 +51,23 @@ import ucc
 
 ## Step 2: Create a Testing Circuit
 
-For testing purposes we create a random clifford+$T$ circuit.
+For testing purposes we use a circuit that simulates the dynamics of the [Heisenberg model](https://en.wikipedia.org/wiki/Quantum_Heisenberg_model) on a square lattice.
+[This circuit](https://github.com/unitaryfoundation/ucc-bench/blob/bc3e88e9c564efdb9e5a7af7493a7e1811c8fbf9/benchmarks/circuits/benchpress/square_heisenberg_N9_basis_rz_rx_ry_cx.qasm) is one of the circuits UCC is benchmarked on in the [`ucc-bench`](https://github.com/unitaryfoundation/ucc-bench) repository.
 
 ```{code-cell} ipython3
-random_circuit = mitiq.benchmarks.generate_random_clifford_t_circuit(
-    num_qubits=2,
-    num_oneq_cliffords=100,
-    num_twoq_cliffords=50,
-    num_t_gates=50,
-    seed=90,
-)
+from cirq.contrib.qasm_import import circuit_from_qasm
 
-print(random_circuit)
-print("circuit depth:", len(random_circuit))
+with open("resources/square_heisenberge.qasm") as f:
+    qasm = f.read()
+
+circuit = circuit_from_qasm(qasm)
+
+print(circuit)
+print("circuit depth:", len(circuit))
+print(
+    "two qubit gate count: ",
+    len([op for op in circuit.all_operations() if len(op.qubits) == 2]),
+)
 ```
 
 ## Step 3: Compile with UCC
@@ -73,10 +77,14 @@ Since noise accrues with circuit depth, shorter circuits are inherently more rob
 This example shows a dramatic reduction in the number of gates, but to see the impact of UCC on a variety of circuits see the [UCC benchmark repository](https://github.com/unitaryfoundation/ucc-bench).
 
 ```{code-cell} ipython3
-compiled_circuit = ucc.compile(random_circuit)
+compiled = ucc.compile(circuit)
 
-print(compiled_circuit)
-print("compiled depth:", len(compiled_circuit))
+print(compiled)
+print("compiled depth:", len(compiled))
+print(
+    "two qubit gate count: ",
+    len([op for op in compiled.all_operations() if len(op.qubits) == 2]),
+)
 ```
 
 ## Step 4: Define a Noisy Simulator
@@ -85,7 +93,7 @@ The dominant source of noise on modern devices is associated with two-qubit gate
 For simplicity, we define a simulator that adds depolarizing noise after each two-qubit gate, but no noise after single-qubit gates.
 
 ```{code-cell} ipython3
-def execute(circuit, noise_level=0.05):
+def execute(circuit, noise_level=0.01):
     noisy_circuit = cirq.Circuit()
     for op in circuit.all_operations():
         noisy_circuit.append(op)
@@ -100,11 +108,11 @@ def execute(circuit, noise_level=0.05):
 ### Baseline: Ideal vs Noisy
 
 ```{code-cell} ipython3
-ideal_uncompiled = execute(random_circuit, noise_level=0.0)
-noisy_uncompiled = execute(random_circuit)
+ideal_uncompiled = execute(circuit, noise_level=0.0)
+noisy_uncompiled = execute(circuit)
 
-ideal_compiled = execute(compiled_circuit, noise_level=0.0)
-noisy_compiled = execute(compiled_circuit)
+ideal_compiled = execute(compiled, noise_level=0.0)
+noisy_compiled = execute(compiled)
 ```
 
 ## Step 5: Apply ZNE
@@ -112,8 +120,8 @@ noisy_compiled = execute(compiled_circuit)
 Here ZNE is applied using the default parameters (Richardson extrapolation with scale factors 1, 3, and 5, and random unitary folding for the noise scaling method).
 
 ```{code-cell} ipython3
-mitigated_uncompiled = mitiq.zne.execute_with_zne(random_circuit, execute)
-mitigated_compiled = mitiq.zne.execute_with_zne(compiled_circuit, execute)
+mitigated_uncompiled = mitiq.zne.execute_with_zne(circuit, execute)
+mitigated_compiled = mitiq.zne.execute_with_zne(compiled, execute)
 ```
 
 ## Step 6: Compare the Results
@@ -142,27 +150,27 @@ ideal = [ideal_uncompiled, ideal_compiled]
 fig, ax = plt.subplots(figsize=(6, 3))
 
 y = range(len(categories))
-bar_width = 0.6
+bar_width = 0.55
 
-ax.barh(y, noisy, height=bar_width, color="lightgray", label="Noisy")
+ax.barh(y, noisy, height=bar_width, color="lightcoral", label="Noisy")
 
 ax.barh(
     y,
     mitigated,
     left=noisy,
     height=bar_width,
-    hatch="///",
-    edgecolor="black",
+    hatch="//",
+    edgecolor="firebrick",
     facecolor="none",
     label="Mitigated",
 )
 
-ax.axvline(x=ideal_uncompiled, color="blue", linestyle="--", linewidth=1)
+ax.axvline(x=ideal_uncompiled, color="maroon", linestyle="--", linewidth=1)
 ax.text(
     ideal_uncompiled,
     0.4,
     "Ideal",
-    color="blue",
+    color="maroon",
     ha="right",
 )
 
