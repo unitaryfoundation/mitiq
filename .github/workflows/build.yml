@@ -19,14 +19,17 @@ jobs:
     steps:
       - name: Check out mitiq
         uses: actions/checkout@v4
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v6
+
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
           python-version: "3.12"
-      - name: Install Python dependencies
-        run: |
-          python -m pip install --upgrade pip
-          make install
+          
+      - name: Install the project
+        run: uv sync --all-extras
 
       - name: Check types with mypy
         run: make check-types
@@ -42,22 +45,24 @@ jobs:
     steps:
       - name: Check out mitiq
         uses: actions/checkout@v4
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v5
+
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
           python-version: "3.12"
+
       - name: Install Mitiq
         # Since requirements.txt includes cirq, which in turn has pyquil as dependency,
         # we explicitly remove pyquil from the installed packages after installing mitiq
-        run: |
-          python -m pip install --upgrade pip
-          pip install .
-          pip uninstall -y pyquil
+        run: uv sync --no-dev
 
       - name: Test without 3rd party packages
         run: |
-          pip install pytest
-          pytest mitiq/tests/test_without_third_party_packages.py
+          uv run pip install pytest
+          uv run pytest mitiq/tests/test_without_third_party_packages.py
 
   test:
     strategy:
@@ -72,21 +77,27 @@ jobs:
         # Increase fetch depth to work around Codecov issue (https://github.com/codecov/codecov-action/issues/190).
         with:
           fetch-depth: 2
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v5
+
       - name: Set up Python ${{ matrix.python-version }}
         uses: actions/setup-python@v5
         with:
           python-version: ${{ matrix.python-version }}
-      - name: Install Python dependencies
-        run: |
-          python -m pip install --upgrade pip
-          make install
+
+      - name: Install Python dependencies except for docs
+        run: uv sync --all-extras
+
       - name: Run the quilc & qvm Docker images
         if: ${{ matrix.os == 'ubuntu-latest' }}
         run: |
           docker run --rm -idt -p 5000:5000 rigetti/qvm -S
           docker run --rm -idt -p 5555:5555 rigetti/quilc -R
+          
       - name: Run all the unit tests
         run: ${{ matrix.os == 'ubuntu-latest' && 'make test-all' || 'make test' }}
+
       - name: Submit coverage report to Codecov
         # Only submit to Codecov once.
         if: ${{ matrix.python-version == '3.12' && matrix.os == 'ubuntu-latest'}}
