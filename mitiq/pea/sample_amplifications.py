@@ -15,12 +15,27 @@ from mitiq.pec.sampling import sample_circuit
 
 def scale_circuit_amplifications(
     ideal_circuit: Circuit,
-    scale_factor: float,
+    scale_factors: float,
     noise_model: str,
     epsilon: float,
 ) -> Sequence[OperationRepresentation]:
-    """Returns a list of noise-amplified circuits, corresponding to each scale
-    factor multiplied by the baseline noise level."""
+    r"""Generates a list of implementable sequences from the noise-amplified
+    representation of the input ideal circuit based on the input noise model
+    and baseline noise level.
+
+    Args:
+        ideal_circuit: The ideal circuit from which an implementable
+            sequence is sampled.
+        scale_factors: A list of (positive) numbers by which the baseline
+            noise level is to be amplified.
+        noise_model: A string describing the noise model to be used for the
+            noise-scaled representations, e.g. "local_depolarizing" or
+            "global_depolarizing".
+        epsilon: Baseline noise level.
+
+    Returns:
+        A list of noise-amplified circuits, corresponding to each scale
+        factor multiplied by the baseline noise level."""
 
     if noise_model == "local_depolarizing":
         amp_fn = amplify_noisy_ops_in_circuit_with_local_depolarizing_noise
@@ -31,7 +46,7 @@ def scale_circuit_amplifications(
         raise ValueError("Must specify supported noise model")
         # TODO allow use of custom noise model
 
-    return amp_fn(ideal_circuit, (scale_factor - 1) * epsilon)
+    return amp_fn(ideal_circuit, (scale_factors - 1) * epsilon)
 
 
 def sample_circuit_amplifications(
@@ -44,13 +59,43 @@ def sample_circuit_amplifications(
     num_samples: Optional[int] = None,
     force_run_all: bool = True,
 ) -> List[float]:
-    """Returns a list of expectation values, evaluated at each noise scale
-    factor times the baseline noise level."""
+    """Samples a list of implementable circuits from the noise-amplified
+    representation of the input ideal circuit.
+    Returns a list of expectation values, evaluated at each scaled noise level.
+
+    Note that the ideal operation can be a sequence of operations (circuit),
+    for instance U = V W, as long as a representation is known. Similarly, A
+    and B can be sequences of operations (circuits) or just single operations.
+
+    Args:
+        ideal_circuit: The ideal circuit from which an implementable
+            sequence is sampled.
+        executor: A Mitiq executor that executes a circuit and returns the
+            unmitigated ``QuantumResult`` (e.g. an expectation value).
+        scale_factors: A list of (positive) numbers by which the baseline
+            noise level is to be amplified.
+        noise_model: A string describing the noise model to be used for the
+            noise-scaled representations, e.g. "local_depolarizing" or
+            "global_depolarizing".
+        epsilon: Baseline noise level.
+        observable: Observable to compute the expectation value of. If None,
+            the `executor` must return an expectation value. Otherwise,
+            the `QuantumResult` returned by `executor` is used to compute the
+            expectation of the observable.
+        num_samples: The number of noisy circuits to be sampled for PEA.
+            If not given, this is deduced from the 'precision'.
+        force_run_all: If True, all sampled circuits are executed regardless of
+            uniqueness, else a minimal unique set is executed.
+
+    Returns:
+        A list of expectation values, evaluated at each noise scale
+        factor times the baseline noise level.
+   """
 
     if not isinstance(executor, Executor):
         executor = Executor(executor)
 
-    precision = 0.1
+    precision = 0.1 #TODO make configurable?
     amp_values = []
     for s in scale_factors:
         scaled_amplification = scale_circuit_amplifications(

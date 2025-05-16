@@ -23,8 +23,8 @@ def amplify_noisy_op_with_global_depolarizing_noise(
     noise_level: float,
     is_qubit_dependent: bool = True,
 ) -> OperationRepresentation:
-    r"""As described in :cite:`Temme_2017_PRL`, this function maps an
-    ``ideal_operation`` :math:`\mathcal{U}` into its quasi-probability
+    r"""As described in :cite:`Kim_2023_Nature`, this function maps an
+    ``ideal_operation`` :math:`\mathcal{U}` into its noise-amplified
     representation, which is a linear combination of noisy implementable
     operations :math:`\sum_\alpha \eta_{\alpha} \mathcal{O}_{\alpha}`.
 
@@ -38,29 +38,6 @@ def amplify_noisy_op_with_global_depolarizing_noise(
     depolarizing channel (:math:`\epsilon` is a simple function of
     ``noise_level``).
 
-    For a single-qubit ``ideal_operation``, the representation is as
-    follows:
-
-    .. math::
-         \mathcal{U}_{\beta} = \eta_1 \mathcal{O}_1 + \eta_2 \mathcal{O}_2 +
-                               \eta_3 \mathcal{O}_3 + \eta_4 \mathcal{O}_4
-
-    .. math::
-        \eta_1 =1 + \frac{3}{4} \frac{\epsilon}{1- \epsilon},
-        \qquad \mathcal{O}_1 = \mathcal{D} \circ \mathcal{I} \circ \mathcal{U}
-
-        \eta_2 =- \frac{1}{4}\frac{\epsilon}{1- \epsilon} , \qquad
-        \mathcal{O}_2 = \mathcal{D} \circ \mathcal{X} \circ \mathcal{U}
-
-        \eta_3 =- \frac{1}{4}\frac{\epsilon}{1- \epsilon} , \qquad
-        \mathcal{O}_3 = \mathcal{D} \circ \mathcal{Y} \circ \mathcal{U}
-
-        \eta_4 =- \frac{1}{4}\frac{\epsilon}{1- \epsilon} , \qquad
-        \mathcal{O}_4 = \mathcal{D} \circ \mathcal{Z} \circ \mathcal{U}
-
-    It was proven in :cite:`Takagi_2020_PRR` that, under suitable assumptions,
-    this representation is optimal (minimum 1-norm).
-
     Args:
         ideal_operation: The ideal operation (as a QPROGRAM) to represent.
         noise_level: The noise level (as a float) of the depolarizing channel.
@@ -71,20 +48,7 @@ def amplify_noisy_op_with_global_depolarizing_noise(
             `ideal_operation`.
 
     Returns:
-        The quasi-probability representation of the ``ideal_operation``.
-
-    .. note::
-        This representation is based on the ideal assumption that one
-        can append Pauli gates to a noisy operation without introducing
-        additional noise. For a backend which violates this assumption,
-        it remains a good approximation for small values of ``noise_level``.
-
-    .. note::
-        The input ``ideal_operation`` is typically a QPROGRAM with a single
-        gate but could also correspond to a sequence of more gates.
-        This is possible as long as the unitary associated to the input
-        QPROGRAM, followed by a single final depolarizing channel, is
-        physically implementable.
+        The noise-amplified representation of the ``ideal_operation``.
     """
     circuit_copy = copy.deepcopy(ideal_operation)
     converted_circ, _ = convert_to_mitiq(circuit_copy)
@@ -145,8 +109,8 @@ def amplify_noisy_op_with_local_depolarizing_noise(
     noise_level: float,
     is_qubit_dependent: bool = True,
 ) -> OperationRepresentation:
-    r"""As described in :cite:`Temme_2017_PRL`, this function maps an
-    ``ideal_operation`` :math:`\mathcal{U}` into its quasi-probability
+    r"""As described in :cite:`Kim_2023_Nature`, this function maps an
+    ``ideal_operation`` :math:`\mathcal{U}` into its noise-amplified
     representation, which is a linear combination of noisy implementable
     operations :math:`\sum_\alpha \eta_{\alpha} \mathcal{O}_{\alpha}`.
 
@@ -161,7 +125,7 @@ def amplify_noisy_op_with_local_depolarizing_noise(
     single-qubit depolarizing channel (:math:`\epsilon` is a simple function
     of ``noise_level``).
 
-    More information about the quasi-probability representation for a
+    More information about the noise-amplified representation for a
     depolarizing noise channel can be found in:
     :func:`amplify_operation_with_global_depolarizing_noise`.
 
@@ -174,7 +138,7 @@ def amplify_noisy_op_with_local_depolarizing_noise(
             if acting on different qubits from those specified in
             `ideal_operation`.
     Returns:
-        The quasi-probability representation of the ``ideal_operation``.
+        The noise-amplified representation of the ``ideal_operation``.
 
     .. note::
         The input ``ideal_operation`` is typically a QPROGRAM with a single
@@ -246,15 +210,11 @@ def amplify_noisy_ops_in_circuit_with_global_depolarizing_noise(
     ideal_circuit: QPROGRAM, noise_level: float
 ) -> List[OperationRepresentation]:
     """Iterates over all unique operations of the input ``ideal_circuit`` and,
-    for each of them, generates the corresponding quasi-probability
-    amplification (linear combination of implementable noisy operations).
+    for each of them, generates the corresponding noise-amplified representation
+    (linear combination of implementable noisy operations).
 
     This function assumes that the same depolarizing noise channel of strength
     ``noise_level`` affects each implemented operation.
-
-    This function internally calls
-    :func:`amplify_operation_with_global_depolarizing_noise` (more details
-    about the quasi-probability amplification can be found in its docstring).
 
     Args:
         ideal_circuit: The ideal circuit, whose ideal operations should be
