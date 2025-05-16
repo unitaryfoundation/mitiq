@@ -90,12 +90,12 @@ def sample_circuit_amplifications(
     Returns:
         A list of expectation values, evaluated at each noise scale
         factor times the baseline noise level.
-   """
+    """
 
     if not isinstance(executor, Executor):
         executor = Executor(executor)
 
-    precision = 0.1 #TODO make configurable?
+    precision = 0.1  # TODO make configurable?
     amp_values = []
     for s in scale_factors:
         scaled_amplification = scale_circuit_amplifications(
