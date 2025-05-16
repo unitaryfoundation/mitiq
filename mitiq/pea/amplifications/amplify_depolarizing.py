@@ -210,8 +210,8 @@ def amplify_noisy_ops_in_circuit_with_global_depolarizing_noise(
     ideal_circuit: QPROGRAM, noise_level: float
 ) -> List[OperationRepresentation]:
     """Iterates over all unique operations of the input ``ideal_circuit`` and,
-    for each of them, generates the corresponding noise-amplified representation
-    (linear combination of implementable noisy operations).
+    for each of them, generates the corresponding noise-amplified
+    representation (linear combination of implementable noisy operations).
 
     This function assumes that the same depolarizing noise channel of strength
     ``noise_level`` affects each implemented operation.
