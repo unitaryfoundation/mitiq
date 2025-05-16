@@ -17,11 +17,11 @@ make install
 - [`sphinx-copybutton`](https://sphinx-copybutton.readthedocs.io/en/latest/) allows to easily copy-paste code snippets from examples.
 - [`sphinx-autodoc-typehints`](https://pypi.org/project/sphinx-autodoc-typehints/) allows to control how annotations are displayed in the API-doc part of the documentation, integrating with  [`sphinx-autodoc`](https://www.sphinx-doc.org/en/master/usage/extensions/autodoc.html) and [`sphinx-napoleon`](https://sphinxcontrib-napoleon.readthedocs.io/en/latest/) which handle specific styling requirements for the API documentation comments.
 
-You can check that Sphinx is installed with `sphinx-build --version`.
+You can check that Sphinx is installed with `uv run sphinx-build --version`.
 
 ### The configuration file
 Since the documentation is already created, you need not to generate a
-configuration file from scratch (this is done with `sphinx-quickstart`).
+configuration file from scratch (this is done with `uv run sphinx-quickstart`).
 Meta-data, extensions and other custom specifications are accounted for
 in the `conf.py` file.
 
@@ -153,6 +153,10 @@ To convert from an IPython notebook to markdown file, run `jupytext your_filenam
 Further, not only can `jupytext` convert between the formats on demand, but once you install it, you can configure it to manage _both_ a Jupyter and Markdown version of your file, so you don't have to remember to do conversions (for more details, see the `jupytext` docs on [paired notebooks](https://jupytext.readthedocs.io/en/latest/index.html#paired-notebooks)).
 Using the paired notebooks you can continue your development in the notebooks as normal, and just commit to git the markdown serialized version when you want to add to the docs.
 You can even add this tool as a [git pre-commit hook](https://jupytext.readthedocs.io/en/latest/using-pre-commit.html) if you want!
+
+```{note}
+Code cells in notebooks are executed and tested when building the documentation. If any additional Python libraries are needed to execute the notebook, they must be added to [pyproject.toml](https://github.com/unitaryfoundation/mitiq/blob/main/pyproject.toml) in the `docs` section of `[dependency-groups]`.
+```
 
 ```{tip}
 There is a [sample markdown formatted notebook in the `examples` directory](../source/examples/template.md) for you to take a look at as you write your own!
