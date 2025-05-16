@@ -36,7 +36,7 @@ braket = [
     "cirq-ionq>=1.4.0,<1.5.0",
 ]
 pennylane = [
-    "pennylane-qiskit~=0.36.0",
+    "pennylane-qiskit>=0.36,<0.42",
     "pennylane~=0.36.0",
 ]
 pyquil = [
