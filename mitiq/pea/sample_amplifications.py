@@ -19,13 +19,13 @@ def scale_circuit_amplifications(
     noise_model: str,
     epsilon: float,
 ) -> Sequence[OperationRepresentation]:
-    """Returns a list of noise-amplified circuits, corrsponding to each scale
+    """Returns a list of noise-amplified circuits, corresponding to each scale
     factor multiplied by the baseline noise level."""
 
-    if noise_model == "local-depolarizing":
+    if noise_model == "local_depolarizing":
         amp_fn = amplify_noisy_ops_in_circuit_with_local_depolarizing_noise
         # TODO add other existing noise models from Mitiq
-    elif noise_model == "global-depolarizing":
+    elif noise_model == "global_depolarizing":
         amp_fn = amplify_noisy_ops_in_circuit_with_global_depolarizing_noise
     else:
         raise ValueError("Must specify supported noise model")
@@ -53,38 +53,29 @@ def sample_circuit_amplifications(
     precision = 0.1
     amp_values = []
     for s in scale_factors:
-        if s == 1:
-            if num_samples is None:
-                amp_norms = [
-                    amp.norm
-                    for amp in scale_circuit_amplifications(
-                        ideal_circuit, s, noise_model, epsilon
-                    )
-                ]
-                num_samples = int(
-                    sum([(a_norm / precision) ** 2 for a_norm in amp_norms])
-                )
-            results = executor.evaluate(circuits=[ideal_circuit] * num_samples)
-            amp_values.append(cast(float, np.average(results)))
-        else:
-            scaled_ampflication = scale_circuit_amplifications(
-                ideal_circuit, s, noise_model, epsilon
+        scaled_amplification = scale_circuit_amplifications(
+            ideal_circuit, s, noise_model, epsilon
+        )
+        if num_samples is None:
+            amp_norms = [amp.norm for amp in scaled_amplification]
+            num_samples = int(
+                sum([(a_norm / precision) ** 2 for a_norm in amp_norms])
             )
-            for amp_norm in amp_norms:
-                sampled_circuits, signs, norm = sample_circuit(
-                    ideal_circuit,
-                    scaled_ampflication,
-                    num_samples=int(amp_norm / precision) ** 2,
-                )
-                scaled_result = executor.evaluate(
-                    sampled_circuits, observable, force_run_all
-                )
 
-                # Evaluate unbiased estimators
-                unbiased_estimators = [
-                    norm * s * val for s, val in zip(signs, scaled_result)
-                ]
+        sampled_circuits, signs, norm = sample_circuit(
+            ideal_circuit,
+            scaled_amplification,
+            num_samples=num_samples,
+        )
+        scaled_results = executor.evaluate(
+            sampled_circuits, observable, force_run_all
+        )
 
-            amp_values.append(cast(float, np.average(unbiased_estimators)))
+        # Evaluate unbiased estimators
+        unbiased_estimators = [
+            norm * s * val for s, val in zip(signs, scaled_results)
+        ]
+
+        amp_values.append(cast(float, np.average(unbiased_estimators)))
 
     return amp_values
