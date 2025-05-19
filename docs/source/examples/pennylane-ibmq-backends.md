@@ -58,18 +58,23 @@ See <https://quantum-computing.ibm.com/> for instructions to create an account, 
 
 First, we get our devices set up depending on whether we would like to use real hardware, or a simulator.
 
+```{warning}
+This notebook may not run when `USE_REAL_HARDWARE = True` due to recent changes in Qiskit and Pennylane.
+We are working on mointoring and updating this in https://github.com/unitaryfoundation/mitiq/issues/2659.
+```
+
 ```{code-cell} ipython3
 import qiskit
-from qiskit_ibm_runtime import QiskitRuntimeService
+from qiskit_ibm_runtime import QiskitRuntimeService, SamplerV2 as Sampler
 
 USE_REAL_HARDWARE = False
 
-# TODO: Remove the below comment when PennyLane supports Qiskit 1.0
-# As of 03 May 2024, PennyLane is not compatible with Qiskit 1.0,
+# TODO: Remove the below comment when PennyLane supports Qiskit 1.3
+# As of May 19, 2025, PennyLane is not compatible with Qiskit 1.3,
 # but PennyLane plans to support the upgrade, soon
 if QiskitRuntimeService.saved_accounts() and USE_REAL_HARDWARE:
     service = QiskitRuntimeService()
-    backend = service.least_busy(operational=True, simulator=False)
+    backend = Sampler(service.least_busy(operational=True, simulator=False))
     dev = qml.device(
         "qiskit.ibmq",
         wires=1,
