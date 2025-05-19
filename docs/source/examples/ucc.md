@@ -30,7 +30,7 @@ pip install cirq
 
 ## 🔁 Workflow
 
-We’ll:
+We'll be completing the following steps:
 
 1. Define a quantum circuit.
 2. Compile it with UCC.
@@ -184,11 +184,8 @@ plt.show()
 ```
 
 ```{warning}
-The above plot is a single instance of a random circuit.
-Despite setting a random seed, non-deterministic behavior in the simulator means results vary from run to run.
-While mitigation on the uncompiled circuit is almost always an improvement, the same is unfortunately not true for the compiled circuit due to it's short depth.
-
-From inspection, the compiled circuit usually contains $< 5$ CNOT gates, which is where error is accrued.
+The above plot is a single instance of a given circuit.
+The behavior of compilation and mitigation acting beneficially is a common phenomenon, but not always guaranteed.
 ```
 
 ## Conclusions
