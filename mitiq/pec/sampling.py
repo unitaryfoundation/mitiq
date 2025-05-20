@@ -113,7 +113,7 @@ def _cirq_sample_circuit(
     representations: Sequence[OperationRepresentation],
     random_state: int | np.random.RandomState | None = None,
     num_samples: int = 1,
-    extra_data: dict[str, Any] = {},
+    extra_data: dict[str, Any] | None = None,
 ) -> list[cirq.Circuit]:
     """Cirq version of the more general "sample_circuit" function.
 
@@ -137,6 +137,9 @@ def _cirq_sample_circuit(
         ValueError:
             If a representation is not found for an operation in the circuit.
     """
+    if extra_data is None:
+        extra_data = {}
+
     if isinstance(random_state, int):
         random_state = np.random.RandomState(random_state)
 

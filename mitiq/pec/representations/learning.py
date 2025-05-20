@@ -27,7 +27,7 @@ def learn_biased_noise_parameters(
     circuit: QPROGRAM,
     ideal_executor: Executor,
     noisy_executor: Executor,
-    pec_kwargs: dict[str, Any] = {},
+    pec_kwargs: dict[str, Any] | None = None,
     num_training_circuits: int = 5,
     fraction_non_clifford: float = 0.2,
     training_random_state: np.random.RandomState | None = None,
@@ -81,6 +81,9 @@ def learn_biased_noise_parameters(
         large statistical error, ultimately causing the optimization process to
         fail.
     """
+    if pec_kwargs is None:
+        pec_kwargs = {}
+
     training_circuits = generate_training_circuits(
         circuit=circuit,
         num_training_circuits=num_training_circuits,
@@ -123,7 +126,7 @@ def learn_depolarizing_noise_parameter(
     circuit: QPROGRAM,
     ideal_executor: Executor,
     noisy_executor: Executor,
-    pec_kwargs: dict[str, Any] = {},
+    pec_kwargs: dict[str, Any] | None = None,
     num_training_circuits: int = 5,
     fraction_non_clifford: float = 0.2,
     training_random_state: np.random.RandomState | None = None,
@@ -175,6 +178,9 @@ def learn_depolarizing_noise_parameter(
         large statistical error, ultimately causing the optimization process to
         fail.
     """
+    if pec_kwargs is None:
+        pec_kwargs = {}
+
     training_circuits = generate_training_circuits(
         circuit=circuit,
         num_training_circuits=num_training_circuits,
