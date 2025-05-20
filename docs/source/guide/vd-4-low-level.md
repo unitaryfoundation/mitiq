@@ -12,9 +12,11 @@ kernelspec:
 ---
 
 # What happens when I use VD?
+
 There are several steps that happen in the backend when you call the `vd.execute_with_vd` function
 
 [comment]: <> (TODO: create the workflow diagram once the code is finalized)
+
 ```{figure} ../img/vd_workflow.png
 ---
 width: 400
@@ -32,8 +34,9 @@ In the following sections we will provide a mitiq-specific workflow:
 3. A series of SWAP gates are performed such that the qubits from the $M$ copies are aligned with each other
 4. A basis change unitary is applied
 5. A $B_i$ diagonalization gate is generated and applied to the circuits
-5. The circuits are measured
-6. The corrected expectation value is calculated
+6. The circuits are measured
+7. The corrected expectation value is calculated
 
 ## Detailed steps
+
 [comment]: <> (TODO: finalize this section once the code for VD is finalized)
