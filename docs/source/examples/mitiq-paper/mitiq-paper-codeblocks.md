@@ -469,7 +469,8 @@ print("ZNE then PEC value:", zne_then_pec_value)  # Note this is not accurate (b
 
 import qiskit
 from qiskit_aer import QasmSimulator
-from qiskit_ibm_runtime import QiskitRuntimeService
+from qiskit_ibm_runtime import QiskitRuntimeService, SamplerV2 as Sampler
+from qiskit.transpiler.preset_passmanagers import generate_preset_pass_manager
 
 
 def execute(
@@ -480,18 +481,25 @@ def execute(
     backend = QasmSimulator()  # Use of a simulator as backend.
     # backend = QiskitRuntimeService().least_busy(operational=True, simulator=False)  # Alternative way to run the blocks, with saved credentials.
 
-    exec_circuit = qiskit.transpile(
-        circuit,
+    pm = generate_preset_pass_manager(
         backend=backend,
-        optimization_level=0, # Important to preserve folded gates.
+        optimization_level=0,
     )
+
+    exec_circuit = pm.run(circuit) 
+    if not isinstance(exec_circuit, list):
+        exec_circuit = [exec_circuit]    
     
-    job = backend.run(
+    sampler = Sampler(backend)
+
+    job = sampler.run(
         exec_circuit,
         shots=shots,
     )
 
-    counts = job.result().get_counts()
+    result = job.result()[0]
+    counts = result.join_data().get_counts()
+
     return counts.get("00", 0.0) / shots
 ```
 
