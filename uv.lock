@@ -1604,7 +1604,7 @@ requires-dist = [
     { name = "cirq-rigetti", marker = "extra == 'pyquil'", specifier = ">=1.4.0,<1.5.0" },
     { name = "numpy", specifier = ">=1.22.0,<2.0.0" },
     { name = "pennylane", marker = "extra == 'pennylane'", specifier = "~=0.36.0" },
-    { name = "pennylane-qiskit", marker = "extra == 'pennylane'", specifier = "~=0.36.0" },
+    { name = "pennylane-qiskit", marker = "extra == 'pennylane'", specifier = ">=0.36,<0.42" },
     { name = "ply", marker = "extra == 'qiskit'", specifier = "==3.11" },
     { name = "pyquil", marker = "extra == 'pyquil'", specifier = "~=4.11.0" },
     { name = "qibo", marker = "extra == 'qibo'", specifier = "~=0.2.16" },
