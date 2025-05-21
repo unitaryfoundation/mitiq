@@ -217,7 +217,7 @@ following code block.
 <!-- #endregion -->
 
 ```{code-cell} ipython3
-all_counts = [job.result().get_counts(i) for i in range(len(folded_circuits))]
+all_counts = [job.result()[i].join_data().get_counts() for i in range(len(folded_circuits))]
 expectation_values = [counts.get("0") / shots for counts in all_counts]
 print(f"Expectation values:\n{expectation_values}")
 ```
