@@ -231,6 +231,13 @@ See Ref. {cite}`Czarnik_2021_Quantum` for more details on these methods.
    :members:
 ```
 
+### Virtual Distillation
+
+```{eval-rst}
+.. automodule:: mitiq.vd.vd
+   :members:
+```
+
 ## Tools For Error Mitigation
 
 ### Benchmarks

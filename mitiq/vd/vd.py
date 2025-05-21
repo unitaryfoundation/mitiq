@@ -34,14 +34,15 @@ def construct_circuits(
 def combine_results(
     measurements: MeasurementResult,
 ) -> npt.NDArray[np.float64]:
-    """Process measurement results according to the virtual distillation
+    r"""Process measurement results according to the virtual distillation
     protocol.
 
     Args:
         measurements: Measurement results from circuit execution
 
     Returns:
-        Array of error-mitigated expectation values for <Z_i> observables.
+        Array of error-mitigated expectation values for
+        :math:`\langle Z_i\rangle` observables.
     """
     num_qubits = measurements.nqubits // 2
     E = np.zeros(num_qubits)
@@ -86,7 +87,7 @@ def execute_with_vd(
     circuit: cirq.Circuit,
     executor: Callable[[cirq.Circuit], MeasurementResult],
 ) -> list[float]:
-    """Given a circuit that acts on N qubits, this function returns the
+    r"""Given a circuit that acts on N qubits, this function returns the
     expectation values of a given observable for each qubit i.
     The expectation values are corrected using the virtual distillation
     algorithm.
@@ -101,7 +102,8 @@ def execute_with_vd(
         (unlikely) scenario where the normalization constant can be zero.
 
     Returns:
-        A list of VD-estimated expectation values for <Z_i>.
+        A list of VD-estimated expectation values for
+        :math:`\langle Z_i\rangle`.
     """
     vd_circuit = construct_circuits(circuit)
 
