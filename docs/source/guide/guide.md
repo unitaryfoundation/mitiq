@@ -13,6 +13,7 @@ lre.md
 rem.md
 qse.md
 pt.md
+vd.md
 shadows.md
 error-mitigation.md
 glossary.md
