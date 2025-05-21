@@ -1610,7 +1610,7 @@ requires-dist = [
     { name = "qibo", marker = "extra == 'qibo'", specifier = "~=0.2.16" },
     { name = "qiskit", marker = "extra == 'qiskit'", specifier = "~=1.4.2" },
     { name = "qiskit-aer", marker = "extra == 'qiskit'", specifier = "~=0.17.0" },
-    { name = "qiskit-ibm-runtime", marker = "extra == 'qiskit'", specifier = "~=0.37.0" },
+    { name = "qiskit-ibm-runtime", marker = "extra == 'qiskit'", specifier = ">=0.37,<0.40" },
     { name = "scipy", specifier = ">=1.10.1,<=1.15.2" },
     { name = "tabulate" },
 ]
@@ -3001,7 +3001,7 @@ wheels = [
 
 [[package]]
 name = "qiskit-ibm-runtime"
-version = "0.37.0"
+version = "0.39.0"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "ibm-platform-services" },
@@ -3013,11 +3013,10 @@ dependencies = [
     { name = "requests" },
     { name = "requests-ntlm" },
     { name = "urllib3" },
-    { name = "websocket-client" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/f8/33/b9085d55d7e1fb51444092cb6c6e3592c4ff5a0dd9ba68bff4bb37748928/qiskit_ibm_runtime-0.37.0.tar.gz", hash = "sha256:656e8c97730125cd82c910722eefd3dc5bd4d22a7a8f868735629001995646e1", size = 3055745, upload-time = "2025-03-13T23:23:10.647Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/09/fc/520df318badb0841c8f604da22f0fd6910ef5e9798eff15077a7cea5ccfd/qiskit_ibm_runtime-0.39.0.tar.gz", hash = "sha256:deb36df2444bf4be5db0f827386d5286f4bdde8dbf27486190c91ce410f85aa4", size = 3189722, upload-time = "2025-05-13T17:41:04.025Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/7f/eb/a2c5eb434851e63e1fd0085fe5cd027506392cf92442af990c960013c897/qiskit_ibm_runtime-0.37.0-py3-none-any.whl", hash = "sha256:d671cf398617e13844e8310187eb261636b1f82954edf0a060bfe37673065dac", size = 3052000, upload-time = "2025-03-13T23:23:08.413Z" },
+    { url = "https://files.pythonhosted.org/packages/50/1d/17b9c5eb07ff2648638fbd94a8a8843cb32bac7efc67883f334206d6f5a7/qiskit_ibm_runtime-0.39.0-py3-none-any.whl", hash = "sha256:dfc5390e7ba453e116694be7db58ac31011dd544bb34c120d6d11e72421ea5f2", size = 3191375, upload-time = "2025-05-13T17:41:01.591Z" },
 ]
 
 [[package]]
