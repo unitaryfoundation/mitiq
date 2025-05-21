@@ -37,7 +37,7 @@ braket = [
 ]
 pennylane = [
     "pennylane-qiskit~=0.36.0",
-    "pennylane~=0.36.0",
+    "pennylane>=0.36,<0.42",
 ]
 pyquil = [
     "pyquil~=4.11.0",
