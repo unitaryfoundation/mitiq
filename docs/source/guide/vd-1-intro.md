@@ -30,7 +30,7 @@ This equation allows us to use $M$ copies of $\rho$ instead of calculating $\rho
 
 As with all techniques, Virtual Distillation (VD) is compatible with any frontend supported by Mitiq:
 
-```{code-cell} ipython3
+```python
 import mitiq
 
 mitiq.SUPPORTED_PROGRAM_TYPES.keys()
@@ -51,7 +51,7 @@ Currently, VD only supports $M=2$ copies and measurements of the Pauli-Z observa
 ## Applying VD
 Below we provide an example of applying VD:
 
-```{code-cell} ipython3
+```python
 import cirq
 from mitiq import vd, MeasurementResult
 

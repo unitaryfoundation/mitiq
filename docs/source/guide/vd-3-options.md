@@ -38,7 +38,7 @@ vd_values: List[float] = execute_with_vd(
 
 ## Example Usage
 
-```{code-cell} ipython3
+```ipython
 import cirq
 from mitiq import vd, MeasurementResult
 
