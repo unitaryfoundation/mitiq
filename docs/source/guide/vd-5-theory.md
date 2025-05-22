@@ -14,15 +14,15 @@ kernelspec:
 # What is the theory behind VD?
 
 Virtual Distillation (VD) is a quantum error mitigation technique introduced and explained in much greater detail in the paper {cite}`Huggins_2021`.
-This method is designed to suppress noise in NISQ devices by using multiple noisy copies of a quantum state $\rho^{\otimes M}$ to estimate expectation values with respect to a "virtually distilled" state, $\frac{\rho^M}{\text{Tr}(\rho^M)}$.
+This method is designed to suppress noise in NISQ devices by using multiple noisy copies of a quantum state $\rho^{\otimes M}$ to estimate expectation values with respect to a "virtually distilled" state, $\frac{\rho^M}{\text{tr}(\rho^M)}$.
 
-The error-free observable is approximated as $\langle O\rangle_{\text{corrected}} := \frac{\text{Tr}(O \rho^M)}{\text{Tr}(\rho^M)}$.
+The error-free observable is approximated as $\langle O\rangle_{\text{corrected}} := \frac{\text{tr}(O \rho^M)}{\text{tr}(\rho^M)}$.
 By doing so, VD effectively reduces the influence of non-dominant eigenvectors in the density matrix and the estimator converges exponentially quickly towards the closest pure state to $\rho$ as $M$ is increased.
 Crucially, VD does not require the explicit preparation of the purified state, making it computationally efficient for near-term quantum devices.
 
 To evaluate the numerator and denominators of the $\langle O\rangle_{\text{corrected}}$, the equality below can be used:
 
-$$\text{Tr}(O \rho^M) = \text{Tr}(O^i S^{(M)} \rho^{\otimes M})$$
+$$\text{tr}(O \rho^M) = \text{tr}(O^i S^{(M)} \rho^{\otimes M})$$
 
 $O^i$ represents the observable acting upon one of the M subsystems, and $S^{(M)}$ is the cyclic shift operator performend on M subsystems.
 
@@ -42,7 +42,7 @@ First a symmetrized version of the observable is defined as $O^{(M)} = \frac{1}{
 For the example of $M = 2$ and $O = Z$, this equalities can be rewritten as: $Z^{(2)}_k = \frac{1}{2}(Z^1_k + Z^2_k)$.
 This can be used to rewrite the corrected observable as:
 
-$$\langle O\rangle_{\text{corrected}} = \frac{\text{Tr}(Z^{(2)}_k S^{(2)} \rho^{\otimes 2})}{\text{Tr}(S^{(2)} \rho^{\otimes 2})}$$
+$$\langle O\rangle_{\text{corrected}} = \frac{\text{tr}(Z^{(2)}_k S^{(2)} \rho^{\otimes 2})}{\text{tr}(S^{(2)} \rho^{\otimes 2})}$$
 
 Both $S^{(2)}$ and $Z^{(2)}S^{(2)}$ need to be diagonalized, which can be done using the two-qubit unitary that acts on the $i$ th qubit defined as $B^{(2)}_i$.
 
@@ -66,17 +66,17 @@ These measurement outcomes are stored as $z^1_i$ for the $i$th qubit in the firs
 The numerator value can now be calculated by computing for each qubit:
 
 $$
-E_i \mathrel{+}= \frac{1}{2N} \left( z^1_i + z^2_i \right) \prod_{j \neq i} \left( 1 + z^1_j - z^2_j + z^1_j z^2_j \right)
+E_i = \frac{1}{2N} \left( z^1_i + z^2_i \right) \prod_{j \neq i} \left( 1 + z^1_j - z^2_j + z^1_j z^2_j \right)
 $$
 
 The denomiator is calculated using the equation:
 
 $$
-D \mathrel{+}= \frac{1}{2N} \prod_{j = 1}^{N} \left(1 + z^1_j - z^2_j + z^1_j z^2_j \right)
+D = \frac{1}{2N} \prod_{j = 1}^{N} \left(1 + z^1_j - z^2_j + z^1_j z^2_j \right)
 $$
 
 The final value of $\langle Z_i \rangle_\text{corrected}$ can thus be calculated as $\frac{E_i}{D}$.
 
 VD has been shown to reduce errors by orders of magnitude in numerical simulations for a variety of quantum circuits and noise models.
 Its simplicity, effectiveness, and compatibility with NISQ devices make it a powerful addition to the suite of error mitigation techniques available today.
-However, its performance depends on factors such as the quality of the noisy state copies, the observables being measured, and the underlying noise model.
+However, its performance depends on factors such as the quality of the noisy state copies and the underlying noise model.

@@ -12,51 +12,51 @@ kernelspec:
 ---
 
 # What is VD?
-Virtual distillation is an error mitigation technique based on the following paper: [VD article](https://arxiv.org/pdf/2011.07064). VD leverages $M$ copies of a state $\rho$ to suppress the error term. Virtual distillation describes the approximation of the error-free expectation value of an operator $O$ as:
+Virtual distillation is an error mitigation technique introduced in {cite}`Huggins_2021, Koczor_2021`.
+VD leverages $M$ copies of a state $\rho$ to suppress the error term.
+Virtual distillation describes the approximation of the error-free expectation value of an operator $O$ as:
 
 $$
-\langle O \rangle_{corrected} = \dfrac{Tr(O\rho^M)}{Tr(\rho^M)}
+\langle O \rangle_\text{corrected} = \frac{\mathrm{tr}(O\rho^M)}{\mathrm{tr}(\rho^M)}
 $$
 
-As described in the paper, we make use of the following equality:
+As described in the paper, the protocol makes use of the following equality:
 
 $$
-Tr(O\rho^M) = Tr(O^{\textbf{i}}S^{(M)}\rho^{\otimes M})
+\mathrm{tr}(O\rho^M) = \mathrm{tr}(O^{\textbf{i}}S^{(M)}\rho^{\otimes M})
 $$
 
-This equation allows us to use $M$ copies of $\rho$ instead of calculating $\rho^M$ directly.
+```{tip}
+More details about $O^{\textbf{i}}$ and $S^{(M)}$ can be found in [](vd-5-theory.md).
+```
+
+This equation allows us to use $M$ copies of $\rho$ instead of preparing $\rho^M$ explicitly.
 
 # How do I use VD?
 
-As with all techniques, Virtual Distillation (VD) is compatible with any frontend supported by Mitiq:
-
-```python
-import mitiq
-
-mitiq.SUPPORTED_PROGRAM_TYPES.keys()
-```
-
-For the purpose of this tutorial we will use `cirq`:
-```{code-cell} ipython3
-frontend = "cirq"
-```
-
 ## Problem setup
+
 The VD implementation requires:
-1. A quantum circuit to apply error mitigation to
+
+1. A quantum circuit to apply error mitigation to (can be any supported frontend `mitiq.SUPPORTED_PROGRAM_TYPES`)
 2. An executor function that runs the circuit and returns measurement results
 
+```{warning}
 Currently, VD only supports $M=2$ copies and measurements of the Pauli-Z observable on each qubit.
+```
 
 ## Applying VD
+
 Below we provide an example of applying VD:
 
-```python
-import cirq
+```{code-cell} ipython3
 from mitiq import vd, MeasurementResult
 
+import cirq
+import numpy as np
+
 # Create a simple example circuit WITHOUT measurements
-# VD will add measurements automatically
+# VD will add measurements
 qubits = cirq.LineQubit.range(2)
 circuit = cirq.Circuit([
     cirq.H(qubits[0]),
