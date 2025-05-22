@@ -404,6 +404,7 @@ html_theme_options = {
         }
     ],
     "secondary_sidebar_items": ["page-toc", "sourcelink", "notebook-download"],
+    "show_toc_level": 2,
 }
 
 myst_update_mathjax = False
