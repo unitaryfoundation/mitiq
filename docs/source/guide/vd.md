@@ -9,6 +9,9 @@ You can get started with ZNE in Mitiq with the following sections of the user gu
 ---
 maxdepth: 1
 ---
+vd-1-intro.md
 vd-2-use-case.md
 vd-3-options.md
+vd-4-low-level.md
+vd-5-theory.md
 ```
