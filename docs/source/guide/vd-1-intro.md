@@ -11,7 +11,7 @@ kernelspec:
   name: python3
 ---
 
-## What is VD?
+# What is VD?
 Virtual distillation is an error mitigation technique based on the following paper: [VD article](https://arxiv.org/pdf/2011.07064). VD leverages $M$ copies of a state $\rho$ to suppress the error term. Virtual distillation describes the approximation of the error-free expectation value of an operator $O$ as:
 
 $$
