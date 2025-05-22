@@ -16,7 +16,7 @@ Virtual distillation is an error mitigation technique based on the following pap
 
 $$
 \langle O \rangle_{corrected} = \dfrac{Tr(O\rho^M)}{Tr(\rho^M)}
-$$,
+$$
 
 As described in the paper, we make use of the following equality:
 
@@ -24,8 +24,7 @@ $$
 Tr(O\rho^M) = Tr(O^{\textbf{i}}S^{(M)}\rho^{\otimes M})
 $$
 
-This equation allows us to use $M$ copies of $\rho$m instead of calculating $\rho^M$  directly.
-
+This equation allows us to use $M$ copies of $\rho$ instead of calculating $\rho^M$ directly.
 
 # How do I use VD?
 
@@ -43,22 +42,42 @@ frontend = "cirq"
 ```
 
 ## Problem setup
-Similarly to other techniques available in `mitiq`, we use an executor to run VD - in our case the exact function is: `vd.execute_with_vd`. We need to supply the following parameters to our function:
-1. A quantum circuit, which we want to run VD on
+The VD implementation requires:
+1. A quantum circuit to apply error mitigation to
+2. An executor function that runs the circuit and returns measurement results
 
-Note that currently, we do not support custom observables or values of `M` different than 2, but this will most likely change in the future.
-
-[comment]: <> (TODO: finalize this section once the code for VD is finalized)
+Currently, VD only supports $M=2$ copies and measurements of the Pauli-Z observable on each qubit.
 
 ## Applying VD
-Below we provide an example of applying VD - you can use it to run VD on your own circuits, as the necessary steps will remain largely the same:
+Below we provide an example of applying VD:
 
 ```{code-cell} ipython3
-from mitiq import vd
+import cirq
+from mitiq import vd, MeasurementResult
 
-mitigated_result = vd.execute_with_vd(circuit, execute)
+# Create a simple example circuit WITHOUT measurements
+# VD will add measurements automatically
+qubits = cirq.LineQubit.range(2)
+circuit = cirq.Circuit([
+    cirq.H(qubits[0]),
+    cirq.CNOT(qubits[0], qubits[1])
+])
+
+def noisy_executor(circuit, noise_level=0.01, shots=1001) -> MeasurementResult:
+    circuit_to_run = circuit.with_noise(cirq.depolarize(noise_level))
+    simulator = cirq.DensityMatrixSimulator()
+    result = simulator.run(circuit_to_run, repetitions=shots)
+    bitstrings = np.column_stack(list(result.measurements.values()))
+    qubit_indices = tuple(
+            int(q[2:-1])  # Extract index from "q(index)" string
+            for k in result.measurements.keys()
+            for q in k.split(",")
+    )
+    return MeasurementResult(bitstrings, qubit_indices)
+
+# Apply VD
+mitigated_expectation_values = vd.execute_with_vd(circuit, noisy_executor)
+print(f"Z expectation values for each qubit: {mitigated_expectation_values}")
 ```
 
-In this case we see that VD indeed works in bringing the expectation closer to the noiseless value. However, it is also crucial to note that for very large error rates (relative to the circuit), the results obtained from VD might not be as good given the large drift from the noiseless eigenstates.
-
-[comment]: <> (TODO: finalize this section once the code for VD is finalized)
+The function returns a list of error-mitigated expectation values $\langle Z_i \rangle$ for each qubit $i$ in the original circuit.
