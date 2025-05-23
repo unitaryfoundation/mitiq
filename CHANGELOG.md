@@ -2,7 +2,32 @@
 
 ## Version 0.45.0
 
-*in developement*
+([Full Changelog](https://github.com/unitaryfund/mitiq/compare/v0.44.0...v0.45.0))
+
+### Highlights
+
+- Many tutorials are now updated with modern Qiskit code, ready to run on the latest IBM devices thanks to @bdg221!
+- A new tutorial demonstrating how to use UCC in conjunction with Mitiq that shows how compilation and mitigation work well together.
+- The Virtual Distillation technique now has a complete user guide along with API-docs.
+
+#### ✨ Enhancements
+
+- Update get_scale_factors for static scale factors (#2727) [@bdg221]
+- Use uv and pyproject.toml for dependencies and configs (#2724) [@bdg221] (this will not impact users of `mitiq`, but it makes development much easier! Come try it out :))
+
+#### 📓 Documentation
+
+- add Virtual Distillation documentation (#2760) [@FarLab]
+- add VD to api-doc (#2761) [@natestemen]
+- Update tutorials for IBM hardware (#2759) [@bdg221]
+- Add tutorial demonstrating basic usage of mitiq & ucc (#2728) [@natestemen]
+- Update README.md (#2718) [@lifechange777]
+- fix shadows path (#2717) [@natestemen]
+
+#### 📦 Dependency Updates
+
+- Bump pyscf from 2.8.0 to 2.9.0 (#2725) [@dependabot[bot]]
+
 
 ## Version 0.44.0
 
