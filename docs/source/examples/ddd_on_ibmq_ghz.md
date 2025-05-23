@@ -40,7 +40,8 @@ from matplotlib import pyplot as plt
 
 import qiskit
 from qiskit_aer import AerSimulator
-from qiskit_ibm_runtime import QiskitRuntimeService
+from qiskit_ibm_runtime import QiskitRuntimeService, SamplerV2 as Sampler
+from qiskit.transpiler.preset_passmanagers import generate_preset_pass_manager
 
 from mitiq.interface.mitiq_qiskit import to_qiskit
 from mitiq import ddd, QPROGRAM
@@ -148,7 +149,7 @@ correct_bitstring=[0, 0]
 
 ```{code-cell} ipython3
 if USE_REAL_HARDWARE:
-    service = QiskitRuntimeService()
+    service = QiskitRuntimeService(channel="ibm_quantum")
     backend = service.least_busy(operational=True, simulator=False)
 else:
     from qiskit_ibm_runtime.fake_provider import FakeLimaV2 as FakeLima
@@ -172,14 +173,24 @@ def ibm_executor(
             absence of noise.
     """
     if noisy:
-        transpiled = qiskit.transpile(circuit, backend=backend, optimization_level=0)
-        job = backend.run(transpiled, shots=shots)
+        pm = generate_preset_pass_manager(
+            backend=backend,
+            optimization_level=0,
+        )
+        transpiled = pm.run(circuit)
+
+        if not isinstance(transpiled, list):
+            transpiled = [transpiled]
+
+        sampler = Sampler(backend)
+        job = sampler.run(transpiled, shots=shots)
+        all_counts = job.result()[0].join_data().get_counts()
     else:
         ideal_backend = AerSimulator()
         job = ideal_backend.run(circuit, optimization_level=0, shots=shots)
+        all_counts = job.result().get_counts()
 
     # Convert from raw measurement counts to the expectation value
-    all_counts = job.result().get_counts()
     prob_zero = all_counts.get("".join(map(str, correct_bitstring)), 0.0) / shots
     return prob_zero
 ```
