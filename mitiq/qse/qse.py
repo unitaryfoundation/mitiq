@@ -7,7 +7,7 @@
 """High-level Quantum Susbapce Expansion tools."""
 
 from functools import wraps
-from typing import Callable, Dict, List, Sequence, Union
+from typing import Callable, Dict, List, Optional, Sequence, Union
 
 from mitiq import QPROGRAM, Executor, Observable, PauliString, QuantumResult
 from mitiq.qse.qse_utils import (
@@ -22,7 +22,9 @@ def execute_with_qse(
     check_operators: Sequence[PauliString],
     code_hamiltonian: Observable,
     observable: Observable,
-    pauli_string_to_expectation_cache: Dict[PauliString, complex] = {},
+    pauli_string_to_expectation_cache: Optional[
+        Dict[PauliString, complex]
+    ] = None,
 ) -> float:
     """Function for the calculation of an observable from some circuit of
     interest to be mitigated with quantum subspace expansion (QSE).
@@ -40,6 +42,9 @@ def execute_with_qse(
     Returns:
         The expectation value estimated with QSE.
     """
+    if pauli_string_to_expectation_cache is None:
+        pauli_string_to_expectation_cache = {}
+
     projector = get_projector(
         circuit,
         executor,
@@ -69,7 +74,9 @@ def mitigate_executor(
     check_operators: Sequence[PauliString],
     code_hamiltonian: Observable,
     observable: Observable,
-    pauli_string_to_expectation_cache: Dict[PauliString, complex] = {},
+    pauli_string_to_expectation_cache: Optional[
+        Dict[PauliString, complex]
+    ] = None,
 ) -> Callable[[QPROGRAM], float]:
     """Returns a modified version of the input 'executor' which is
     error-mitigated with quantum subspace expansion (QSE).
@@ -86,6 +93,9 @@ def mitigate_executor(
     Returns:
         The error-mitigated version of the input executor.
     """
+    if pauli_string_to_expectation_cache is None:
+        pauli_string_to_expectation_cache = {}
+
     executor_obj = Executor(executor)
     if not executor_obj.can_batch:
 
@@ -123,7 +133,9 @@ def qse_decorator(
     check_operators: Sequence[PauliString],
     code_hamiltonian: Observable,
     observable: Observable,
-    pauli_string_to_expectation_cache: Dict[PauliString, complex] = {},
+    pauli_string_to_expectation_cache: Optional[
+        Dict[PauliString, complex]
+    ] = None,
 ) -> Callable[
     [Callable[[QPROGRAM], QuantumResult]], Callable[[QPROGRAM], float]
 ]:
@@ -143,6 +155,9 @@ def qse_decorator(
     Returns:
         The error-mitigating decorator to be applied to an executor function.
     """
+
+    if pauli_string_to_expectation_cache is None:
+        pauli_string_to_expectation_cache = {}
 
     def decorator(
         executor: Callable[[QPROGRAM], QuantumResult],

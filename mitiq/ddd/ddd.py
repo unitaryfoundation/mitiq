@@ -20,7 +20,7 @@ def execute_with_ddd(
     observable: Optional[Observable] = None,
     *,
     rule: Callable[[int], QPROGRAM],
-    rule_args: Dict[str, Any] = {},
+    rule_args: Optional[Dict[str, Any]] = None,
     num_trials: int = 1,
     full_output: bool = False,
 ) -> Union[float, Tuple[float, Dict[str, Any]]]:
@@ -56,6 +56,8 @@ def execute_with_ddd(
         only ``ddd_value`` is returned.
     """
     # Initialize executor
+    if rule_args is None:
+        rule_args = {}
     if not isinstance(executor, Executor):
         executor = Executor(executor)
 
@@ -101,7 +103,7 @@ def combine_results(results: list[float]) -> float:
 def construct_circuits(
     circuit: QPROGRAM,
     rule: Callable[[int], QPROGRAM],
-    rule_args: Dict[str, Any] = {},
+    rule_args: Optional[Dict[str, Any]] = None,
     num_trials: int = 1,
 ) -> list[QPROGRAM]:
     """Generates a list of circuits with DDD sequences inserted.
@@ -118,6 +120,8 @@ def construct_circuits(
     Returns:
         A list of circuits with DDD inserted.
     """
+    if rule_args is None:
+        rule_args = {}
     rule_partial: Callable[[int], QPROGRAM]
     rule_partial = partial(rule, **rule_args)
 
@@ -134,7 +138,7 @@ def mitigate_executor(
     observable: Optional[Observable] = None,
     *,
     rule: Callable[[int], QPROGRAM],
-    rule_args: Dict[str, Any] = {},
+    rule_args: Optional[Dict[str, Any]] = None,
     num_trials: int = 1,
     full_output: bool = False,
 ) -> Callable[[QPROGRAM], Union[float, Tuple[float, Dict[str, Any]]]]:
@@ -163,6 +167,8 @@ def mitigate_executor(
     Returns:
         The error-mitigated version of the input executor.
     """
+    if rule_args is None:
+        rule_args = {}
     executor_obj = Executor(executor)
     if not executor_obj.can_batch:
 
@@ -206,7 +212,7 @@ def ddd_decorator(
     observable: Optional[Observable] = None,
     *,
     rule: Callable[[int], QPROGRAM],
-    rule_args: Dict[str, Any] = {},
+    rule_args: Optional[Dict[str, Any]] = None,
     num_trials: int = 1,
     full_output: bool = False,
 ) -> Callable[
@@ -238,6 +244,9 @@ def ddd_decorator(
     Returns:
         The error-mitigating decorator to be applied to an executor function.
     """
+
+    if rule_args is None:
+        rule_args = {}
 
     def decorator(
         executor: Callable[[QPROGRAM], QuantumResult],

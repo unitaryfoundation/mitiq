@@ -21,13 +21,18 @@ def get_projector(
     executor: Union[Executor, Callable[[QPROGRAM], QuantumResult]],
     check_operators: Sequence[PauliString],
     code_hamiltonian: Observable,
-    pauli_string_to_expectation_cache: Dict[PauliString, complex] = {},
+    pauli_string_to_expectation_cache: Optional[
+        Dict[PauliString, complex]
+    ] = None,
 ) -> Observable:
     """Computes the projector onto the code space defined by the
     check_operators provided that minimizes the code_hamiltonian.
 
     Returns: Projector as an Observable.
     """
+    if pauli_string_to_expectation_cache is None:
+        pauli_string_to_expectation_cache = {}
+
     S = _compute_overlap_matrix(
         circuit, executor, check_operators, pauli_string_to_expectation_cache
     )
@@ -54,13 +59,16 @@ def get_expectation_value_for_observable(
     circuit: QPROGRAM,
     executor: Union[Executor, Callable[[QPROGRAM], QuantumResult]],
     observable: Union[PauliString, Observable],
-    pauli_expectation_cache: Dict[PauliString, complex] = {},
+    pauli_expectation_cache: Optional[Dict[PauliString, complex]] = None,
 ) -> float:
     """Provide pauli_string_to_expectation_cache if you want to take advantage
     of caching.
 
     This function modifies pauli_string_to_expectation_cache in place.
     """
+
+    if pauli_expectation_cache is None:
+        pauli_expectation_cache = {}
 
     final_executor = (
         executor if isinstance(executor, Executor) else Executor(executor)
@@ -90,10 +98,13 @@ def _compute_overlap_matrix(
     circuit: QPROGRAM,
     executor: Union[Executor, Callable[[QPROGRAM], QuantumResult]],
     check_operators: Sequence[PauliString],
-    pauli_expectation_cache: Dict[PauliString, complex] = {},
+    pauli_expectation_cache: Optional[Dict[PauliString, complex]] = None,
     code_hamiltonian: Optional[Observable] = None,
 ) -> npt.NDArray[np.float64]:
     num_ops = len(check_operators)
+
+    if pauli_expectation_cache is None:
+        pauli_expectation_cache = {}
 
     H = np.zeros((num_ops, num_ops))
     # Hij = ⟨Ψ|Mi† H Mj|Ψ⟩
