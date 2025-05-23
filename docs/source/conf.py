@@ -201,6 +201,9 @@ nb_execution_timeout = 600
 # By default, if nothing has changed in the source, a notebook won't be
 # re-run for a subsequent docs build.
 nb_execution_mode = "cache"
+if os.environ.get("DOCS_LITE"):
+    print("*** Skipping all notebook execution ***")
+    nb_execution_mode = "off"
 
 # If SKIP_PYQUIL is True, do not re-run PyQuil notebooks.
 if os.environ.get("SKIP_PYQUIL"):
@@ -412,6 +415,7 @@ myst_update_mathjax = False
 nbsphinx_custom_formats = {
     ".mystnb": ["jupytext.reads", {"fmt": "mystnb"}],
 }
+
 nbsphinx_execute = "always"
 
 nbsphinx_thumbnails = {
