@@ -2,11 +2,36 @@
 
 ## Version 0.45.0
 
-*in developement*
+([Full Changelog](https://github.com/unitaryfoundation/mitiq/compare/v0.44.0...v0.45.0))
+
+### Highlights
+
+- Many tutorials are now updated with modern Qiskit code, ready to run on the latest IBM devices thanks to @bdg221!
+- A new tutorial demonstrating how to use UCC in conjunction with Mitiq that shows how compilation and mitigation work well together.
+- The Virtual Distillation technique now has a complete user guide along with API-docs.
+
+#### ✨ Enhancements
+
+- Update get_scale_factors for static scale factors (#2727) [@bdg221]
+- Use uv and pyproject.toml for dependencies and configs (#2724) [@bdg221] (this will not impact users of `mitiq`, but it makes development much easier! Come try it out :))
+
+#### 📓 Documentation
+
+- add Virtual Distillation documentation (#2760) [@FarLab]
+- add VD to api-doc (#2761) [@natestemen]
+- Update tutorials for IBM hardware (#2759) [@bdg221]
+- Add tutorial demonstrating basic usage of mitiq & ucc (#2728) [@natestemen]
+- Update README.md (#2718) [@lifechange777]
+- fix shadows path (#2717) [@natestemen]
+
+#### 📦 Dependency Updates
+
+- Bump pyscf from 2.8.0 to 2.9.0 (#2725) [@dependabot[bot]]
+
 
 ## Version 0.44.0
 
-([Full Changelog](https://github.com/unitaryfund/mitiq/compare/v0.43.0...v0.44.0))
+([Full Changelog](https://github.com/unitaryfoundation/mitiq/compare/v0.43.0...v0.44.0))
 
 ### Highlights
 
@@ -94,7 +119,7 @@ WERQSHOP: Workshop on Error Resilience Quantum computing (https://werq.shop).
 
 ## Version 0.43.0
 
-([Full Changelog](https://github.com/unitaryfund/mitiq/compare/v0.42.0...v0.43.0))
+([Full Changelog](https://github.com/unitaryfoundation/mitiq/compare/v0.42.0...v0.43.0))
 
 ### Highlights
 
@@ -129,7 +154,7 @@ We are currently testing Layerwise Richardson Extrapolation (LRE) on hardware, a
 
 ## Version 0.42.0
 
-([Full Changelog](https://github.com/unitaryfund/mitiq/compare/v0.41.0...v0.42.0))
+([Full Changelog](https://github.com/unitaryfoundation/mitiq/compare/v0.41.0...v0.42.0))
 
 ### Highlights
 
@@ -194,7 +219,7 @@ pec_estimate = pec.combine_results(sampled_circuit_results, ...)
 
 ## Version 0.41.0
 
-([Full Changelog](https://github.com/unitaryfund/mitiq/compare/v0.40.0...v0.41.0))
+([Full Changelog](https://github.com/unitaryfoundation/mitiq/compare/v0.40.0...v0.41.0))
 
 ### Highlights
 
@@ -221,11 +246,11 @@ This is both an informative tutorial on turning physics problems into something 
 ### 📞 Call for ideas
 
 We're currently looking into what features we could add to make Mitiq more **noise-aware**.
-If you have ideas and features requests in this area, do make a post on the GitHub discussion [here](https://github.com/unitaryfund/mitiq/discussions/2193)!
+If you have ideas and features requests in this area, do make a post on the GitHub discussion [here](https://github.com/unitaryfoundation/mitiq/discussions/2193)!
 
 ## Version 0.40.0
 
-([Full Changelog](https://github.com/unitaryfund/mitiq/compare/v0.39.0...v0.40.0))
+([Full Changelog](https://github.com/unitaryfoundation/mitiq/compare/v0.39.0...v0.40.0))
 
 ### Highlights
 
@@ -282,12 +307,12 @@ Thank you both for your contributions!
 
 ## Version 0.39.0
 
-([Full Changelog](https://github.com/unitaryfund/mitiq/compare/v0.38.0...v0.39.0))
+([Full Changelog](https://github.com/unitaryfoundation/mitiq/compare/v0.38.0...v0.39.0))
 
 ### Highlights
 
 We've made updates to our documentation, beginning with the completion of the first section of the Pauli Twirling user guide, which offers a comprehensive introduction to this feature.
-Additionally, we've added a new tutorial on CDR (Clifford Data Regression) using [Qrack](https://github.com/unitaryfund/qrack/) as an efficient near-Clifford simulator.
+Additionally, we've added a new tutorial on CDR (Clifford Data Regression) using [Qrack](https://github.com/unitaryfoundation/qrack/) as an efficient near-Clifford simulator.
 This demonstrates a workflow that harnesses the speed of Qrack in the CDR training phase, while providing users with an in-depth look at how to integrate Mitiq and Qrack effectively.
 
 #### 📓 Documentation
@@ -309,7 +334,7 @@ This demonstrates a workflow that harnesses the speed of Qrack in the CDR traini
 
 ## Version 0.38.0 
 
-([Full Changelog](https://github.com/unitaryfund/mitiq/compare/v0.37.0...v0.38.0))
+([Full Changelog](https://github.com/unitaryfoundation/mitiq/compare/v0.37.0...v0.38.0))
 
 ### Highlights
 
@@ -344,7 +369,7 @@ This demonstrates a workflow that harnesses the speed of Qrack in the CDR traini
 
 ## Version 0.37.0
 
-([Full Changelog](https://github.com/unitaryfund/mitiq/compare/v0.36.0...v0.37.0))
+([Full Changelog](https://github.com/unitaryfoundation/mitiq/compare/v0.36.0...v0.37.0))
 
 ### Highlights
 
@@ -386,7 +411,7 @@ This demonstrates a workflow that harnesses the speed of Qrack in the CDR traini
 
 ## Version 0.36.0
 
-([Full Changelog](https://github.com/unitaryfund/mitiq/compare/v0.35.0...v0.36.0))
+([Full Changelog](https://github.com/unitaryfoundation/mitiq/compare/v0.35.0...v0.36.0))
 
 ### Highlights
 
@@ -397,7 +422,7 @@ This demonstrates a workflow that harnesses the speed of Qrack in the CDR traini
 ```bash
 pip install mitiq[qiskit]
 ```
-and similarly for all other [supported integrations](https://github.com/unitaryfund/mitiq/blob/main/INTEGRATIONS.txt).
+and similarly for all other [supported integrations](https://github.com/unitaryfoundation/mitiq/blob/main/INTEGRATIONS.txt).
 This ensures compatibility between all dependency packages required by Mitiq for frontend integration and those in the user's environment.
 
 **Quantum Error Mitigation methods**: Users can now discover the available quantum error mitigation techniques by executing:
@@ -815,7 +840,7 @@ execute_with_qse(circuit, executor, check_operators, code_hamiltonian, observabl
 ```
 
 This feature is still in flux, and would greatly benefit from further testing.
-Do give a try, and [let us know if you have feedback](https://github.com/unitaryfund/mitiq/issues/new/)!
+Do give a try, and [let us know if you have feedback](https://github.com/unitaryfoundation/mitiq/issues/new/)!
 More details can be found in our [API-doc](https://mitiq.readthedocs.io/en/latest/apidoc.html#module-mitiq.qse.qse).
 Congratulations to @bubakazouba for the great work here.
 
@@ -935,7 +960,7 @@ twirled_value = pt.execute_with_pauli_twirling(circuit, expval_executor)
 ```
 
 <sup>\*</sup>Thorough testing and documentation of Pauli Twirling to follow in future releases.
-If any bugs or inconsistencies are encountered, please [open an issue](https://github.com/unitaryfund/mitiq/issues/new).
+If any bugs or inconsistencies are encountered, please [open an issue](https://github.com/unitaryfoundation/mitiq/issues/new).
 
 ### All changes
 
@@ -1119,7 +1144,7 @@ This release officially adds support for the learning-based PEC sub-technique wh
 [fully documented](https://mitiq.readthedocs.io/en/latest/guide/pec-3-options.html#applying-learning-based-pec) and ready to be applied by
 Mitiq users.
 We are still assessing the stability of this new sub-technique, so if you notice any bugs, please let us know by opening
-[issues](https://github.com/unitaryfund/mitiq/issues) on GitHub.
+[issues](https://github.com/unitaryfoundation/mitiq/issues) on GitHub.
 
 Functions to apply Readout Error Mitigation (REM) are also introduced in this release, special thanks to Amir Ebrahimi for this contribution!
 
@@ -1128,7 +1153,7 @@ method is included in the ZNE section of the user guide.
 Special thanks to Purva Thakre for this contribution!
 
 During the release cycle we accepted the
-[RFC for implementation of calibration tools (Solution 1)](https://github.com/unitaryfund/mitiq/issues/1578).
+[RFC for implementation of calibration tools (Solution 1)](https://github.com/unitaryfoundation/mitiq/issues/1578).
 We also completed a prototype of this approach, which will be released in a future version of Mitiq.
 
 In addition, this release adds support for qubit-independent representations for PEC, along with bug fixes and minor dependency upgrades.
@@ -1254,7 +1279,7 @@ Special thanks to the external contributors @yitchen-tim, @amirebrahimi and @isa
 
 ### Summary
 
-This release cycle focused on review and approval of two RFCs, one for Readout Error Mitigation (REM) [#1387](https://github.com/unitaryfund/mitiq/issues/1387) and one for Identity insertion noise scaling [#335](https://github.com/unitaryfund/mitiq/issues/335) (not listed as PRs). It also includes bug fixes and minor dependency upgrades.
+This release cycle focused on review and approval of two RFCs, one for Readout Error Mitigation (REM) [#1387](https://github.com/unitaryfoundation/mitiq/issues/1387) and one for Identity insertion noise scaling [#335](https://github.com/unitaryfoundation/mitiq/issues/335) (not listed as PRs). It also includes bug fixes and minor dependency upgrades.
 
 ### All Changes
 
@@ -1343,7 +1368,7 @@ Along with the great contributions from hackers, this release focused on expandi
 ### Summary
 
 This release officially adds support for the digital dynamical decoupling (DDD) technique which is now [fully documented](https://mitiq.readthedocs.io/en/latest/guide/ddd.html) and so ready to be applied by Mitiq users. This is still very new technique and so, if you notice any bugs, please let us know by
-opening [issues](https://github.com/unitaryfund/mitiq/issues) on GihHub.
+opening [issues](https://github.com/unitaryfoundation/mitiq/issues) on GihHub.
 A further notable addition is the function [generate_quantum_volume_circuit()](https://mitiq.readthedocs.io/en/latest/apidoc.html#mitiq.benchmarks.quantum_volume_circuits.generate_quantum_volume_circuit) by @nickdgardner, extending the Mitiq benchmarking module with quantum volume
 circuits.
 
@@ -1459,7 +1484,7 @@ The HTML rendering of all PyQuil examples in our documentation is now fixed. Tha
 
 We also thank @Rahul-Mistri for adding GHZ circuits to our benchmarking module and for making Clifford circuits compatible with the Mitiq CDR technique (instead of raising an error as it happened before this release).
 
-We discussed and approved the design documents (RFC) for two new error-mitigation techniques: _learning-based PEC_ and _digital dynamical decoupling_. You can find them at [this link](https://github.com/unitaryfund/mitiq/projects/7). Special thanks go to @Misty-W and @Aaron-Robertson!
+We discussed and approved the design documents (RFC) for two new error-mitigation techniques: _learning-based PEC_ and _digital dynamical decoupling_. You can find them at [this link](https://github.com/unitaryfoundation/mitiq/projects/7). Special thanks go to @Misty-W and @Aaron-Robertson!
 
 ### All Changes
 
@@ -2064,5 +2089,5 @@ This marks the first public release of Mitiq on a stable version.
 
 - **Initial release (internal).**
 
-[Github]: https://github.com/unitaryfund/mitiq
+[Github]: https://github.com/unitaryfoundation/mitiq
 [PyPI]: https://pypi.org/project/mitiq/0.1a2/
