@@ -15,6 +15,7 @@ qse.md
 pt.md
 vd.md
 shadows.md
+vd.md
 error-mitigation.md
 glossary.md
 ```
