@@ -1,5 +1,9 @@
 # Changelog
 
+## Version 0.45.1
+
+Fix packaging issue that caused `import mitiq` to fail due to missing VERSION.txt in wheel.
+
 ## Version 0.45.0
 
 ([Full Changelog](https://github.com/unitaryfoundation/mitiq/compare/v0.44.0...v0.45.0))
