@@ -30,8 +30,8 @@ def construct_circuits(
     num_samples: Optional[int] = None,
     full_output: bool = True,
 ) -> (
-    list[list[QPROGRAM]]
-    | tuple[list[list[QPROGRAM]], list[list[int]], list[float]]
+    List[List[QPROGRAM]]
+    | tuple[List[List[QPROGRAM]], List[List[int]], List[float]]
 ):
     """Samples lists of implementable circuits from the noise-amplified
     representation of the input ideal circuit at each input noise scale

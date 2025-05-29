@@ -114,8 +114,33 @@ def test_large_sample_size_warning():
     with pytest.warns(LargeSampleWarning):
         construct_circuits(
             oneq_circ,
-            scale_factors=[1, 3, 5, 7],
+            scale_factors=[1],
             noise_model="global_depolarizing",
             epsilon=0.02,
             num_samples=100_001,
         )
+
+
+def test_full_output():
+    assert isinstance(
+        construct_circuits(
+            oneq_circ,
+            scale_factors=[1, 3, 5, 7],
+            noise_model="global_depolarizing",
+            epsilon=0.02,
+            num_samples=5,
+            full_output=True,
+        ),
+        tuple,
+    )
+    assert not isinstance(
+        construct_circuits(
+            oneq_circ,
+            scale_factors=[1, 3, 5, 7],
+            noise_model="global_depolarizing",
+            epsilon=0.02,
+            num_samples=5,
+            full_output=False,
+        ),
+        tuple,
+    )
