@@ -44,7 +44,7 @@ docs-clean:
 
 .PHONY: docs-lite
 docs-lite:
-	uv run DOCS_LITE=1 make -C docs html
+	uv run env DOCS_LITE=1 make -C docs html
 
 .PHONY: linkcheck
 linkcheck:
