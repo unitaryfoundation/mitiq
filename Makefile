@@ -43,7 +43,7 @@ docs-clean:
 	uv run make -C docs html
 
 .PHONY: docs-lite
-docs-clean:
+docs-lite:
 	uv run DOCS_LITE=1 make -C docs html
 
 .PHONY: linkcheck
