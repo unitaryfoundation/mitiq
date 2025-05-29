@@ -1,3 +1,12 @@
+# Copyright (C) Unitary Foundation
+#
+# This source code is licensed under the GPL license (v3) found in the
+# LICENSE file in the root directory of this source tree.
+
+"""Tools for construting the noise-amplified representations of ideal
+operations.
+"""
+
 from typing import Sequence
 
 from cirq import Circuit
@@ -39,7 +48,7 @@ def scale_circuit_amplifications(
     elif noise_model == "global_depolarizing":
         amp_fn = amplify_noisy_ops_in_circuit_with_global_depolarizing_noise
     else:
-        raise ValueError("Must specify supported noise model")
+        raise ValueError("Noise model not supported")
         # TODO allow use of custom noise model
 
     return amp_fn(ideal_circuit, (scale_factors - 1) * epsilon)

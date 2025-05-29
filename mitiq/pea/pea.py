@@ -1,3 +1,10 @@
+# Copyright (C) Unitary Foundation
+#
+# This source code is licensed under the GPL license (v3) found in the
+# LICENSE file in the root directory of this source tree.
+
+"""High-level probabilistic error amplification tools."""
+
 import warnings
 from typing import List, Optional
 
@@ -26,29 +33,26 @@ def construct_circuits(
     list[list[QPROGRAM]]
     | tuple[list[list[QPROGRAM]], list[list[int]], list[float]]
 ):
-    """Samples a list of implementable circuits from the noise-amplified
-    representation of the input ideal circuit.
-    Returns a list of expectation values, evaluated at each scaled noise level.
+    """Samples lists of implementable circuits from the noise-amplified
+    representation of the input ideal circuit at each input noise scale
+    factor.
 
     Note that the ideal operation can be a sequence of operations (circuit),
     for instance U = V W, as long as a representation is known. Similarly, A
     and B can be sequences of operations (circuits) or just single operations.
 
     Args:
-        ideal_circuit: The ideal circuit from which an implementable
+        circuit: The ideal circuit from which an implementable
             sequence is sampled.
-        executor: A Mitiq executor that executes a circuit and returns the
-            unmitigated ``QuantumResult`` (e.g. an expectation value).
         scale_factors: A list of (positive) numbers by which the baseline
             noise level is to be amplified.
         noise_model: A string describing the noise model to be used for the
             noise-scaled representations, e.g. "local_depolarizing" or
             "global_depolarizing".
         epsilon: Baseline noise level.
-        observable: Observable to compute the expectation value of. If None,
-            the `executor` must return an expectation value. Otherwise,
-            the `QuantumResult` returned by `executor` is used to compute the
-            expectation of the observable.
+        random_state: The random state or seed for reproducibility.
+        precision: The desired precision for the sampling process.
+            Default is 0.1.
         num_samples: The number of noisy circuits to be sampled for PEA.
             If not given, this is deduced from the 'precision'.
         full_output: If ``full_output`` is True, a list of lists of signs and a
@@ -56,10 +60,10 @@ def construct_circuits(
             returned.
 
     Returns:
-        A list of lists of sampled circuits, corresponding to each noise scale
-        factor times the baseline noise level. If ``full_output`` is True, also
-        returns a list of lists of signs and a list of norms, corresponding to
-        each noise scale factor.
+        A list of lists of sampled circuits, where each list of circuits
+        corresponds to an input noise scale factor times the baseline noise
+        level. If ``full_output`` is True, also returns a list of lists of
+        signs and a list of norms, corresponding to each noise scale factor.
 
     Raises:
         ValueError: If the precision is not within the interval (0, 1].
@@ -94,6 +98,8 @@ def construct_circuits(
         sampled_circuits, signs, norm = sample_circuit(
             circuit,
             scale_circuit_amplifications(circuit, s, noise_model, epsilon),
+            num_samples=num_samples,
+            random_state=random_state,
         )
         scaled_sampled_circuits.append(sampled_circuits)
         scaled_signs.append(signs)
