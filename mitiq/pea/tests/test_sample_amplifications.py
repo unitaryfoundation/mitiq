@@ -8,12 +8,10 @@ from cirq import (
     Y,
 )
 
-from mitiq.interface.mitiq_cirq import compute_density_matrix
 from mitiq.pea.amplifications.amplify_depolarizing import (
     amplify_noisy_ops_in_circuit_with_global_depolarizing_noise,
 )
-from mitiq.pea.sample_amplifications import (
-    sample_circuit_amplifications,
+from mitiq.pea.scale_amplifications import (
     scale_circuit_amplifications,
 )
 
@@ -39,25 +37,3 @@ def test_scale_circuit_amplifications(epsilon):
         )
 
     assert np.allclose(amp_norms, scaled_amp_norms)
-
-
-def sample_executor(circuit):
-    return compute_density_matrix(circuit)[0, 0].real
-
-
-@pytest.mark.parametrize("epsilon", [0.01, 0.02])
-def test_sample_circuit_amplifications(epsilon):
-    scale_factors = [1, 3, 5, 7]
-
-    amp_values = sample_circuit_amplifications(
-        circ,
-        sample_executor,
-        scale_factors,
-        "local_depolarizing",
-        epsilon,
-    )
-
-    ideal_exp_val = sample_executor(circ)
-    errors = abs(np.array(amp_values) - ideal_exp_val)
-
-    assert all(np.diff(errors) > 0)

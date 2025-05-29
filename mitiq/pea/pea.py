@@ -5,7 +5,12 @@ import numpy as np
 from cirq import Circuit
 
 from mitiq.pea.scale_amplifications import scale_circuit_amplifications
-from mitiq.pec import _LARGE_SAMPLE_WARN, LargeSampleWarning, sample_circuit
+from mitiq.pec.pec import (
+    _LARGE_SAMPLE_WARN,
+    LargeSampleWarning,
+    sample_circuit,
+)
+from mitiq.typing import QPROGRAM
 
 
 def construct_circuits(
@@ -14,10 +19,13 @@ def construct_circuits(
     noise_model: str,
     epsilon: float,
     random_state: Optional[np.random.RandomState] = None,
-    precision=0.1,
+    precision: float = 0.1,
     num_samples: Optional[int] = None,
     full_output: bool = True,
-) -> List[float]:
+) -> (
+    list[list[QPROGRAM]]
+    | tuple[list[list[QPROGRAM]], list[list[int]], list[float]]
+):
     """Samples a list of implementable circuits from the noise-amplified
     representation of the input ideal circuit.
     Returns a list of expectation values, evaluated at each scaled noise level.
@@ -68,7 +76,7 @@ def construct_circuits(
     # Get the 1-norm of the circuit quasi-probability representation
     _, _, norm = sample_circuit(
         circuit,
-        scale_circuit_amplifications(circuit, [1], noise_model, epsilon),
+        scale_circuit_amplifications(circuit, 1.0, noise_model, epsilon),
         num_samples=1,
     )
 
@@ -83,8 +91,9 @@ def construct_circuits(
     scaled_signs = []
     scaled_norms = []
     for s in scale_factors:
-        sampled_circuits, signs, norm = scale_circuit_amplifications(
-            circuit, s, noise_model, epsilon
+        sampled_circuits, signs, norm = sample_circuit(
+            circuit,
+            scale_circuit_amplifications(circuit, s, noise_model, epsilon),
         )
         scaled_sampled_circuits.append(sampled_circuits)
         scaled_signs.append(signs)
