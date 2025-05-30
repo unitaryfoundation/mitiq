@@ -5,8 +5,8 @@
 
 import copy
 from collections import defaultdict
+from collections.abc import Callable, Iterable
 from numbers import Number
-from collections.abc import Iterable, Callable, Set
 from typing import Any, Optional, Union, cast
 
 import cirq
@@ -236,7 +236,9 @@ def _combine_duplicate_pauli_strings(
 
     Returns: deduped list of PauliStrings.
     """
-    pauli_string_coefficients: defaultdict[PauliString, complex] = defaultdict(complex)
+    pauli_string_coefficients: defaultdict[
+        PauliString, complex
+    ] = defaultdict(complex)
     for pauli_string in paulis:
         cache_key = pauli_string.with_coeff(1)
         pauli_string_coefficients[cache_key] += pauli_string.coeff

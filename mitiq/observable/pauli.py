@@ -4,10 +4,10 @@
 # LICENSE file in the root directory of this source tree.
 
 from collections import Counter
-from numbers import Number
-from collections.abc import Sequence, Set
-from typing import Any, Optional, Union, cast
 from collections import Counter as TCounter
+from collections.abc import Sequence
+from numbers import Number
+from typing import Any, Optional, Union, cast
 
 import cirq
 import numpy as np
@@ -271,7 +271,9 @@ class PauliStringCollection:
         )
         circuit = circuit.transform_qubits(lambda q: qubit_map[q])
 
-        if not set(paulis._qubits_to_measure()).issubset(set(circuit.all_qubits())):
+        if not set(paulis._qubits_to_measure()).issubset(
+            set(circuit.all_qubits())
+        ):
             raise ValueError(
                 f"Qubit mismatch. The PauliString(s) act on qubits "
                 f"{paulis.support()} but the circuit has qubit indices "
