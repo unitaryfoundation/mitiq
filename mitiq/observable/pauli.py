@@ -6,7 +6,7 @@
 from collections import Counter
 from numbers import Number
 from collections.abc import Sequence, Set
-from typing import Any, Optional, Union, cast
+from typing import Any, Optional, Union, cast, Dict
 from collections import Counter as TCounter
 
 import cirq
@@ -248,8 +248,8 @@ class PauliStringCollection:
     def min_weight(self) -> int:
         return min(self._paulis_by_weight.keys(), default=0)
 
-    def _qubits_to_measure(self) -> Set[cirq.Qid]:
-        qubits: Set[cirq.Qid] = set()
+    def _qubits_to_measure(self) -> set[cirq.Qid]:
+        qubits: set[cirq.Qid] = set()
         for pauli in self.elements:
             qubits.update(pauli._pauli.qubits)
         return qubits
@@ -271,7 +271,7 @@ class PauliStringCollection:
         )
         circuit = circuit.transform_qubits(lambda q: qubit_map[q])
 
-        if not paulis._qubits_to_measure().issubset(set(circuit.all_qubits())):
+        if not set(paulis._qubits_to_measure()).issubset(set(circuit.all_qubits())):
             raise ValueError(
                 f"Qubit mismatch. The PauliString(s) act on qubits "
                 f"{paulis.support()} but the circuit has qubit indices "
@@ -286,13 +286,12 @@ class PauliStringCollection:
         for _, op, _ in circuit.findall_operations_with_gate_type(
             cirq.MeasurementGate
         ):
-            qubits_with_measurements.update(op.qubits)
+            qubits_with_measurements.update(set(op.qubits))  # ensure set
 
         for pauli in paulis.elements:
             basis_rotations.update(pauli._basis_rotations())
             support.update(pauli._qubits_to_measure())
         measured = circuit + basis_rotations + cirq.measure(*sorted(support))
-
         if support & qubits_with_measurements:
             raise ValueError(
                 f"More than one measurement found for qubits: "
