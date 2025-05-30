@@ -275,7 +275,7 @@ class PauliStringCollection:
             set(circuit.all_qubits())
         ):
             raise ValueError(
-                f"Qubit mismatch. The PauliString(s) act on qubits "
+                "Qubit mismatch. The PauliString(s) act on qubits "
                 f"{paulis.support()} but the circuit has qubit indices "
                 f"{sorted([q for q in circuit.all_qubits()])}."
             )
