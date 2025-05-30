@@ -6,7 +6,8 @@
 """High-level digital dynamical decoupling (DDD) tools."""
 
 from functools import partial, wraps
-from typing import Any, Callable, Dict, List, Optional, Tuple, Union
+from collections.abc import Callable
+from typing import Any, Optional, Union
 
 import numpy as np
 
@@ -20,10 +21,10 @@ def execute_with_ddd(
     observable: Optional[Observable] = None,
     *,
     rule: Callable[[int], QPROGRAM],
-    rule_args: Dict[str, Any] = {},
+    rule_args: dict[str, Any] = {},
     num_trials: int = 1,
     full_output: bool = False,
-) -> Union[float, Tuple[float, Dict[str, Any]]]:
+) -> Union[float, tuple[float, dict[str, Any]]]:
     r"""Estimates the error-mitigated expectation value associated to the
     input circuit, via the application of digital dynamical decoupling (DDD).
 
@@ -101,7 +102,7 @@ def combine_results(results: list[float]) -> float:
 def construct_circuits(
     circuit: QPROGRAM,
     rule: Callable[[int], QPROGRAM],
-    rule_args: Dict[str, Any] = {},
+    rule_args: dict[str, Any] = {},
     num_trials: int = 1,
 ) -> list[QPROGRAM]:
     """Generates a list of circuits with DDD sequences inserted.
@@ -134,10 +135,10 @@ def mitigate_executor(
     observable: Optional[Observable] = None,
     *,
     rule: Callable[[int], QPROGRAM],
-    rule_args: Dict[str, Any] = {},
+    rule_args: dict[str, Any] = {},
     num_trials: int = 1,
     full_output: bool = False,
-) -> Callable[[QPROGRAM], Union[float, Tuple[float, Dict[str, Any]]]]:
+) -> Callable[[QPROGRAM], Union[float, tuple[float, dict[str, Any]]]]:
     """Returns a modified version of the input 'executor' which is
     error-mitigated with digital dynamical decoupling (DDD).
 
@@ -169,7 +170,7 @@ def mitigate_executor(
         @wraps(executor)
         def new_executor(
             circuit: QPROGRAM,
-        ) -> Union[float, Tuple[float, Dict[str, Any]]]:
+        ) -> Union[float, tuple[float, dict[str, Any]]]:
             return execute_with_ddd(
                 circuit,
                 executor,
@@ -184,8 +185,8 @@ def mitigate_executor(
 
         @wraps(executor)
         def new_executor(
-            circuits: List[QPROGRAM],
-        ) -> List[Union[float, Tuple[float, Dict[str, Any]]]]:
+            circuits: list[QPROGRAM],
+        ) -> list[Union[float, tuple[float, dict[str, Any]]]]:
             return [
                 execute_with_ddd(
                     circuit,
@@ -206,12 +207,12 @@ def ddd_decorator(
     observable: Optional[Observable] = None,
     *,
     rule: Callable[[int], QPROGRAM],
-    rule_args: Dict[str, Any] = {},
+    rule_args: dict[str, Any] = {},
     num_trials: int = 1,
     full_output: bool = False,
 ) -> Callable[
     [Callable[[QPROGRAM], QuantumResult]],
-    Callable[[QPROGRAM], Union[float, Tuple[float, Dict[str, Any]]]],
+    Callable[[QPROGRAM], Union[float, tuple[float, dict[str, Any]]]],
 ]:
     """Decorator which adds an error-mitigation layer based on digital
     dynamical decoupling (DDD) to an executor function, i.e., a function which
@@ -241,7 +242,7 @@ def ddd_decorator(
 
     def decorator(
         executor: Callable[[QPROGRAM], QuantumResult],
-    ) -> Callable[[QPROGRAM], Union[float, Tuple[float, Dict[str, Any]]]]:
+    ) -> Callable[[QPROGRAM], Union[float, tuple[float, dict[str, Any]]]]:
         return mitigate_executor(
             executor,
             observable,

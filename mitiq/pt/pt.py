@@ -5,7 +5,8 @@
 
 import random
 from functools import singledispatch
-from typing import Callable, List, Optional
+from collections.abc import Callable
+from typing import Optional
 
 import cirq
 import pennylane as qml
@@ -71,7 +72,7 @@ def generate_pauli_twirl_variants(
     num_circuits: int = 10,
     noise_name: Optional[str] = None,
     **kwargs: float,
-) -> List[QPROGRAM]:
+) -> list[QPROGRAM]:
     r"""Return the Pauli twirled versions of the input circuit.
 
     Only the CNOT and CZ gates in an input circuit are Pauli twirled
@@ -161,7 +162,7 @@ def _pennylane(
     )
 
 
-def twirl_CNOT_gates(circuit: QPROGRAM, num_circuits: int) -> List[QPROGRAM]:
+def twirl_CNOT_gates(circuit: QPROGRAM, num_circuits: int) -> list[QPROGRAM]:
     """Generate a list of circuits using Pauli twirling on CNOT gates.
 
     Args:
@@ -176,7 +177,7 @@ def _twirl_CNOT_qprogram(circuit: cirq.Circuit) -> cirq.Circuit:
     return circuit.map_operations(_twirl_single_CNOT_gate)
 
 
-def twirl_CZ_gates(circuit: QPROGRAM, num_circuits: int) -> List[QPROGRAM]:
+def twirl_CZ_gates(circuit: QPROGRAM, num_circuits: int) -> list[QPROGRAM]:
     """Generate a list of circuits using Pauli twirling on CZ gates.
 
     Args:

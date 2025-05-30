@@ -5,7 +5,7 @@
 
 """Tools to determine slack windows in circuits and to insert DDD sequences."""
 
-from typing import Callable
+from collections.abc import Callable
 
 import numpy as np
 import numpy.typing as npt
