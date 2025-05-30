@@ -7,18 +7,8 @@
 
 import warnings
 from functools import wraps
-from typing import (
-    Any,
-    Callable,
-    Dict,
-    Iterable,
-    List,
-    Optional,
-    Sequence,
-    Tuple,
-    Union,
-    cast,
-)
+from typing import Any, Optional, Union, cast
+from collections.abc import Callable, Dict, Iterable, List, Sequence, Tuple
 
 import numpy as np
 

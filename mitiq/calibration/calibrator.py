@@ -6,7 +6,8 @@
 import warnings
 from enum import Enum
 from operator import itemgetter
-from typing import Callable, Dict, List, Optional, Sequence, Tuple, Union, cast
+from typing import Optional, cast
+from collections.abc import Callable, Dict, List, Sequence, Tuple, Union
 
 import cirq
 import numpy as np
@@ -302,7 +303,7 @@ class Calibrator:
         args:
              log: If set, detailed results of each experiment run by the
                 calibrator are printed. The value corresponds to the format of
-                the information and can be set to “flat” or “cartesian”.
+                the information and can be set to "flat" or "cartesian".
         """
         if not self.results.is_missing_data():
             self.results.reset_data()

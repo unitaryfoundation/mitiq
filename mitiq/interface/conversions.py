@@ -6,18 +6,8 @@
 """Functions for converting to/from Mitiq's internal circuit representation."""
 
 from functools import wraps
-from typing import (
-    Any,
-    Callable,
-    Collection,
-    Concatenate,
-    Dict,
-    Optional,
-    ParamSpec,
-    Tuple,
-    TypeVar,
-    cast,
-)
+from typing import Any, Optional, TypeVar, cast
+from collections.abc import Callable, Collection, Concatenate, Dict, Tuple
 
 import cirq
 

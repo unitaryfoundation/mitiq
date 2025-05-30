@@ -6,7 +6,8 @@
 from dataclasses import asdict, dataclass
 from enum import Enum, auto
 from functools import partial
-from typing import Any, Callable, Dict, List, cast
+from typing import Any, cast
+from collections.abc import Callable, Dict, List
 
 import cirq
 import networkx as nx

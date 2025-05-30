@@ -6,7 +6,8 @@
 import copy
 from collections import defaultdict
 from numbers import Number
-from typing import Any, Callable, Iterable, List, Optional, Set, Union, cast
+from typing import Any, Optional, Set, Union, cast
+from collections.abc import Callable, Iterable
 
 import cirq
 import numpy as np
@@ -26,7 +27,7 @@ class Observable:
 
     def __init__(self, *paulis: PauliString) -> None:
         self._paulis = _combine_duplicate_pauli_strings(paulis)
-        self._groups: List[PauliStringCollection]
+        self._groups: list[PauliStringCollection]
         self._ngroups: int
         self.partition()
 
@@ -63,11 +64,11 @@ class Observable:
         return {q for pauli in self._paulis for q in pauli._pauli.qubits}
 
     @property
-    def paulis(self) -> List[PauliString]:
+    def paulis(self) -> list[PauliString]:
         return self._paulis
 
     @property
-    def qubit_indices(self) -> List[int]:
+    def qubit_indices(self) -> list[int]:
         return [cast(cirq.LineQubit, q).x for q in sorted(self._qubits())]
 
     @property
@@ -95,7 +96,7 @@ class Observable:
         return NotImplemented
 
     @property
-    def groups(self) -> List[PauliStringCollection]:
+    def groups(self) -> list[PauliStringCollection]:
         return self._groups
 
     @property
@@ -119,7 +120,7 @@ class Observable:
         """
         rng = np.random.RandomState(seed)
 
-        psets: List[PauliStringCollection] = []
+        psets: list[PauliStringCollection] = []
         paulis = copy.deepcopy(self._paulis)
         rng.shuffle(paulis)  # type: ignore
 
@@ -138,7 +139,7 @@ class Observable:
         self._groups = psets
         self._ngroups = len(self._groups)
 
-    def measure_in(self, circuit: QPROGRAM) -> List[QPROGRAM]:
+    def measure_in(self, circuit: QPROGRAM) -> list[QPROGRAM]:
         """Given a quantum circuit, this method returns a list of circuits
         where each circuit corresponds to a different group of commuting Pauli
         strings, which allows measurement in the appropriate basis.
@@ -155,7 +156,7 @@ class Observable:
 
     def matrix(
         self,
-        qubit_indices: Optional[List[int]] = None,
+        qubit_indices: Optional[list[int]] = None,
     ) -> npt.NDArray[np.complex64]:
         """Returns the (potentially very large) matrix of the ``Observable``.
 
@@ -198,7 +199,7 @@ class Observable:
         return Executor(execute).evaluate(circuit, observable=self)[0]
 
     def _expectation_from_measurements(
-        self, measurements: List[MeasurementResult]
+        self, measurements: list[MeasurementResult]
     ) -> float:
         return sum(
             pset._expectation_from_measurements(bitstrings)
@@ -230,7 +231,7 @@ class Observable:
 
 def _combine_duplicate_pauli_strings(
     paulis: Iterable[PauliString],
-) -> List[PauliString]:
+) -> list[PauliString]:
     """Combines duplicate PauliStrings by adding their coefficients.
     Discards paulis with zero coefficients.
 

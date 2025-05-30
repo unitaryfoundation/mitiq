@@ -5,7 +5,8 @@
 
 """Quantum processing functions for classical shadows."""
 
-from typing import Callable, List, Optional, Sequence, Tuple
+from typing import Optional
+from collections.abc import Callable, List, Sequence, Tuple
 
 import cirq
 import numpy as np

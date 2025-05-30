@@ -7,7 +7,8 @@
 
 import warnings
 from copy import deepcopy
-from typing import Any, Dict, List, Optional, Sequence, Tuple, Union
+from typing import Any, Optional, Union
+from collections.abc import Dict, List, Sequence, Tuple
 
 import cirq
 import numpy as np
@@ -27,7 +28,7 @@ def sample_sequence(
     representations: Sequence[OperationRepresentation],
     random_state: Optional[Union[int, np.random.RandomState]] = None,
     num_samples: int = 1,
-) -> Tuple[List[QPROGRAM], List[int], float]:
+) -> Tuple[list[QPROGRAM], list[int], float]:
     """Samples a list of implementable sequences from the quasi-probability
     representation of the input ideal operation.
     Returns the list of sequences, the corresponding list of signs and the

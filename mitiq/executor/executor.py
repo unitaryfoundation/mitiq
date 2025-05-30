@@ -10,18 +10,8 @@ import collections
 import inspect
 import warnings
 from collections import Counter
-from typing import (
-    Any,
-    Callable,
-    Iterable,
-    List,
-    Optional,
-    Sequence,
-    Tuple,
-    Union,
-    cast,
-    get_args,
-)
+from typing import Any, Optional, cast, get_args
+from collections.abc import Callable, Iterable, List, Sequence, Tuple, Union
 
 import numpy as np
 import numpy.typing as npt

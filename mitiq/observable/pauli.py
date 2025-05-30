@@ -5,7 +5,8 @@
 
 from collections import Counter
 from numbers import Number
-from typing import Any, Dict, List, Optional, Sequence, Set, Union, cast
+from typing import Any, Optional, Sequence, Set, Union, cast
+from collections.abc import Dict, List
 from typing import Counter as TCounter
 
 import cirq

@@ -7,7 +7,8 @@
 
 import warnings
 from copy import deepcopy
-from typing import Any, List, Optional, Tuple, Union
+from typing import Any, Optional, Union
+from collections.abc import List, Tuple
 
 import cirq
 import numpy as np

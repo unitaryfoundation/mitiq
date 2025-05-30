@@ -8,17 +8,8 @@
 import warnings
 from abc import ABC, abstractmethod
 from copy import deepcopy
-from typing import (
-    Any,
-    Callable,
-    Dict,
-    List,
-    Optional,
-    Sequence,
-    Tuple,
-    Union,
-    cast,
-)
+from typing import Any, Optional, Union, cast
+from collections.abc import Callable, Dict, List, Sequence, Tuple
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -40,7 +31,7 @@ ExtrapolationResult = Union[
         float,  # The zero-noise value.
         Optional[float],  # The (estimated) error on the zero-noise value.
         List[float],  # Optimal parameters found during fitting.
-        Optional[np.ndarray],  # Covariance of fitting parameters.
+        Optional[npt.NDArray[np.float64]],  # Covariance of fitting parameters.
         Callable[[float], float],  # Function that was fit.
     ],
 ]
