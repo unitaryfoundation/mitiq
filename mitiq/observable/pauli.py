@@ -6,7 +6,7 @@
 from collections import Counter
 from numbers import Number
 from collections.abc import Sequence, Set
-from typing import Any, Optional, Union, cast, Dict
+from typing import Any, Optional, Union, cast
 from collections import Counter as TCounter
 
 import cirq
@@ -207,7 +207,7 @@ class PauliStringCollection:
     def __init__(
         self, *paulis: PauliString, check_precondition: bool = True
     ) -> None:
-        self._paulis_by_weight: Dict[int, TCounter[PauliString]] = dict()
+        self._paulis_by_weight: dict[int, TCounter[PauliString]] = dict()
         self.add(*paulis, check_precondition=check_precondition)
 
     def can_add(self, pauli: PauliString) -> bool:
