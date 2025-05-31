@@ -1,0 +1,14 @@
+# This requirements.txt is auto-generated to support CI workflows expecting this file.
+# For full dependency management, use pyproject.toml and a PEP 517/518 compatible installer (e.g., pip >= 22, uv, or poetry).
+
+numpy>=1.22.0,<2.0.0
+scipy>=1.10.1,<=1.15.2
+cirq-core>=1.4.0,<1.5.0
+tabulate
+# Dev dependencies
+pytest==8.0.0
+pytest-xdist[psutil]==3.0.2
+pytest-cov==6.0.0
+ruff==0.3.1
+mypy==1.0.0
+types-tabulate
