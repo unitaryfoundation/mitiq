@@ -143,3 +143,50 @@ ddd_circuit
                           │       │
 2: ───Y───I───X───X───I───X───Y───M────────
 ```
+
+## Readout Error Mitigation (REM)
+
+```{code-cell} ipython3
+def execute(circuit: cirq.Circuit, noise_level: float = 0.002, p0: float = 0.05) -> MeasurementResult:
+    """Execute a circuit with depolarizing noise and readout bit-flip errors on measured qubits."""
+    measurements = circuit[-1]
+    circuit = circuit[:-1]
+    circuit = circuit.with_noise(cirq.depolarize(noise_level))
+
+    measured_qubits = list(measurements.qubits)
+    circuit.append(cirq.bit_flip(p0).on_each(measured_qubits))
+
+    circuit.append(measurements)
+
+    simulator = cirq.DensityMatrixSimulator()
+
+    result = simulator.run(circuit, repetitions=10000)
+    bitstrings = np.column_stack(list(result.measurements.values()))
+    return MeasurementResult(bitstrings)
+
+```
+
+```{code-cell} ipython3
+qubits = [cirq.LineQubit(i) for i in range(3)]
+cirq_ps = cirq.PauliString({qubits[0]: cirq.Z, qubits[2]: cirq.Z})  # Note: qubit 1 with identity omitted
+
+spec = "".join(str(cirq_ps[q]) if q in cirq_ps else 'I' for q in qubits)
+support = tuple(range(len(qubits)))
+
+obs = Observable(PauliString(spec, support=support))
+print(obs)
+
+```
+```{code-cell} ipython3
+noisy = raw.execute(ddd_circuit, execute, obs)
+```
+```{code-cell} ipython3
+from functools import partial
+
+ideal = raw.execute(ddd_circuit, partial(execute, noise_level=0, p0=0), obs)
+```
+
+```{code-cell} ipython3
+print("Unmitigated value:", "{:.12f}".format(noisy.real))
+```
+
