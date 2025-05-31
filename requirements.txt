@@ -3,8 +3,11 @@
 
 numpy>=1.22.0,<2.0.0
 scipy>=1.10.1,<=1.15.2
-cirq-core>=1.4.0,<1.5.0
+cirq-core==1.5.0
 tabulate
+qiskit==0.46.3
+qiskit-aer==0.13.3
+qiskit-ibm-provider==0.6.1
 # Dev dependencies
 pytest==8.0.0
 pytest-xdist[psutil]==3.0.2
