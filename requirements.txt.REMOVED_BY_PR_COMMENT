@@ -1,0 +1,1 @@
+# Removed as per code review: Mitiq uses uv and pyproject.toml for dependency management.
