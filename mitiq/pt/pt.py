@@ -4,8 +4,8 @@
 # LICENSE file in the root directory of this source tree.
 
 import random
-from functools import singledispatch
 from collections.abc import Callable
+from functools import singledispatch
 from typing import Optional
 
 import cirq
