@@ -28,8 +28,7 @@ In this example, we demonstrate a comprehensive error mitigation pipeline using:
 
 4. Zero-Noise Extrapolation (ZNE), for extrapolation to noise-free observable values.
 
-More information on these techniques, including examples of how pairs of these techniques can be applied together, can be found in the corresponding sections of the user guide (linked
-above).
+More information on these techniques, including examples of how pairs of these techniques can be applied together, can be found in the corresponding sections of the user guide.
 
 +++
 
@@ -170,7 +169,7 @@ ddd_circuit
 2: ───X───I───X───X───I───X───X───M────────
 ```
 
-## Readout Error Mitigation (REM)
+## Combining Readout Error Mitigation (REM) and Zero Noise Extrapolation (ZNE)
 
 ```{code-cell} ipython3
 def execute(circuit: cirq.Circuit, noise_level: float = 0.002, p0: float = 0.05) -> MeasurementResult:
@@ -215,32 +214,22 @@ print("Unmitigated value:", "{:.12f}".format(noisy.real))
 ```
 Unmitigated value: -0.959200000000
 ```
-## Zero Noise Extrapolation (ZNE)
 
 ```{code-cell} ipython3
-#Readout error probabilities
-p0 = p1 = 0.05 
+p0 = p1 = 0.05  # Your readout error probabilities
 
 num_measured_qubits = 3
 icm = rem.generate_inverse_confusion_matrix(num_measured_qubits, p0, p1)
 
 rem_executor = rem.mitigate_executor(execute, inverse_confusion_matrix=icm)
 
-rem_result = obs.expectation(ddd_circuit, rem_executor)
-print("Mitigated value obtained with REM:", "{:.12f}".format(rem_result.real))
-
-```
-
-```
-Mitigated value obtained with REM: -1.000000000000
-```
-
-```{code-cell} ipython3
 combined_executor = zne.mitigate_executor(rem_executor, observable=obs, scale_noise=zne.scaling.folding.fold_global)
 
 combined_result = combined_executor(ddd_circuit)
 print("Mitigated value obtained with REM + ZNE:", "{:.12f}".format(combined_result.real))
+
 ```
+
 ```
-Mitigated value obtained with REM + ZNE: -1.018000000000
+Mitigated value obtained with REM + ZNE: -1.000000000000
 ```
