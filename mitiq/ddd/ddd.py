@@ -170,7 +170,7 @@ def mitigate_executor(
         @wraps(executor)
         def new_executor(
             circuit: QPROGRAM,
-        ) -> Union[float, Tuple[float, Mapping[str, Any]]]:
+        ) -> Union[float, Tuple[float, Dict[str, Any]]]:
             return execute_with_ddd(
                 circuit,
                 executor,
