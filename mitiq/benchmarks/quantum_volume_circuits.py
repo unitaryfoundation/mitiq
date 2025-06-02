@@ -13,8 +13,8 @@ Cirq implementation of quantum volume circuits:
 cirq-core/cirq/contrib/quantum_volume/quantum_volume.py
 """
 
-from typing import List, Tuple, Optional
 from collections.abc import Sequence
+from typing import Optional, Tuple
 
 from cirq import decompose as cirq_decompose
 from cirq.circuits import Circuit

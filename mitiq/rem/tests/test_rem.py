@@ -7,6 +7,7 @@
 
 from functools import partial
 from typing import List
+
 import cirq
 import numpy as np
 import pytest

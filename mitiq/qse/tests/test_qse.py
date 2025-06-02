@@ -5,7 +5,7 @@
 
 """Tests for the Quantum Subspace Expansion top level API."""
 
-from typing import List, Dict
+from typing import List
 from unittest.mock import patch
 
 import cirq

@@ -3,9 +3,8 @@
 # This source code is licensed under the GPL license (v3) found in the
 # LICENSE file in the root directory of this source tree.
 
-from typing import Optional, Union, cast
-from collections.abc import Sequence
-from typing import List
+from typing import List, Optional, Union, cast
+
 import cirq
 import numpy as np
 from numpy.typing import NDArray

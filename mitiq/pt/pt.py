@@ -4,10 +4,10 @@
 # LICENSE file in the root directory of this source tree.
 
 import random
-from functools import singledispatch
-from typing import Optional
 from collections.abc import Callable
-from typing import List
+from functools import singledispatch
+from typing import List, Optional
+
 import cirq
 import pennylane as qml
 from cirq import Circuit as _Circuit

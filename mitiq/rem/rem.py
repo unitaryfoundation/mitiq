@@ -5,10 +5,10 @@
 
 """Readout Confusion Inversion."""
 
+from collections.abc import Callable, Sequence
 from functools import wraps
 from types import MethodType
-from typing import Union, cast, List
-from collections.abc import Callable, Sequence
+from typing import List, Union, cast
 
 import numpy as np
 import numpy.typing as npt

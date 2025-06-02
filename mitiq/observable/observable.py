@@ -5,9 +5,9 @@
 
 import copy
 from collections import defaultdict
+from collections.abc import Callable, Iterable
 from numbers import Number
-from collections.abc import Iterable, Callable, Set
-from typing import Any, Optional, Union, cast, List
+from typing import Any, Optional, Union, cast
 
 import cirq
 import numpy as np

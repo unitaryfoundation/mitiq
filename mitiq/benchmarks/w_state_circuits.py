@@ -6,7 +6,7 @@
 """Functions for creating a linear complexity W-state benchmarking circuit
 as defined in :cite:`Cruz_2019_Efficient`."""
 
-from typing import List, Optional
+from typing import Optional
 
 import cirq
 import numpy as np

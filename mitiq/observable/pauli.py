@@ -4,11 +4,10 @@
 # LICENSE file in the root directory of this source tree.
 
 from collections import Counter
-from numbers import Number
-from typing import Any, List, Optional, Union, cast
-from collections.abc import Sequence
-from typing import Set
 from collections import Counter as TCounter
+from collections.abc import Sequence
+from numbers import Number
+from typing import Any, Optional, Set, Union, cast
 
 import cirq
 import numpy as np

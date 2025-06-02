@@ -8,8 +8,8 @@ slack window.
 """
 
 from itertools import cycle
-from collections.abc import Sequence
 from typing import List
+
 import numpy as np
 from cirq import (
     Circuit,

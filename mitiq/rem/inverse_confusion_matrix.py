@@ -3,8 +3,8 @@
 # This source code is licensed under the GPL license (v3) found in the
 # LICENSE file in the root directory of this source tree.
 
-from functools import reduce
 from collections.abc import Sequence
+from functools import reduce
 
 import numpy as np
 import numpy.typing as npt
