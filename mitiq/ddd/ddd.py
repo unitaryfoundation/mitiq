@@ -6,8 +6,8 @@
 """High-level digital dynamical decoupling (DDD) tools."""
 
 from functools import partial, wraps
-from collections.abc import Callable, Mapping,Dict
-from typing import Any, Optional, Tuple, Union
+from collections.abc import Callable, Mapping
+from typing import Dict, Any, Optional, Tuple, Union
 
 import numpy as np
 

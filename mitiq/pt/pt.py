@@ -7,7 +7,7 @@ import random
 from functools import singledispatch
 from typing import Optional
 from collections.abc import Callable
-
+from typing import List
 import cirq
 import pennylane as qml
 from cirq import Circuit as _Circuit

@@ -5,7 +5,7 @@
 
 from typing import Optional, Union, cast
 from collections.abc import Sequence
-
+from typing import List
 import cirq
 import numpy as np
 from numpy.typing import NDArray
