@@ -6,7 +6,8 @@
 from collections import Counter
 from numbers import Number
 from typing import Any, List, Optional, Union, cast
-from collections.abc import Sequence, Set
+from collections.abc import Sequence
+from typing import Set
 from collections import Counter as TCounter
 
 import cirq
@@ -279,7 +280,7 @@ class PauliStringCollection:
             )
 
         basis_rotations = set()
-        support = set()
+        support: Set[cirq.Qid] = set()
         qubits_with_measurements = set[cirq.Qid]()
 
         # Find any existing measurement gates in the circuit
