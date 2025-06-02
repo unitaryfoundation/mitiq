@@ -5,7 +5,8 @@
 
 import random
 from functools import singledispatch
-from typing import Callable, List, Optional
+from typing import Optional
+from collections.abc import Callable
 
 import cirq
 import pennylane as qml

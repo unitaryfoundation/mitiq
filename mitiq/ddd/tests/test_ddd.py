@@ -5,7 +5,6 @@
 
 """Unit tests for high-level DDD tools."""
 
-from typing import List
 
 import cirq
 import numpy as np

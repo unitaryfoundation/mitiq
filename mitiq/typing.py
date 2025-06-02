@@ -17,17 +17,8 @@
 from collections import Counter
 from dataclasses import dataclass
 from enum import Enum, EnumMeta
-from typing import (
-    Any,
-    Dict,
-    List,
-    Optional,
-    Sequence,
-    Tuple,
-    Type,
-    Union,
-    cast,
-)
+from typing import Any, Dict, Optional, Tuple, Type, Union, cast
+from collections.abc import Sequence
 
 import numpy as np
 import numpy.typing as npt

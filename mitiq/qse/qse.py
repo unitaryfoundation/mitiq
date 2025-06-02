@@ -7,7 +7,8 @@
 """High-level Quantum Susbapce Expansion tools."""
 
 from functools import wraps
-from typing import Callable, Dict, List, Sequence, Union
+from typing import Dict, Union
+from collections.abc import Callable, Sequence
 
 from mitiq import QPROGRAM, Executor, Observable, PauliString, QuantumResult
 from mitiq.qse.qse_utils import (

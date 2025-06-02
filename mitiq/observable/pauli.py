@@ -5,8 +5,11 @@
 
 from collections import Counter
 from numbers import Number
-from typing import Any, Dict, List, Optional, Sequence, Set, Union, cast
-from typing import Counter as TCounter
+from typing import Any, Optional, Union, cast
+from collections.abc import Sequence
+from collections.abc import Set
+from collections import Counter
+from collections.abc import Counter as TCounter
 
 import cirq
 import numpy as np
@@ -82,7 +85,7 @@ class PauliString:
 
     def matrix(
         self,
-        qubit_indices_to_include: Optional[List[int]] = None,
+        qubit_indices_to_include: Optional[list[int]] = None,
     ) -> npt.NDArray[np.complex64]:
         """Returns the (potentially very large) matrix of the PauliString."""
         qubits = (
@@ -92,7 +95,7 @@ class PauliString:
         )
         return self._pauli.matrix(qubits=qubits)
 
-    def _basis_rotations(self) -> List[cirq.Operation]:
+    def _basis_rotations(self) -> list[cirq.Operation]:
         """Returns the basis rotations needed to measure the PauliString."""
         return [
             op
@@ -206,7 +209,7 @@ class PauliStringCollection:
     def __init__(
         self, *paulis: PauliString, check_precondition: bool = True
     ) -> None:
-        self._paulis_by_weight: Dict[int, TCounter[PauliString]] = dict()
+        self._paulis_by_weight: dict[int, TCounter[PauliString]] = dict()
         self.add(*paulis, check_precondition=check_precondition)
 
     def can_add(self, pauli: PauliString) -> bool:
@@ -227,7 +230,7 @@ class PauliStringCollection:
                 self._paulis_by_weight[weight].update({pauli})
 
     @property
-    def elements(self) -> List[PauliString]:
+    def elements(self) -> list[PauliString]:
         return [
             pauli
             for paulis in self._paulis_by_weight.values()
@@ -235,10 +238,10 @@ class PauliStringCollection:
         ]
 
     @property
-    def elements_by_weight(self) -> Dict[int, TCounter[PauliString]]:
+    def elements_by_weight(self) -> dict[int, TCounter[PauliString]]:
         return self._paulis_by_weight
 
-    def support(self) -> Set[int]:
+    def support(self) -> set[int]:
         return {cast(cirq.LineQubit, q).x for q in self._qubits_to_measure()}
 
     def max_weight(self) -> int:
@@ -247,8 +250,8 @@ class PauliStringCollection:
     def min_weight(self) -> int:
         return min(self._paulis_by_weight.keys(), default=0)
 
-    def _qubits_to_measure(self) -> Set[cirq.Qid]:
-        qubits: Set[cirq.Qid] = set()
+    def _qubits_to_measure(self) -> set[cirq.Qid]:
+        qubits: set[cirq.Qid] = set()
         for pauli in self.elements:
             qubits.update(pauli._pauli.qubits)
         return qubits

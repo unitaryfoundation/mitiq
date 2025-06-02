@@ -7,7 +7,8 @@
 
 from functools import wraps
 from types import MethodType
-from typing import Callable, List, Sequence, Union, cast
+from typing import Union, cast
+from collections.abc import Callable, Sequence
 
 import numpy as np
 import numpy.typing as npt
