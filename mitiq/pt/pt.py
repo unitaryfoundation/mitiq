@@ -70,7 +70,7 @@ PENNYLANE_NOISE_OP = {
 def generate_pauli_twirl_variants(
     circuit: QPROGRAM,
     num_circuits: int = 10,
-    noise_name: Optional[str] = None,
+    noise_name: str | None = None,
     **kwargs: float,
 ) -> list[QPROGRAM]:
     r"""Return the Pauli twirled versions of the input circuit.

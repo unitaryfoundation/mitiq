@@ -7,7 +7,7 @@ from collections import Counter
 from collections import Counter as TCounter
 from collections.abc import Sequence
 from numbers import Number
-from typing import Any, Optional, Union, cast
+from typing import cast
 
 import cirq
 import numpy as np
@@ -42,7 +42,7 @@ class PauliString:
         self,
         spec: str = "",
         coeff: complex = 1.0,
-        support: Optional[Sequence[int]] = None,
+        support: Sequence[int] | None = None,
     ) -> None:
         if not set(spec).issubset(set(self._string_to_gate_map.keys())):
             raise ValueError(
@@ -59,7 +59,7 @@ class PauliString:
         else:
             support = range(len(spec))
 
-        self._pauli: cirq.PauliString[Any] = cirq.PauliString(
+        self._pauli: cirq.PauliString = cirq.PauliString(
             coeff,
             (
                 self._string_to_gate_map[s].on(cirq.LineQubit(i))
@@ -69,7 +69,7 @@ class PauliString:
 
     @staticmethod
     def from_cirq_pauli_string(
-        cirq_pauli_string: cirq.PauliString[Any],
+        cirq_pauli_string: cirq.PauliString,
     ) -> "PauliString":
         return PauliString(
             spec=_cirq_pauli_to_string(cirq_pauli_string),
@@ -83,7 +83,7 @@ class PauliString:
 
     def matrix(
         self,
-        qubit_indices_to_include: Optional[list[int]] = None,
+        qubit_indices_to_include: list[int] | None = None,
     ) -> npt.NDArray[np.complex64]:
         """Returns the (potentially very large) matrix of the PauliString."""
         qubits = (
@@ -151,7 +151,7 @@ class PauliString:
             measurements
         )
 
-    def __mul__(self, other: Union["PauliString", Number]) -> "PauliString":
+    def __mul__(self, other: "PauliString" | Number) -> "PauliString":
         if isinstance(other, PauliString):
             return PauliString.from_cirq_pauli_string(
                 self._pauli * other._pauli
@@ -165,7 +165,9 @@ class PauliString:
             return self.__mul__(other)
         return NotImplemented
 
-    def __eq__(self, other: Any) -> bool:
+    def __eq__(self, other: object) -> bool:
+        if not isinstance(other, PauliString):
+            return False
         return self._pauli == other._pauli
 
     def __hash__(self) -> int:
@@ -319,7 +321,7 @@ class PauliStringCollection:
             total += pauli.coeff * value
         return total
 
-    def __eq__(self, other: Any) -> bool:
+    def __eq__(self, other: object) -> bool:
         return self._paulis_by_weight == other._paulis_by_weight
 
     def __len__(self) -> int:
