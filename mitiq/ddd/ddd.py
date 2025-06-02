@@ -6,8 +6,8 @@
 """High-level digital dynamical decoupling (DDD) tools."""
 
 from functools import partial, wraps
+from collections.abc import Callable, Mapping,Dict
 from typing import Any, Optional, Tuple, Union
-from collections.abc import Callable
 
 import numpy as np
 
@@ -170,7 +170,7 @@ def mitigate_executor(
         @wraps(executor)
         def new_executor(
             circuit: QPROGRAM,
-        ) -> Union[float, Tuple[float, Dict[str, Any]]]:
+        ) -> Union[float, Tuple[float, Mapping[str, Any]]]:
             return execute_with_ddd(
                 circuit,
                 executor,

@@ -6,8 +6,7 @@
 from collections import Counter
 from numbers import Number
 from typing import Any, Optional, Union, cast
-from collections.abc import Sequence
-from collections.abc import Set
+from collections.abc import Sequence, Set
 from collections import Counter
 from collections.abc import Counter as TCounter
 

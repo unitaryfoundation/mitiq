@@ -6,8 +6,8 @@
 import copy
 from collections import defaultdict
 from numbers import Number
-from typing import Any, Callable, Optional, Union, cast
-from collections.abc import Iterable, Set, Callable
+from collections.abc import Iterable, Callable, Set
+from typing import Any, Optional, Union, cast
 
 import cirq
 import numpy as np
