@@ -7,7 +7,7 @@
 """High-level Quantum Susbapce Expansion tools."""
 
 from functools import wraps
-from typing import Callable, Dict, List, Sequence, Union
+from collections.abc import Callable, Sequence
 
 from mitiq import QPROGRAM, Executor, Observable, PauliString, QuantumResult
 from mitiq.qse.qse_utils import (
@@ -18,11 +18,11 @@ from mitiq.qse.qse_utils import (
 
 def execute_with_qse(
     circuit: QPROGRAM,
-    executor: Union[Executor, Callable[[QPROGRAM], QuantumResult]],
+    executor: Executor | Callable[[QPROGRAM], QuantumResult],
     check_operators: Sequence[PauliString],
     code_hamiltonian: Observable,
     observable: Observable,
-    pauli_string_to_expectation_cache: Dict[PauliString, complex] = {},
+    pauli_string_to_expectation_cache: dict[PauliString, complex] = {},
 ) -> float:
     """Function for the calculation of an observable from some circuit of
     interest to be mitigated with quantum subspace expansion (QSE).
@@ -69,7 +69,7 @@ def mitigate_executor(
     check_operators: Sequence[PauliString],
     code_hamiltonian: Observable,
     observable: Observable,
-    pauli_string_to_expectation_cache: Dict[PauliString, complex] = {},
+    pauli_string_to_expectation_cache: dict[PauliString, complex] = {},
 ) -> Callable[[QPROGRAM], float]:
     """Returns a modified version of the input 'executor' which is
     error-mitigated with quantum subspace expansion (QSE).
@@ -103,7 +103,7 @@ def mitigate_executor(
     else:
 
         @wraps(executor)
-        def new_executor(circuits: List[QPROGRAM]) -> List[float]:
+        def new_executor(circuits: list[QPROGRAM]) -> list[float]:
             return [
                 execute_with_qse(
                     circuit,
@@ -123,7 +123,7 @@ def qse_decorator(
     check_operators: Sequence[PauliString],
     code_hamiltonian: Observable,
     observable: Observable,
-    pauli_string_to_expectation_cache: Dict[PauliString, complex] = {},
+    pauli_string_to_expectation_cache: dict[PauliString, complex] = {},
 ) -> Callable[
     [Callable[[QPROGRAM], QuantumResult]], Callable[[QPROGRAM], float]
 ]:

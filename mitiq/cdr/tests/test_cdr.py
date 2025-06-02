@@ -5,8 +5,6 @@
 
 """Tests for the Clifford data regression top-level API."""
 
-from typing import List
-
 import cirq
 import numpy as np
 import pytest
@@ -30,7 +28,7 @@ def execute(circuit: QPROGRAM) -> np.ndarray:
     return compute_density_matrix(convert_to_mitiq(circuit)[0])
 
 
-def batched_execute(circuits) -> List[np.ndarray]:
+def batched_execute(circuits) -> list[np.ndarray]:
     return [execute(circuit) for circuit in circuits]
 
 

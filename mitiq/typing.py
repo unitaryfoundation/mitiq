@@ -17,17 +17,8 @@
 from collections import Counter
 from dataclasses import dataclass
 from enum import Enum, EnumMeta
-from typing import (
-    Any,
-    Dict,
-    List,
-    Optional,
-    Sequence,
-    Tuple,
-    Type,
-    Union,
-    cast,
-)
+from collections.abc import Sequence
+from typing import Any, cast
 
 import numpy as np
 import numpy.typing as npt
@@ -37,7 +28,7 @@ from cirq import Circuit as _Circuit
 class EnhancedEnumMeta(EnumMeta):
     def __str__(cls) -> str:
         return ", ".join(
-            [member.name.lower() for member in cast(Type[Enum], cls)]
+            [member.name.lower() for member in cast(type[Enum], cls)]
         )
 
 
@@ -76,9 +67,7 @@ except ImportError:  # pragma: no cover
 
 
 # Supported + installed quantum programs.
-QPROGRAM = Union[
-    _Circuit, _Program, _QuantumCircuit, _BKCircuit, _QuantumTape, _QiboCircuit
-]
+QPROGRAM = _Circuit | _Program | _QuantumCircuit | _BKCircuit | _QuantumTape | _QiboCircuit
 
 
 # Supported quantum programs.
@@ -93,7 +82,7 @@ class SUPPORTED_PROGRAM_TYPES(EnhancedEnum):
 
 # Define MeasurementResult, a result obtained by measuring qubits on a quantum
 # computer.
-Bitstring = Union[str, List[int]]
+Bitstring = str | list[int]
 
 
 @dataclass
@@ -127,7 +116,7 @@ class MeasurementResult:
     """
 
     result: Sequence[Bitstring]
-    qubit_indices: Optional[Tuple[int, ...]] = None
+    qubit_indices: tuple[int, ...] | None = None
 
     def __post_init__(self) -> None:
         # Validate arguments
@@ -143,7 +132,7 @@ class MeasurementResult:
         if symbols.issubset({"0", "1"}):
             # Convert to list of integers
             int_result = [[int(b) for b in bits] for bits in self.result]
-            self.result: List[List[int]] = list(int_result)
+            self.result: list[list[int]] = list(int_result)
 
         if isinstance(self.result, np.ndarray):
             self.result = self.result.tolist()
@@ -180,8 +169,8 @@ class MeasurementResult:
     @classmethod
     def from_counts(
         cls,
-        counts: Dict[str, int],
-        qubit_indices: Optional[Tuple[int, ...]] = None,
+        counts: dict[str, int],
+        qubit_indices: tuple[int, ...] | None = None,
     ) -> "MeasurementResult":
         """Initializes a ``MeasurementResult`` from a dictionary of counts.
 
@@ -192,20 +181,20 @@ class MeasurementResult:
         counter = Counter(counts)
         return cls(list(counter.elements()), qubit_indices)
 
-    def get_counts(self) -> Dict[str, int]:
+    def get_counts(self) -> dict[str, int]:
         """Returns a Python dictionary whose keys are the measured
         bitstrings and whose values are the counts.
         """
         strings = ["".join(map(str, bits)) for bits in self.result]
         return dict(Counter(strings))
 
-    def prob_distribution(self) -> Dict[str, float]:
+    def prob_distribution(self) -> dict[str, float]:
         """Returns a Python dictionary whose keys are the measured
         bitstrings and whose values are their empirical frequencies.
         """
         return {k: v / self.shots for k, v in self.get_counts().items()}
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         """Exports data to a Python dictionary.
 
         Note: Information about the order measurements is not preserved.
@@ -219,7 +208,7 @@ class MeasurementResult:
         }
 
     @classmethod
-    def from_dict(cls, data: Dict[str, Any]) -> "MeasurementResult":
+    def from_dict(cls, data: dict[str, Any]) -> "MeasurementResult":
         """Loads a ``MeasurementResult`` from a Python dictionary.
 
         Note: Only ``data["counts"]`` and ``data["qubit_indices"]`` are used
@@ -227,7 +216,7 @@ class MeasurementResult:
         """
         return cls.from_counts(data["counts"], data["qubit_indices"])
 
-    def filter_qubits(self, qubit_indices: List[int]) -> npt.NDArray[np.int64]:
+    def filter_qubits(self, qubit_indices: list[int]) -> npt.NDArray[np.int64]:
         """Returns the bitstrings associated to a subset of qubits."""
         return np.array([self._measurements[i] for i in qubit_indices]).T
 
@@ -239,10 +228,4 @@ class MeasurementResult:
 # An `executor` function inputs a quantum program and outputs an object from
 # which expectation values can be computed. Explicitly, this object can be one
 # of the following types:
-QuantumResult = Union[
-    float,  # The expectation value itself.
-    MeasurementResult,  # Sampled bitstrings.
-    np.ndarray,  # Density matrix.
-    # TODO: Support the following:
-    # Sequence[np.ndarray],  # Wavefunctions sampled via quantum trajectories.
-]
+QuantumResult = float | MeasurementResult | np.ndarray

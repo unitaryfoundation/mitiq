@@ -4,7 +4,8 @@
 # LICENSE file in the root directory of this source tree.
 
 import copy
-from typing import Callable, List, Optional, cast
+from collections.abc import Callable
+from typing import cast
 
 import numpy as np
 from cirq import (
@@ -46,7 +47,7 @@ class CircuitMismatchException(Exception):
 
 
 def _generate_parameter_calibration_circuit(
-    qubits: List[Qid], depth: int, gate: EigenGate
+    qubits: list[Qid], depth: int, gate: EigenGate
 ) -> Circuit:
     """Generates a circuit which should be the identity. Given a rotation
     gate R(param), it applies R(2 * pi / depth) depth times, resulting
@@ -111,7 +112,7 @@ def scale_parameters(
     circuit: QPROGRAM,
     scale_factor: float,
     base_variance: float,
-    seed: Optional[int] = None,
+    seed: int | None = None,
 ) -> Circuit:
     """Applies parameter-noise scaling to the input circuit,
     assuming that each gate has the same base level of noise.

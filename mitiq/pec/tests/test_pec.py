@@ -6,7 +6,6 @@
 """Unit tests for PEC."""
 
 from functools import partial
-from typing import List, Optional
 from unittest.mock import patch
 
 import cirq
@@ -36,8 +35,8 @@ from mitiq.pec.representations import (
 # Noisy representations of Pauli and CNOT operations for testing.
 def get_pauli_and_cnot_representations(
     base_noise: float,
-    qubits: Optional[List[cirq.Qid]] = None,
-) -> List[OperationRepresentation]:
+    qubits: list[cirq.Qid] | None = None,
+) -> list[OperationRepresentation]:
     if qubits is None:
         qreg = cirq.LineQubit.range(2)
     else:
@@ -77,7 +76,7 @@ def serial_executor(circuit: QPROGRAM, noise: float = BASE_NOISE) -> float:
     )[0, 0].real
 
 
-def batched_executor(circuits) -> List[float]:
+def batched_executor(circuits) -> list[float]:
     return [serial_executor(circuit) for circuit in circuits]
 
 

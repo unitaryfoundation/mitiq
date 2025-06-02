@@ -3,7 +3,6 @@
 import math
 import random
 import re
-from typing import List
 from unittest.mock import Mock
 
 import numpy as np
@@ -55,11 +54,11 @@ def executor_density_matrix_typed(circuit) -> np.ndarray:
     return compute_density_matrix(circuit, noise_level=(0,))
 
 
-def executor_density_matrix_batched(circuits) -> List[np.ndarray]:
+def executor_density_matrix_batched(circuits) -> list[np.ndarray]:
     return [executor_density_matrix_typed(circuit) for circuit in circuits]
 
 
-def batched_executor(circuits) -> List[float]:
+def batched_executor(circuits) -> list[float]:
     return [execute(circuit) for circuit in circuits]
 
 

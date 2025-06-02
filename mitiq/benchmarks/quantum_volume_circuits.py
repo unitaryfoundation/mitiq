@@ -13,7 +13,7 @@ Cirq implementation of quantum volume circuits:
 cirq-core/cirq/contrib/quantum_volume/quantum_volume.py
 """
 
-from typing import Optional, Sequence, Tuple
+from collections.abc import Sequence
 
 from cirq import decompose as cirq_decompose
 from cirq.circuits import Circuit
@@ -32,9 +32,9 @@ def generate_quantum_volume_circuit(
     num_qubits: int,
     depth: int,
     decompose: bool = False,
-    seed: Optional[int] = None,
-    return_type: Optional[str] = None,
-) -> Tuple[QPROGRAM, Sequence[Bitstring]]:
+    seed: int | None = None,
+    return_type: str | None = None,
+) -> tuple[QPROGRAM, Sequence[Bitstring]]:
     """Generate a quantum volume circuit with the given number of qubits and
     depth.
 

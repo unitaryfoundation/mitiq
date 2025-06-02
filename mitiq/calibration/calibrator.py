@@ -6,7 +6,8 @@
 import warnings
 from enum import Enum
 from operator import itemgetter
-from typing import Callable, Dict, List, Optional, Sequence, Tuple, Union, cast
+from collections.abc import Callable, Sequence
+from typing import Any, cast
 
 import cirq
 import numpy as np
@@ -43,7 +44,7 @@ class ExperimentResults:
     for computing results based on it."""
 
     def __init__(
-        self, strategies: List[Strategy], problems: List[BenchmarkProblem]
+        self, strategies: list[Strategy], problems: list[BenchmarkProblem]
     ) -> None:
         self.strategies = strategies
         self.problems = problems
@@ -78,7 +79,7 @@ class ExperimentResults:
 
     def _get_errors(
         self, strategy_id: int, problem_id: int
-    ) -> Tuple[float, float]:
+    ) -> tuple[float, float]:
         """Get errors for a given strategy/problem combination.
 
         Returns:
@@ -121,10 +122,10 @@ class ExperimentResults:
             │ Two qubit gate count: 1  │ Scale method: fold_global    │ Improvement factor: 0.9369 │
             └──────────────────────────┴──────────────────────────────┴────────────────────────────┘
         """  # noqa: E501
-        table: List[List[Union[str, float]]] = []
-        headers: List[str] = ["benchmark", "strategy", "performance"]
+        table: list[list[Union[str, float]]] = []
+        headers: list[str] = ["benchmark", "strategy", "performance"]
         for problem in self.problems:
-            row_group: List[List[Union[str, float]]] = []
+            row_group: list[list[Union[str, float]]] = []
             for strategy in self.strategies:
                 nerr, merr = self._get_errors(strategy.id, problem.id)
                 row_group.append(
@@ -162,12 +163,12 @@ class ExperimentResults:
             │ Scale method: fold_global    │ Improvement factor: 2.7672 │ Improvement factor: 0.6852 │
             └──────────────────────────────┴────────────────────────────┴────────────────────────────┘
         """  # noqa: E501
-        table: List[List[str]] = []
-        headers: List[str] = ["strategy\\benchmark"]
+        table: list[list[str]] = []
+        headers: list[str] = ["strategy\\benchmark"]
         for problem in self.problems:
             headers.append(str(problem))
         for strategy in self.strategies:
-            row: List[str] = [str(strategy)]
+            row: list[str] = [str(strategy)]
             for problem in self.problems:
                 nerr, merr = self._get_errors(strategy.id, problem.id)
                 row.append(self._performance_str(nerr, merr))

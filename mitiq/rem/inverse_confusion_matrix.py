@@ -4,7 +4,7 @@
 # LICENSE file in the root directory of this source tree.
 
 from functools import reduce
-from typing import Sequence
+from collections.abc import Sequence
 
 import numpy as np
 import numpy.typing as npt

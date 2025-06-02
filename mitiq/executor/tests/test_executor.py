@@ -6,7 +6,6 @@
 """Unit tests for Collector."""
 
 from random import choices
-from typing import List
 
 import cirq
 import numpy as np
@@ -24,7 +23,7 @@ from mitiq.observable import Observable, PauliString
 
 
 # Serial / batched executors which return floats.
-def executor_batched(circuits, **kwargs) -> List[float]:
+def executor_batched(circuits, **kwargs) -> list[float]:
     return [
         float(v)
         for v in np.full(
@@ -34,7 +33,7 @@ def executor_batched(circuits, **kwargs) -> List[float]:
     ]
 
 
-def executor_batched_unique(circuits) -> List[float]:
+def executor_batched_unique(circuits) -> list[float]:
     return [executor_serial_unique(circuit) for circuit in circuits]
 
 
@@ -50,7 +49,7 @@ def executor_serial(*args, **kwargs):
     return kwargs.setdefault("return_value", 0.0)
 
 
-def executor_pyquil_batched(programs) -> List[float]:
+def executor_pyquil_batched(programs) -> list[float]:
     for p in programs:
         if not isinstance(p, pyquil.Program):
             raise TypeError
@@ -80,7 +79,7 @@ def executor_density_matrix_typed(circuit) -> np.ndarray:
     return compute_density_matrix(circuit, noise_level=(0,))
 
 
-def executor_density_matrix_batched(circuits) -> List[np.ndarray]:
+def executor_density_matrix_batched(circuits) -> list[np.ndarray]:
     return [executor_density_matrix_typed(circuit) for circuit in circuits]
 
 

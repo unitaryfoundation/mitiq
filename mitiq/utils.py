@@ -7,7 +7,7 @@
 
 from copy import deepcopy
 from itertools import product
-from typing import Any, Dict, List, Tuple
+from typing import Any
 
 import cirq
 import numpy as np
@@ -84,7 +84,7 @@ def _is_measurement(op: ops.Operation) -> bool:
 
 def _pop_measurements(
     circuit: Circuit,
-) -> List[Tuple[int, ops.Operation]]:
+) -> list[tuple[int, ops.Operation]]:
     """Removes all measurements from a circuit.
 
     Args:
@@ -103,7 +103,7 @@ def _pop_measurements(
 
 
 def _append_measurements(
-    circuit: Circuit, measurements: List[Tuple[int, ops.Operation]]
+    circuit: Circuit, measurements: list[tuple[int, ops.Operation]]
 ) -> None:
     """Appends all measurements into the final moment of the circuit.
 
@@ -169,7 +169,7 @@ def _equal(
     return circuit_one == circuit_two
 
 
-def _are_close_dict(dict_a: Dict[Any, Any], dict_b: Dict[Any, Any]) -> bool:
+def _are_close_dict(dict_a: dict[Any, Any], dict_b: dict[Any, Any]) -> bool:
     """Returns True if the two dictionaries have equal keys and
     their corresponding values are "sufficiently" close."""
     keys_a = dict_a.keys()
@@ -324,7 +324,7 @@ PAULIS = [
 ]
 
 
-def matrix_kronecker_product(matrices: List[NDArray[Any]]) -> NDArray[Any]:
+def matrix_kronecker_product(matrices: list[NDArray[Any]]) -> NDArray[Any]:
     """
     Returns the Kronecker product of a list of matrices.
     Args:
@@ -363,7 +363,7 @@ def operator_ptm_vector_rep(opt: NDArray[Any]) -> NDArray[Any]:
     return np.array(opt_vec)
 
 
-def qem_methods() -> Dict[str, str]:
+def qem_methods() -> dict[str, str]:
     """
     Returns a dictionary of Quantum Error Mitigation techniques
     currently available in Mitiq. Updated v0.36.0

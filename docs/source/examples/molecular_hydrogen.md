@@ -32,7 +32,7 @@ In this example, we variationally estimate the potential energy surface of the m
 
 ```{code-cell} ipython3
 from functools import partial
-from typing import List
+
 import matplotlib.pyplot as plt
 import numpy as np
 from scipy.optimize import brute
@@ -40,7 +40,7 @@ import cirq
 import openfermion as of
 from openfermionpyscf import generate_molecular_hamiltonian
 
-from mitiq import PauliString, Observable, Executor, zne  # Zero-noise extrapolation module
+from mitiq import Paulistring, Observable, Executor, zne  # Zero-noise extrapolation module
 from mitiq.interface.mitiq_cirq import compute_density_matrix
 ```
 
@@ -73,18 +73,18 @@ This results in slightly modified hamiltonians of the form:
 ```{code-cell} ipython3
 radii = [0.2 * i for i in range(1, 14)]
 
-def qubit_operator_to_pauli_sum(qubit_op) -> List:
+def qubit_operator_to_pauli_sum(qubit_op) -> list:
     """Converts the OpenFermion qubit operator to a list of mitiq Pauli Strings."""
     psum = []
     for ind_ops, coeff in qubit_op.terms.items():
         if ind_ops == tuple():
-            psum.append(PauliString("I", coeff))
+            psum.append(Paulistring("I", coeff))
             continue
         term = ["I", "I"]
         for ind, op in ind_ops:
             term[ind] = op
         term = ''.join(term)
-        psum.append(PauliString(term, coeff))
+        psum.append(Paulistring(term, coeff))
     return psum
 
 def get_hamiltonian(bond_length) -> Observable:

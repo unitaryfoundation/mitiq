@@ -5,8 +5,6 @@
 
 """Functions for mapping circuits to (near) Clifford circuits."""
 
-from typing import List
-
 import cirq
 import numpy as np
 import numpy.typing as npt
@@ -99,7 +97,7 @@ def is_clifford_angle(
 
 
 @np.vectorize
-def angle_to_proximities(angle: float, sigma: float) -> List[float]:
+def angle_to_proximities(angle: float, sigma: float) -> list[float]:
     """Returns probability distribution based on distance from angles to
     Clifford gates.
 

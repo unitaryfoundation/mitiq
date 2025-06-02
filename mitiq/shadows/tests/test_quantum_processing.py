@@ -6,7 +6,7 @@
 """Unit tests for quantum processing functions for classical shadows."""
 
 import importlib
-from typing import Callable, List
+from collections.abc import Callable  # Use collections.abc for Callable
 from unittest.mock import patch
 
 import cirq
@@ -59,7 +59,7 @@ def test_generate_random_pauli_strings():
     result = generate_random_pauli_strings(num_qubits, num_strings)
 
     # Check that the result is a list
-    assert isinstance(result, List)
+    assert isinstance(result, list)
 
     # Check that the number of strings matches the input
     assert len(result) == num_strings

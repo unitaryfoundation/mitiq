@@ -10,18 +10,8 @@ import collections
 import inspect
 import warnings
 from collections import Counter
-from typing import (
-    Any,
-    Callable,
-    Iterable,
-    List,
-    Optional,
-    Sequence,
-    Tuple,
-    Union,
-    cast,
-    get_args,
-)
+from collections.abc import Sequence, Iterable, Callable
+from typing import Any, cast, get_args
 
 import numpy as np
 import numpy.typing as npt
@@ -34,9 +24,9 @@ from mitiq.observable.pauli import PauliString
 DensityMatrixLike = [
     np.ndarray,
     Iterable[np.ndarray],  # type: ignore
-    List[np.ndarray],  # type: ignore
+    list[np.ndarray],  # type: ignore
     Sequence[np.ndarray],  # type: ignore
-    Tuple[np.ndarray],
+    tuple[np.ndarray],
     npt.NDArray[np.complex64],
     list[npt.NDArray[np.complex64]],
     list[np.ndarray],  # type: ignore
@@ -46,19 +36,15 @@ FloatLike = [
     None,  # Untyped executors are assumed to return floats.
     float,
     Iterable[float],
-    List[float],
-    Sequence[float],
-    Tuple[float],
     list[float],
+    Sequence[float],
     tuple[float],
 ]
 MeasurementResultLike = [
     MeasurementResult,
     Iterable[MeasurementResult],
-    List[MeasurementResult],
-    Sequence[MeasurementResult],
-    Tuple[MeasurementResult],
     list[MeasurementResult],
+    Sequence[MeasurementResult],
     tuple[MeasurementResult],
 ]
 
@@ -77,7 +63,7 @@ class Executor:
 
     def __init__(
         self,
-        executor: Callable[[Union[QPROGRAM, Sequence[QPROGRAM]]], Any],
+        executor: Callable[[QPROGRAM | Sequence[QPROGRAM]], Any],
         max_batch_size: int = 75,
     ) -> None:
         self._executor = executor
@@ -86,8 +72,8 @@ class Executor:
         self._executor_return_type = executor_annotation.get("return")
         self._max_batch_size = max_batch_size
 
-        self._executed_circuits: List[QPROGRAM] = []
-        self._quantum_results: List[QuantumResult] = []
+        self._executed_circuits: list[QPROGRAM] = []
+        self._quantum_results: list[QuantumResult] = []
 
         self._calls_to_executor: int = 0
 
@@ -132,11 +118,11 @@ class Executor:
         )
 
     @property
-    def executed_circuits(self) -> List[QPROGRAM]:
+    def executed_circuits(self) -> list[QPROGRAM]:
         return self._executed_circuits
 
     @property
-    def quantum_results(self) -> List[QuantumResult]:
+    def quantum_results(self) -> list[QuantumResult]:
         return self._quantum_results
 
     @property
@@ -145,11 +131,11 @@ class Executor:
 
     def evaluate(
         self,
-        circuits: Union[QPROGRAM, List[QPROGRAM]],
-        observable: Optional[Observable] = None,
+        circuits: QPROGRAM | list[QPROGRAM],
+        observable: Observable | None = None,
         force_run_all: bool = True,
         **kwargs: Any,
-    ) -> List[float]:
+    ) -> list[float]:
         """Returns the expectation value Tr[ρ O] for each circuit in
         ``circuits`` where O is the observable provided or implicitly defined
         by the ``executor``. (The observable is implicitly defined when the
@@ -170,7 +156,7 @@ class Executor:
         Returns:
             List of real valued expectation values.
         """
-        if not isinstance(circuits, List):
+        if not isinstance(circuits, list):
             circuits = [circuits]
 
         warn_non_hermitian = False
@@ -244,7 +230,7 @@ class Executor:
 
         elif self._executor_return_type in DensityMatrixLike:
             observable = cast(Observable, observable)
-            all_results = cast(List[npt.NDArray[np.complex64]], all_results)
+            all_results = cast(list[npt.NDArray[np.complex64]], all_results)
             results = [
                 observable._expectation_from_density_matrix(density_matrix)
                 for density_matrix in all_results
@@ -252,7 +238,7 @@ class Executor:
 
         elif self._executor_return_type in MeasurementResultLike:
             observable = cast(Observable, observable)
-            all_results = cast(List[MeasurementResult], all_results)
+            all_results = cast(list[MeasurementResult], all_results)
             results = [
                 observable._expectation_from_measurements(
                     all_results[i : i + result_step]
@@ -270,7 +256,7 @@ class Executor:
 
     def run(
         self,
-        circuits: Union[QPROGRAM, Sequence[QPROGRAM]],
+        circuits: QPROGRAM | Sequence[QPROGRAM],
         force_run_all: bool = True,
         **kwargs: Any,
     ) -> Sequence[QuantumResult]:
@@ -340,7 +326,7 @@ class Executor:
         return results
 
     def _call_executor(
-        self, to_run: Union[QPROGRAM, Sequence[QPROGRAM]], **kwargs: Any
+        self, to_run: QPROGRAM | Sequence[QPROGRAM], **kwargs: Any
     ) -> None:
         """Calls the executor on the input circuit(s) to run. Stores the
         executed circuits in ``self._executed_circuits`` and the quantum

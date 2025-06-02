@@ -3,7 +3,7 @@
 # This source code is licensed under the GPL license (v3) found in the
 # LICENSE file in the root directory of this source tree.
 
-from typing import List, Optional, Union, cast
+from typing import cast
 
 import cirq
 import numpy as np
@@ -162,7 +162,7 @@ def _apply_cyclic_system_permutation(
 def _apply_symmetric_observable(
     matrix: NDArray[np.complex64],
     N_qubits: int,
-    observable: Optional[Union[Observable, NDArray[np.complex64]]] = None,
+    observable: Observable | NDArray[np.complex64] | None = None,
 ) -> NDArray[np.complex64]:
     """
     Function that applies a symmetric observable to a matrix or vector.
@@ -184,7 +184,7 @@ def _apply_symmetric_observable(
         and np.allclose(observable, z_matrix)
     ):
         # use the default Z observable
-        sym_observable_diagonals: List[NDArray[np.complex64]] = []
+        sym_observable_diagonals: list[NDArray[np.complex64]] = []
         for i in range(N_qubits):
             observable_i_diagonal = np.array(
                 [
@@ -233,7 +233,7 @@ def _apply_symmetric_observable(
             if isinstance(observable, np.ndarray)
             else observable.matrix()
         )
-        sym_observable_matrices: List[NDArray[np.complex64]] = []
+        sym_observable_matrices: list[NDArray[np.complex64]] = []
         for i in range(N_qubits):
             observable_i_matrix = np.kron(
                 np.kron(np.eye(2**i), obs_array),

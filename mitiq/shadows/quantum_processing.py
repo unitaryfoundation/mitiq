@@ -5,7 +5,7 @@
 
 """Quantum processing functions for classical shadows."""
 
-from typing import Callable, List, Optional, Sequence, Tuple
+from collections.abc import Callable, Sequence
 
 import cirq
 import numpy as np
@@ -20,7 +20,7 @@ from mitiq import MeasurementResult
 
 def generate_random_pauli_strings(
     num_qubits: int, num_strings: int
-) -> List[str]:
+) -> list[str]:
     """Generate a list of random Pauli strings.
 
     Args:
@@ -39,10 +39,10 @@ def generate_random_pauli_strings(
 
 def get_rotated_circuits(
     circuit: cirq.Circuit,
-    pauli_strings: List[str],
+    pauli_strings: list[str],
     add_measurements: bool = True,
-    qubits: Optional[Sequence[cirq.Qid]] = None,
-) -> List[cirq.Circuit]:
+    qubits: Sequence[cirq.Qid] | None = None,
+) -> list[cirq.Circuit]:
     """Returns a list of circuits that are identical to the input circuit,
     except that each one has single-qubit Clifford gates followed by
     measurement gates that are designed to measure the input
@@ -83,8 +83,8 @@ def random_pauli_measurement(
     circuit: cirq.Circuit,
     n_total_measurements: int,
     executor: Callable[[cirq.Circuit], MeasurementResult],
-    qubits: Optional[List[cirq.Qid]] = None,
-) -> Tuple[List[str], List[str]]:
+    qubits: list[cirq.Qid] | None = None,
+) -> tuple[list[str], list[str]]:
     r"""This function performs random Pauli measurements on a given circuit and
     returns the outcomes. These outcomes are represented as a tuple of two
     lists of strings.

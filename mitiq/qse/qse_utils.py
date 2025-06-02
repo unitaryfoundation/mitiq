@@ -6,7 +6,7 @@
 """Functions for computing the projector for subspace expansion."""
 
 from itertools import product
-from typing import Callable, Dict, Optional, Sequence, Union
+from collections.abc import Callable, Sequence
 
 import numpy as np
 import numpy.typing as npt
@@ -18,10 +18,10 @@ from mitiq import QPROGRAM, Executor, Observable, PauliString, QuantumResult
 
 def get_projector(
     circuit: QPROGRAM,
-    executor: Union[Executor, Callable[[QPROGRAM], QuantumResult]],
+    executor: Executor | Callable[[QPROGRAM], QuantumResult],
     check_operators: Sequence[PauliString],
     code_hamiltonian: Observable,
-    pauli_string_to_expectation_cache: Dict[PauliString, complex] = {},
+    pauli_string_to_expectation_cache: dict[PauliString, complex] = {},
 ) -> Observable:
     """Computes the projector onto the code space defined by the
     check_operators provided that minimizes the code_hamiltonian.
@@ -52,9 +52,9 @@ def get_projector(
 
 def get_expectation_value_for_observable(
     circuit: QPROGRAM,
-    executor: Union[Executor, Callable[[QPROGRAM], QuantumResult]],
-    observable: Union[PauliString, Observable],
-    pauli_expectation_cache: Dict[PauliString, complex] = {},
+    executor: Executor | Callable[[QPROGRAM], QuantumResult],
+    observable: PauliString | Observable,
+    pauli_expectation_cache: dict[PauliString, complex] = {},
 ) -> float:
     """Provide pauli_string_to_expectation_cache if you want to take advantage
     of caching.
@@ -88,10 +88,10 @@ def get_expectation_value_for_observable(
 
 def _compute_overlap_matrix(
     circuit: QPROGRAM,
-    executor: Union[Executor, Callable[[QPROGRAM], QuantumResult]],
+    executor: Executor | Callable[[QPROGRAM], QuantumResult],
     check_operators: Sequence[PauliString],
-    pauli_expectation_cache: Dict[PauliString, complex] = {},
-    code_hamiltonian: Optional[Observable] = None,
+    pauli_expectation_cache: dict[PauliString, complex] = {},
+    code_hamiltonian: Observable | None = None,
 ) -> npt.NDArray[np.float64]:
     num_ops = len(check_operators)
 

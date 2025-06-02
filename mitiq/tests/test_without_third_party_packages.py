@@ -11,7 +11,7 @@ mitiq.interface.mitiq_[package], where [package] is any supported package that
 interfaces with Mitiq (see mitiq.SUPPORTED_PROGRAM_TYPES).
 """
 
-from typing import Union, get_origin
+from typing import get_origin
 
 from cirq import Circuit
 
@@ -22,7 +22,7 @@ def test_import():
     """
     import mitiq
 
-    if get_origin(mitiq.QPROGRAM) is Union:
+    if get_origin(mitiq.QPROGRAM) is __import__('builtins').Union:
         assert (
             1  # cirq.Circuit is always supported.
             <= len(mitiq.QPROGRAM.__args__)  # All installed types.

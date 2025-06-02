@@ -3,9 +3,10 @@
 # This source code is licensed under the GPL license (v3) found in the
 # LICENSE file in the root directory of this source tree.
 
+from collections.abc import Sequence
+from typing import Any, cast
 from collections import Counter
 from numbers import Number
-from typing import Any, Dict, List, Optional, Sequence, Set, Union, cast
 from typing import Counter as TCounter
 
 import cirq
@@ -41,7 +42,7 @@ class PauliString:
         self,
         spec: str = "",
         coeff: complex = 1.0,
-        support: Optional[Sequence[int]] = None,
+        support: Sequence[int] | None = None,
     ) -> None:
         if not set(spec).issubset(set(self._string_to_gate_map.keys())):
             raise ValueError(
@@ -82,7 +83,7 @@ class PauliString:
 
     def matrix(
         self,
-        qubit_indices_to_include: Optional[List[int]] = None,
+        qubit_indices_to_include: list[int] | None = None,
     ) -> npt.NDArray[np.complex64]:
         """Returns the (potentially very large) matrix of the PauliString."""
         qubits = (
@@ -92,7 +93,7 @@ class PauliString:
         )
         return self._pauli.matrix(qubits=qubits)
 
-    def _basis_rotations(self) -> List[cirq.Operation]:
+    def _basis_rotations(self) -> list[cirq.Operation]:
         """Returns the basis rotations needed to measure the PauliString."""
         return [
             op
@@ -100,7 +101,7 @@ class PauliString:
             if op.gate != cirq.SingleQubitCliffordGate.I
         ]
 
-    def _qubits_to_measure(self) -> Set[cirq.Qid]:
+    def _qubits_to_measure(self) -> set[cirq.Qid]:
         return set(self._pauli.qubits)
 
     def measure_in(self, circuit: QPROGRAM) -> QPROGRAM:
@@ -134,7 +135,7 @@ class PauliString:
         the PauliString."""
         return _cirq_pauli_to_string(self._pauli)
 
-    def support(self) -> Set[int]:
+    def support(self) -> set[int]:
         return {q.x for q in self._pauli.qubits}
 
     def weight(self) -> int:
@@ -150,7 +151,7 @@ class PauliString:
             measurements
         )
 
-    def __mul__(self, other: Union["PauliString", Number]) -> "PauliString":
+    def __mul__(self, other: "PauliString" | Number) -> "PauliString":
         if isinstance(other, PauliString):
             return PauliString.from_cirq_pauli_string(
                 self._pauli * other._pauli
@@ -206,7 +207,7 @@ class PauliStringCollection:
     def __init__(
         self, *paulis: PauliString, check_precondition: bool = True
     ) -> None:
-        self._paulis_by_weight: Dict[int, TCounter[PauliString]] = dict()
+        self._paulis_by_weight: dict[int, TCounter[PauliString]] = dict()
         self.add(*paulis, check_precondition=check_precondition)
 
     def can_add(self, pauli: PauliString) -> bool:
@@ -227,7 +228,7 @@ class PauliStringCollection:
                 self._paulis_by_weight[weight].update({pauli})
 
     @property
-    def elements(self) -> List[PauliString]:
+    def elements(self) -> list[PauliString]:
         return [
             pauli
             for paulis in self._paulis_by_weight.values()
@@ -235,10 +236,10 @@ class PauliStringCollection:
         ]
 
     @property
-    def elements_by_weight(self) -> Dict[int, TCounter[PauliString]]:
+    def elements_by_weight(self) -> dict[int, TCounter[PauliString]]:
         return self._paulis_by_weight
 
-    def support(self) -> Set[int]:
+    def support(self) -> set[int]:
         return {cast(cirq.LineQubit, q).x for q in self._qubits_to_measure()}
 
     def max_weight(self) -> int:
@@ -247,8 +248,8 @@ class PauliStringCollection:
     def min_weight(self) -> int:
         return min(self._paulis_by_weight.keys(), default=0)
 
-    def _qubits_to_measure(self) -> Set[cirq.Qid]:
-        qubits: Set[cirq.Qid] = set()
+    def _qubits_to_measure(self) -> set[cirq.Qid]:
+        qubits: set[cirq.Qid] = set()
         for pauli in self.elements:
             qubits.update(pauli._pauli.qubits)
         return qubits

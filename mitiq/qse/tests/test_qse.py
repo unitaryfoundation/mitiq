@@ -5,7 +5,6 @@
 
 """Tests for the Quantum Subspace Expansion top level API."""
 
-from typing import List
 from unittest.mock import patch
 
 import cirq
@@ -32,7 +31,7 @@ def execute_with_depolarized_noise(circuit: QPROGRAM) -> np.ndarray:
     )
 
 
-def batched_execute_with_depolarized_noise(circuits) -> List[np.ndarray]:
+def batched_execute_with_depolarized_noise(circuits) -> list[np.ndarray]:
     return [execute_with_depolarized_noise(circuit) for circuit in circuits]
 
 
@@ -263,7 +262,7 @@ def prepare_logical_0_state_for_5_1_3_code():
     """
 
     def gram_schmidt(
-        orthogonal_vecs: List[np.ndarray],
+        orthogonal_vecs: list[np.ndarray],
     ) -> np.ndarray:
         orthonormalVecs = [
             vec / np.sqrt(np.vdot(vec, vec)) for vec in orthogonal_vecs

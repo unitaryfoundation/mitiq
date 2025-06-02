@@ -48,7 +48,6 @@ More information on the layerwise folding technique can be found in
 ## Setup
 
 ```{code-cell} ipython3
-from typing import Dict, List, Optional
 import numpy as np
 import os
 import cirq
@@ -79,7 +78,7 @@ will be useful when analyzing how much folding increases the noise on a given
 layer.
 
 ```{code-cell} ipython3
-def apply_num_folds_to_all_layers(circuit: cirq.Circuit, num_folds: int = 1) -> List[cirq.Circuit]:
+def apply_num_folds_to_all_layers(circuit: cirq.Circuit, num_folds: int = 1) -> list[cirq.Circuit]:
     """List of circuits where ith circuit is folded `num_folds` times."""
     return [
         layer_folding(circuit, [0] * i + [num_folds] + [0] * (len(circuit) - i))
@@ -162,13 +161,13 @@ $$
 $$
 
 ```{code-cell} ipython3
-def tvd(circuit: cirq.Circuit, num_folds: int = 1, shots: int = 10_000) -> List[float]:
+def tvd(circuit: cirq.Circuit, num_folds: int = 1, shots: int = 10_000) -> list[float]:
     """Compute the total variational distance (TVD) between ideal circuit and folded circuit(s)."""
     circuit_dist = sample_bitstrings(circuit=circuit, shots=shots).prob_distribution()
 
     folded_circuits = apply_num_folds_to_all_layers(circuit, num_folds)
 
-    distances: Dict[int, float] = {}
+    distances: dict[int, float] = {}
     for i, folded_circuit in enumerate(folded_circuits):
         folded_circuit_dist = sample_bitstrings(circuit=folded_circuit, shots=shots).prob_distribution()
 

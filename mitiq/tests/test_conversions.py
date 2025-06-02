@@ -5,8 +5,6 @@
 
 """Tests for circuit conversions."""
 
-from typing import List
-
 import cirq
 import numpy as np
 import pennylane as qml
@@ -75,7 +73,7 @@ def scaling_function(circ: cirq.Circuit, *args, **kwargs) -> cirq.Circuit:
 
 def one_to_many_circuit_modifier(
     circ: cirq.Circuit, *args, **kwargs
-) -> List[cirq.Circuit]:
+) -> list[cirq.Circuit]:
     return [circ, circ[0:1] + circ]
 
 

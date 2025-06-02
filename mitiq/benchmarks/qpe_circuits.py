@@ -5,8 +5,6 @@
 
 """Functions to create a QPE circuit."""
 
-from typing import Optional
-
 import cirq
 
 from mitiq import QPROGRAM
@@ -16,7 +14,7 @@ from mitiq.interface import convert_from_mitiq
 def generate_qpe_circuit(
     evalue_reg: int,
     input_gate: cirq.Gate = cirq.T,
-    return_type: Optional[str] = None,
+    return_type: str | None = None,
 ) -> QPROGRAM:
     """Returns a circuit to create a quantum phase estimation (QPE) circuit as
     defined in https://en.wikipedia.org/wiki/Quantum_phase_estimation_algorithm

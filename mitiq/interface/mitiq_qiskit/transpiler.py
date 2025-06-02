@@ -21,8 +21,6 @@
 # - Modified docstring format
 # - Modified length check
 
-from typing import List
-
 from qiskit import QuantumRegister
 from qiskit.dagcircuit import DAGCircuit
 from qiskit.transpiler.basepasses import TransformationPass
@@ -42,7 +40,7 @@ class ApplyMitiqLayout(TransformationPass):  # type: ignore
         new_qregs: The new quantum registers for the circuit.
     """
 
-    def __init__(self, new_qregs: List[QuantumRegister]) -> None:
+    def __init__(self, new_qregs: list[QuantumRegister]) -> None:
         super().__init__()
         self._new_qregs = new_qregs
 

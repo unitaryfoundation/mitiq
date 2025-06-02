@@ -6,7 +6,7 @@
 """Functions to create a Mirror Quantum Volume Benchmarking circuit
 as defined in https://arxiv.org/abs/2303.02108."""
 
-from typing import Optional, cast
+from typing import cast
 
 import cirq
 
@@ -21,8 +21,8 @@ def generate_mirror_qv_circuit(
     num_qubits: int,
     depth: int,
     decompose: bool = False,
-    seed: Optional[int] = None,
-    return_type: Optional[str] = None,
+    seed: int | None = None,
+    return_type: str | None = None,
 ) -> QPROGRAM:
     """Generate a mirror quantum volume circuit with the given number of qubits
     and depth as defined in :cite:`Amico_2023_arxiv`.

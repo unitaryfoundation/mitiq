@@ -23,7 +23,7 @@ This notebook shows how to use classical shadows estimation with the Mitiq libra
 ```{code-cell} ipython3
 import cirq
 import numpy as np
-from typing import List
+
 import sys
 sys.modules["tqdm"] = None # distable tqdm for cleaner notebook rendering
 from mitiq.shadows.shadows import *
@@ -45,7 +45,7 @@ In the context of an $n$-qubit system, where $\rho$ is an unknown quantum state 
 # number of qubits in the circuit
 num_qubits: int = 4
 # qubits in the circuit prepared in the $|0\rangle$ state
-qubits: List[cirq.Qid] = cirq.LineQubit.range(num_qubits)
+qubits: list[cirq.Qid] = cirq.LineQubit.range(num_qubits)
 
 # defining random parameters for the circuit
 # np.random.seed(666)
@@ -53,7 +53,7 @@ params: np.ndarray = np.random.randn(2 * num_qubits)
 
 # define circuit
 def simple_test_circuit(
-    params: np.ndarray, qubits: List[cirq.Qid]
+    params: np.ndarray, qubits: list[cirq.Qid]
 ) -> cirq.Circuit:
     circuit: cirq.Circuit = cirq.Circuit()
     for i, qubit in enumerate(qubits):
@@ -370,23 +370,23 @@ for all $1\leq j\leq K$
 
 
 ```{code-cell} ipython3
-from mitiq import Observable, PauliString
+from mitiq import Observable, Paulistring
 
 # from cirq import LineQubit
 
 r"""
  define the observables $\{X_iX_{i+1}\}_{i\leq n-1}$
 """
-from mitiq import PauliString
+from mitiq import Paulistring
 
 list_of_paulistrings = (
     [
-        PauliString("XX", support=(i, i + 1), coeff=1)
+        Paulistring("XX", support=(i, i + 1), coeff=1)
         for i in range(num_qubits - 1)
     ]
-    + [PauliString("YY", support=(i, i + 1)) for i in range(num_qubits - 1)]
+    + [Paulistring("YY", support=(i, i + 1)) for i in range(num_qubits - 1)]
     + [
-        PauliString("ZZ", support=(i, i + 1), coeff=1)
+        Paulistring("ZZ", support=(i, i + 1), coeff=1)
         for i in range(num_qubits - 1)
     ]
 )

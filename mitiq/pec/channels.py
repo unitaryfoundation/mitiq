@@ -10,7 +10,6 @@
 """Utilities for manipulating matrix representations of quantum channels."""
 
 from copy import deepcopy
-from typing import List
 
 import numpy as np
 import numpy.typing as npt
@@ -89,7 +88,7 @@ def _operation_to_choi(operation_tree: OP_TREE) -> npt.NDArray[np.complex64]:
 
 
 def kraus_to_super(
-    kraus_ops: List[npt.NDArray[np.complex64]],
+    kraus_ops: list[npt.NDArray[np.complex64]],
 ) -> npt.NDArray[np.complex64]:
     r"""Maps a set of Kraus operators into a single superoperator
     matrix acting by matrix multiplication on vectorized
@@ -143,7 +142,7 @@ def super_to_choi(
 
 
 def kraus_to_choi(
-    kraus_ops: List[npt.NDArray[np.complex64]],
+    kraus_ops: list[npt.NDArray[np.complex64]],
 ) -> npt.NDArray[np.complex64]:
     """Returns the normalized choi state corresponding to
     the channel defined by the input kraus operators.

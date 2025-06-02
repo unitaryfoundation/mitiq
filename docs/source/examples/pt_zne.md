@@ -363,17 +363,13 @@ Depending on the noise strength, type of coherent noise etc. this transformation
 
 ```{code-cell} ipython3
 from mitiq.zne import execute_with_zne
-from typing import List
+executor = partial(execute, noise_level=NOISE_LEVEL)
 
-executor=partial(execute, noise_level=NOISE_LEVEL)
-
-def combine_zne_pt(list_circuits, executor) -> List[float]:
+def combine_zne_pt(list_circuits, executor) -> float:
     zne_pt_vals = []
-
     for twirled_circuit in list_circuits:
         zne_pt_vals.append(execute_with_zne(twirled_circuit, executor))
-
-    return(np.average(zne_pt_vals))
+    return np.average(zne_pt_vals)
 
 mitigated_result = combine_zne_pt(twirled_circuits, executor)
 

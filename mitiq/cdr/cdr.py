@@ -6,7 +6,8 @@
 """API for using Clifford Data Regression (CDR) error mitigation."""
 
 from functools import wraps
-from typing import Any, Callable, List, Optional, Sequence, Union
+from collections.abc import Callable, Sequence
+from typing import Any
 
 import numpy as np
 from scipy.optimize import curve_fit
@@ -23,14 +24,14 @@ from mitiq.zne.scaling import fold_gates_at_random
 
 def execute_with_cdr(
     circuit: QPROGRAM,
-    executor: Union[Executor, Callable[[QPROGRAM], QuantumResult]],
-    observable: Optional[Observable] = None,
+    executor: Executor | Callable[[QPROGRAM], QuantumResult],
+    observable: Observable | None = None,
     *,
-    simulator: Union[Executor, Callable[[QPROGRAM], QuantumResult]],
+    simulator: Executor | Callable[[QPROGRAM], QuantumResult],
     num_training_circuits: int = 10,
     fraction_non_clifford: float = 0.1,
     fit_function: Callable[..., float] = linear_fit_function,
-    num_fit_parameters: Optional[int] = None,
+    num_fit_parameters: int | None = None,
     scale_factors: Sequence[float] = (1,),
     scale_noise: Callable[[QPROGRAM, float], QPROGRAM] = fold_gates_at_random,
     **kwargs: Any,
@@ -167,13 +168,13 @@ def execute_with_cdr(
 
 def mitigate_executor(
     executor: Callable[[QPROGRAM], QuantumResult],
-    observable: Optional[Observable] = None,
+    observable: Observable | None = None,
     *,
-    simulator: Union[Executor, Callable[[QPROGRAM], QuantumResult]],
+    simulator: Executor | Callable[[QPROGRAM], QuantumResult],
     num_training_circuits: int = 10,
     fraction_non_clifford: float = 0.1,
     fit_function: Callable[..., float] = linear_fit_function,
-    num_fit_parameters: Optional[int] = None,
+    num_fit_parameters: int | None = None,
     scale_factors: Sequence[float] = (1,),
     scale_noise: Callable[[QPROGRAM, float], QPROGRAM] = fold_gates_at_random,
     **kwargs: Any,
@@ -255,8 +256,8 @@ def mitigate_executor(
 
         @wraps(executor)
         def new_executor(
-            circuits: List[QPROGRAM],
-        ) -> List[float]:
+            circuits: list[QPROGRAM],
+        ) -> list[float]:
             return [
                 execute_with_cdr(
                     circuit,
@@ -278,22 +279,19 @@ def mitigate_executor(
 
 
 def cdr_decorator(
-    observable: Optional[Observable] = None,
+    observable: Observable | None = None,
     *,
-    simulator: Union[Executor, Callable[[QPROGRAM], QuantumResult]],
+    simulator: Executor | Callable[[QPROGRAM], QuantumResult],
     num_training_circuits: int = 10,
     fraction_non_clifford: float = 0.1,
     fit_function: Callable[..., float] = linear_fit_function,
-    num_fit_parameters: Optional[int] = None,
+    num_fit_parameters: int | None = None,
     scale_factors: Sequence[float] = (1,),
     scale_noise: Callable[[QPROGRAM, float], QPROGRAM] = fold_gates_at_random,
     **kwargs: Any,
 ) -> Callable[
-    [Callable[[Union[QPROGRAM, Any, Any, Any]], QuantumResult]],
-    Callable[
-        [Union[QPROGRAM, Any, Any, Any]],
-        float,
-    ],
+    [Callable[[QPROGRAM], QuantumResult],],
+    Callable[[QPROGRAM], float],
 ]:
     """Decorator which adds clifford data regression (CDR) mitigation
     to an executor function, i.e., a function which executes a quantum circuit

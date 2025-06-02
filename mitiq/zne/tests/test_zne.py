@@ -7,7 +7,6 @@
 
 import functools
 import random
-from typing import List
 from unittest.mock import Mock
 
 import cirq
@@ -312,7 +311,7 @@ def qiskit_decorated_executor(qp: QPROGRAM) -> float:
     return qiskit_executor(qp)
 
 
-def batched_qiskit_executor(circuits) -> List[float]:
+def batched_qiskit_executor(circuits) -> list[float]:
     return [qiskit_executor(circuit) for circuit in circuits]
 
 

@@ -6,7 +6,6 @@
 """Unit tests for readout confusion inversion."""
 
 from functools import partial
-from typing import List
 
 import cirq
 import numpy as np
@@ -224,7 +223,7 @@ def test_rem_decorator_batched():
     )
 
     @rem_decorator(inverse_confusion_matrix=inverse_confusion_matrix)
-    def noisy_readout_batched(circuits) -> List[MeasurementResult]:
+    def noisy_readout_batched(circuits) -> list[MeasurementResult]:
         return [noisy_readout_executor(c, p0=p0, p1=p1) for c in circuits]
 
     noisy_executor = partial(noisy_readout_executor, p0=p0, p1=p1)

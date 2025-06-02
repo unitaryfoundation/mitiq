@@ -147,12 +147,10 @@ Actually, since we have a list of circuits to execute, we define a *batched* ver
 circuits as input and returns a list of expectation values. More details on batched executors can be found in the ["Executors"](pec-1-intro.md) section.
 
 ```{code-cell} ipython3
-from typing import List
-
 from cirq import DensityMatrixSimulator, depolarize
 from mitiq.interface import convert_to_mitiq
 
-def batched_execute(circuits: List[mitiq.QPROGRAM], noise_level: float=0.01)->List[float]:
+def batched_execute(circuits: list[mitiq.QPROGRAM], noise_level: float=0.01) -> list[float]:
     """Returns [Tr[ρ_1 |0⟩⟨0|], Tr[ρ_2 |0⟩⟨0|]... ] where ρ_j is the state prepared by the
     j_th circuit in the input argument "circuits".
     """

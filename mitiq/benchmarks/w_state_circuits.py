@@ -6,8 +6,6 @@
 """Functions for creating a linear complexity W-state benchmarking circuit
 as defined in :cite:`Cruz_2019_Efficient`."""
 
-from typing import Optional
-
 import cirq
 import numpy as np
 
@@ -17,7 +15,7 @@ from mitiq.interface import convert_from_mitiq
 
 def generate_w_circuit(
     n_qubits: int,
-    return_type: Optional[str] = None,
+    return_type: str | None = None,
 ) -> QPROGRAM:
     """Returns a circuit to create a ``n_qubits`` qubit Werner-state with
     linear complexity as defined in :cite:`Cruz_2019_Efficient`.

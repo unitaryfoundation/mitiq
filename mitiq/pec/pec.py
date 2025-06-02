@@ -7,18 +7,8 @@
 
 import warnings
 from functools import wraps
-from typing import (
-    Any,
-    Callable,
-    Dict,
-    Iterable,
-    List,
-    Optional,
-    Sequence,
-    Tuple,
-    Union,
-    cast,
-)
+from collections.abc import Callable, Iterable, Sequence
+from typing import Any, cast
 
 import numpy as np
 
@@ -130,16 +120,16 @@ def combine_results(
 
 def execute_with_pec(
     circuit: QPROGRAM,
-    executor: Union[Executor, Callable[[QPROGRAM], QuantumResult]],
-    observable: Optional[Observable] = None,
+    executor: Executor | Callable[[QPROGRAM], QuantumResult],
+    observable: Observable | None = None,
     *,
     representations: Sequence[OperationRepresentation],
     precision: float = 0.03,
-    num_samples: Optional[int] = None,
+    num_samples: int | None = None,
     force_run_all: bool = True,
-    random_state: Optional[Union[int, np.random.RandomState]] = None,
+    random_state: int | np.random.RandomState | None = None,
     full_output: bool = False,
-) -> Union[float, Tuple[float, Dict[str, Any]]]:
+) -> float | tuple[float, dict[str, Any]]:
     r"""Estimates the error-mitigated expectation value associated to the
     input circuit, via the application of probabilistic error cancellation
     (PEC). :cite:`Temme_2017_PRL` :cite:`Endo_2018_PRX`.
@@ -214,7 +204,7 @@ def execute_with_pec(
 
     num_circuits = len(sampled_circuits)
     # Build dictionary with additional results and data
-    pec_data: Dict[str, Any] = {
+    pec_data: dict[str, Any] = {
         "num_samples": num_circuits,
         "precision": precision,
         "pec_value": pec_value,
@@ -229,15 +219,15 @@ def execute_with_pec(
 
 def mitigate_executor(
     executor: Callable[[QPROGRAM], QuantumResult],
-    observable: Optional[Observable] = None,
+    observable: Observable | None = None,
     *,
     representations: Sequence[OperationRepresentation],
     precision: float = 0.03,
-    num_samples: Optional[int] = None,
+    num_samples: int | None = None,
     force_run_all: bool = True,
-    random_state: Optional[Union[int, np.random.RandomState]] = None,
+    random_state: int | np.random.RandomState | None = None,
     full_output: bool = False,
-) -> Callable[[QPROGRAM], Union[float, Tuple[float, Dict[str, Any]]]]:
+) -> Callable[[QPROGRAM], float | tuple[float, dict[str, Any]]]:
     """Returns a modified version of the input 'executor' which is
     error-mitigated with probabilistic error cancellation (PEC).
 
@@ -273,7 +263,7 @@ def mitigate_executor(
         @wraps(executor)
         def new_executor(
             circuit: QPROGRAM,
-        ) -> Union[float, Tuple[float, Dict[str, Any]]]:
+        ) -> float | tuple[float, dict[str, Any]]:
             return execute_with_pec(
                 circuit,
                 executor,
@@ -290,8 +280,8 @@ def mitigate_executor(
 
         @wraps(executor)
         def new_executor(
-            circuits: List[QPROGRAM],
-        ) -> List[Union[float, Tuple[float, Dict[str, Any]]]]:
+            circuits: list[QPROGRAM],
+        ) -> list[float | tuple[float, dict[str, Any]]]:
             return [
                 execute_with_pec(
                     circuit,
@@ -311,20 +301,17 @@ def mitigate_executor(
 
 
 def pec_decorator(
-    observable: Optional[Observable] = None,
+    observable: Observable | None = None,
     *,
     representations: Sequence[OperationRepresentation],
     precision: float = 0.03,
-    num_samples: Optional[int] = None,
+    num_samples: int | None = None,
     force_run_all: bool = True,
-    random_state: Optional[Union[int, np.random.RandomState]] = None,
+    random_state: int | np.random.RandomState | None = None,
     full_output: bool = False,
 ) -> Callable[
     [Callable[[QPROGRAM], QuantumResult]],
-    Callable[
-        [QPROGRAM],
-        Union[float, Tuple[float, Dict[str, Any]]],
-    ],
+    Callable[[QPROGRAM], float | tuple[float, dict[str, Any]]],
 ]:
     """Decorator which adds an error-mitigation layer based on probabilistic
     error cancellation (PEC) to an executor function, i.e., a function which
@@ -360,7 +347,7 @@ def pec_decorator(
 
     def decorator(
         executor: Callable[[QPROGRAM], QuantumResult],
-    ) -> Callable[[QPROGRAM], Union[float, Tuple[float, Dict[str, Any]]]]:
+    ) -> Callable[[QPROGRAM], float | tuple[float, dict[str, Any]]]:
         return mitigate_executor(
             executor,
             observable,

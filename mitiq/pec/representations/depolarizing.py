@@ -6,7 +6,6 @@
 
 import copy
 from itertools import product
-from typing import List
 
 import numpy as np
 import numpy.typing as npt
@@ -100,7 +99,7 @@ def represent_operation_with_global_depolarizing_noise(
     """
     circuit_copy = copy.deepcopy(ideal_operation)
     converted_circ, _ = convert_to_mitiq(circuit_copy)
-    post_ops: List[List[Operation]]
+    post_ops: list[list[Operation]]
     qubits = converted_circ.all_qubits()
 
     # The single-qubit case: linear combination of 1Q Paulis
@@ -259,7 +258,7 @@ def represent_operation_with_local_depolarizing_noise(
 
 def represent_operations_in_circuit_with_global_depolarizing_noise(
     ideal_circuit: QPROGRAM, noise_level: float
-) -> List[OperationRepresentation]:
+) -> list[OperationRepresentation]:
     """Iterates over all unique operations of the input ``ideal_circuit`` and,
     for each of them, generates the corresponding quasi-probability
     representation (linear combination of implementable noisy operations).
@@ -305,7 +304,7 @@ def represent_operations_in_circuit_with_global_depolarizing_noise(
 
 def represent_operations_in_circuit_with_local_depolarizing_noise(
     ideal_circuit: QPROGRAM, noise_level: float
-) -> List[OperationRepresentation]:
+) -> list[OperationRepresentation]:
     """Iterates over all unique operations of the input ``ideal_circuit`` and,
     for each of them, generates the corresponding quasi-probability
     representation (linear combination of implementable noisy operations).
@@ -352,7 +351,7 @@ def represent_operations_in_circuit_with_local_depolarizing_noise(
 def global_depolarizing_kraus(
     noise_level: float,
     num_qubits: int,
-) -> List[npt.NDArray[np.complex64]]:
+) -> list[npt.NDArray[np.complex64]]:
     """Returns the kraus operators of a global depolarizing channel at a
     given noise level.
     """
@@ -363,7 +362,7 @@ def global_depolarizing_kraus(
 def local_depolarizing_kraus(
     noise_level: float,
     num_qubits: int,
-) -> List[npt.NDArray[np.complex64]]:
+) -> list[npt.NDArray[np.complex64]]:
     """Returns the kraus operators of the tensor product of local
     depolarizing channels acting on each qubit.
     """

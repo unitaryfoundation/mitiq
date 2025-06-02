@@ -4,7 +4,8 @@
 # LICENSE file in the root directory of this source tree.
 """Classical shadow estimation for quantum circuits."""
 
-from typing import Any, Callable, Dict, List, Mapping, Optional, Tuple, Union
+from typing import Any
+from collections.abc import Callable, Mapping
 
 import cirq
 import numpy as np
@@ -22,12 +23,12 @@ from mitiq.shadows.quantum_processing import random_pauli_measurement
 
 def pauli_twirling_calibrate(
     k_calibration: int = 1,
-    locality: Optional[int] = None,
-    zero_state_shadow_outcomes: Optional[Tuple[List[str], List[str]]] = None,
-    qubits: Optional[List[cirq.Qid]] = None,
-    executor: Optional[Callable[[cirq.Circuit], MeasurementResult]] = None,
-    num_total_measurements_calibration: Optional[int] = 20000,
-) -> Dict[str, complex]:
+    locality: int | None = None,
+    zero_state_shadow_outcomes: tuple[list[str], list[str]] | None = None,
+    qubits: list[cirq.Qid] | None = None,
+    executor: Callable[[cirq.Circuit], MeasurementResult] | None = None,
+    num_total_measurements_calibration: int | None = 20000,
+) -> dict[str, complex]:
     r"""
     This function returns the dictionary of the median of means estimation
     of Pauli fidelities: :math:`\{`"b": :math:`f_{b}\}_{b\in\{0,1\}^n}`.
@@ -101,9 +102,9 @@ def shadow_quantum_processing(
     circuit: cirq.Circuit,
     executor: Callable[[cirq.Circuit], MeasurementResult],
     num_total_measurements_shadow: int,
-    random_seed: Optional[int] = None,
-    qubits: Optional[List[cirq.Qid]] = None,
-) -> Tuple[List[str], List[str]]:
+    random_seed: int | None = None,
+    qubits: list[cirq.Qid] | None = None,
+) -> tuple[list[str], list[str]]:
     r"""
     This function returns the bit strings and Pauli strings corresponding to
     the executor measurement outcomes for a given circuit, rotated by unitaries
@@ -153,12 +154,12 @@ def shadow_quantum_processing(
 
 
 def classical_post_processing(
-    shadow_outcomes: Tuple[List[str], List[str]],
-    calibration_results: Optional[Dict[str, float]] = None,
-    observables: Optional[List[mitiq.PauliString]] = None,
-    k_shadows: Optional[int] = None,
-    state_reconstruction: Optional[bool] = False,
-) -> Mapping[str, Union[float, NDArray[Any]]]:
+    shadow_outcomes: tuple[list[str], list[str]],
+    calibration_results: dict[str, float] | None = None,
+    observables: list[mitiq.PauliString] | None = None,
+    k_shadows: int | None = None,
+    state_reconstruction: bool | None = False,
+) -> Mapping[str, float | NDArray[Any]]:
     r"""
     Executes a circuit with classical shadows. This function can be used for
     state reconstruction or expectation value estimation of observables.

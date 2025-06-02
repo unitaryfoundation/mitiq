@@ -3,8 +3,6 @@
 # This source code is licensed under the GPL license (v3) found in the
 # LICENSE file in the root directory of this source tree.
 
-from typing import Optional
-
 import cirq
 import numpy as np
 
@@ -17,8 +15,8 @@ def generate_random_clifford_t_circuit(
     num_oneq_cliffords: int,
     num_twoq_cliffords: int,
     num_t_gates: int,
-    return_type: Optional[str] = None,
-    seed: Optional[int] = None,
+    return_type: str | None = None,
+    seed: int | None = None,
 ) -> QPROGRAM:
     r"""Generate a random quantum circuit with the given number of qubits,
     number of one-qubit Cliffords, number of two-qubit Cliffords and number

@@ -5,8 +5,6 @@
 
 """Unit tests for high-level DDD tools."""
 
-from typing import List
-
 import cirq
 import numpy as np
 from pytest import mark
@@ -196,7 +194,7 @@ def test_ddd_decorator():
 
     # Test batched executors too
     @ddd_decorator(rule=xx)
-    def my_batched_executor(circuits) -> List[float]:
+    def my_batched_executor(circuits) -> list[float]:
         return batched_executor(circuits)
 
     assert np.isclose(*my_batched_executor([circuit_cirq_a]), ddd_value)

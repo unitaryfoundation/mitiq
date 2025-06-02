@@ -7,7 +7,8 @@
 
 from functools import wraps
 from types import MethodType
-from typing import Callable, List, Sequence, Union, cast
+from collections.abc import Callable, Sequence
+from typing import cast
 
 import numpy as np
 import numpy.typing as npt
@@ -20,7 +21,7 @@ from mitiq.rem.inverse_confusion_matrix import mitigate_measurements
 
 def execute_with_rem(
     circuit: QPROGRAM,
-    executor: Union[Executor, Callable[[QPROGRAM], MeasurementResult]],
+    executor: Executor | Callable[[QPROGRAM], MeasurementResult],
     observable: Observable,
     *,
     inverse_confusion_matrix: npt.NDArray[np.float64],
@@ -53,10 +54,10 @@ def execute_with_rem(
 
 
 def mitigate_executor(
-    executor: Union[Executor, Callable[[QPROGRAM], MeasurementResult]],
+    executor: Executor | Callable[[QPROGRAM], MeasurementResult],
     *,
     inverse_confusion_matrix: npt.NDArray[np.float64],
-) -> Union[Executor, Callable[[QPROGRAM], MeasurementResult]]:
+) -> Executor | Callable[[QPROGRAM], MeasurementResult]:
     """Returns a modified version of the input 'executor' which is
     error-mitigated with readout confusion inversion (RCI).
     The type of the output executor will be equal to the type of
@@ -103,7 +104,7 @@ def mitigate_executor(
 
         @wraps(executor)
         def new_executor(
-            circuits: List[QPROGRAM],
+            circuits: list[QPROGRAM],
         ) -> Sequence[MeasurementResult]:
             results = executor_obj.run(circuits)
             return cast(Sequence[MeasurementResult], results)

@@ -6,18 +6,8 @@
 """Functions for converting to/from Mitiq's internal circuit representation."""
 
 from functools import wraps
-from typing import (
-    Any,
-    Callable,
-    Collection,
-    Concatenate,
-    Dict,
-    Optional,
-    ParamSpec,
-    Tuple,
-    TypeVar,
-    cast,
-)
+from collections.abc import Callable, Collection
+from typing import Any, Concatenate, ParamSpec, TypeVar, cast
 
 import cirq
 
@@ -32,13 +22,13 @@ class CircuitConversionError(Exception):
     pass
 
 
-FROM_MITIQ_DICT: Dict[str, Callable[[cirq.Circuit], Any]]
+FROM_MITIQ_DICT: dict[str, Callable[[cirq.Circuit], Any]]
 try:
     FROM_MITIQ_DICT
 except NameError:
     FROM_MITIQ_DICT = {}
 
-TO_MITIQ_DICT: Dict[str, Callable[[Any], cirq.Circuit]]
+TO_MITIQ_DICT: dict[str, Callable[[Any], cirq.Circuit]]
 try:
     TO_MITIQ_DICT
 except NameError:
@@ -69,7 +59,7 @@ def register_mitiq_converters(
     TO_MITIQ_DICT[package_name] = convert_from_function
 
 
-def convert_to_mitiq(circuit: QPROGRAM) -> Tuple[cirq.Circuit, str]:
+def convert_to_mitiq(circuit: QPROGRAM) -> tuple[cirq.Circuit, str]:
     """Converts any valid input circuit to a mitiq circuit.
 
     Args:

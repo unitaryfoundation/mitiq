@@ -34,7 +34,6 @@ We begin by importing the relevant modules and libraries that we will require
 for the rest of this tutorial.
 
 ```{code-cell} ipython3
-from typing import List, Callable
 import numpy as np
 from matplotlib import pyplot as plt
 
@@ -54,6 +53,7 @@ In this example, we test the performance of repeated I (default built into `get_
 
 ```{code-cell} ipython3
 import cirq
+from collections.abc import Callable
 
 def rep_ixix_rule(window_length: int) -> Callable[[int], QPROGRAM]:
     return ddd.rules.repeated_rule(
@@ -159,7 +159,7 @@ else:
 def ibm_executor(
     circuit: qiskit.QuantumCircuit,
     shots: int,
-    correct_bitstring: List[int],
+    correct_bitstring: list[int],
     noisy: bool = True,
 ) -> float:
     """Executes the input circuit(s) and returns ⟨A⟩, where 

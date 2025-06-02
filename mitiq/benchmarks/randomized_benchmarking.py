@@ -10,8 +10,6 @@
 
 """Functions for generating randomized benchmarking circuits."""
 
-from typing import List, Optional
-
 import cirq
 import numpy as np
 from cirq.experiments.qubit_characterizations import (
@@ -30,9 +28,9 @@ def generate_rb_circuits(
     n_qubits: int,
     num_cliffords: int,
     trials: int = 1,
-    return_type: Optional[str] = None,
-    seed: Optional[int] = None,
-) -> List[QPROGRAM]:
+    return_type: str | None = None,
+    seed: int | None = None,
+) -> list[QPROGRAM]:
     """Returns a list of randomized benchmarking circuits, i.e. circuits that
     are equivalent to the identity.
 

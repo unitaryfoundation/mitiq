@@ -5,7 +5,6 @@
 """Functions related to representations with amplitude damping noise."""
 
 from itertools import product
-from typing import List
 
 import numpy as np
 import numpy.typing as npt
@@ -88,7 +87,7 @@ def _represent_operation_with_amplitude_damping_noise(
 def amplitude_damping_kraus(
     noise_level: float,
     num_qubits: int,
-) -> List[npt.NDArray[np.complex64]]:
+) -> list[npt.NDArray[np.complex64]]:
     """Returns the Kraus operators of the tensor product of local
     depolarizing channels acting on each qubit.
     """

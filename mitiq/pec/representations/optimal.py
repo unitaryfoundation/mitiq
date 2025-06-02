@@ -6,7 +6,7 @@
 """Functions for finding optimal representations given a noisy basis."""
 
 import functools
-from typing import List, Optional, cast
+from typing import cast
 
 import numpy as np
 import numpy.typing as npt
@@ -22,9 +22,9 @@ from mitiq.utils import matrix_to_vector
 
 def minimize_one_norm(
     ideal_matrix: npt.NDArray[np.complex64],
-    basis_matrices: List[npt.NDArray[np.complex64]],
+    basis_matrices: list[npt.NDArray[np.complex64]],
     tol: float = 1.0e-8,
-    initial_guess: Optional[npt.NDArray[np.float64]] = None,
+    initial_guess: npt.NDArray[np.float64] | None = None,
 ) -> npt.NDArray[np.float64]:
     r"""
     Returns the list of real coefficients :math:`[x_0, x_1, \dots]`,
@@ -89,9 +89,9 @@ def minimize_one_norm(
 
 def find_optimal_representation(
     ideal_operation: QPROGRAM,
-    noisy_operations: List[NoisyOperation],
+    noisy_operations: list[NoisyOperation],
     tol: float = 1.0e-8,
-    initial_guess: Optional[npt.NDArray[np.float64]] = None,
+    initial_guess: npt.NDArray[np.float64] | None = None,
     is_qubit_dependent: bool = True,
 ) -> OperationRepresentation:
     r"""Returns the ``OperationRepresentation`` of the input ideal operation

@@ -7,7 +7,9 @@
 classically generated data.
 """
 
-from typing import Callable, List
+import functools
+import random
+from collections.abc import Callable
 
 import cirq
 import numpy as np
@@ -283,7 +285,7 @@ def test_run_sequential_and_batched(factory, batched):
     # Compute expectation values at all the scale factors
     if batched:
 
-        def executor(circuits) -> List[float]:
+        def executor(circuits) -> list[float]:
             return [1.0] * len(circuits)
 
     else:
@@ -530,7 +532,7 @@ def test_poly_exp_factory_no_asympt(test_f: Callable[[float], float]):
     "exp_vals", [[0.700000001, 0.7, 0.7, 0.7], [0.7, 0.7, 0.7, 0.700001]]
 )
 def test_poly_exp_factory_converges_toward_asympt(
-    exp_vals: List[float],
+    exp_vals: list[float],
     infinite_noise_limit: float,
 ):
     """Test of (almost) exponential extrapolator in special cases"""
@@ -991,7 +993,7 @@ def test_short_circuit_warning(factory):
     """Tests a warning is raised if the input circuit has very few gates."""
     scale_factors = np.linspace(1.0, 10.0, num=20)
 
-    def executor(circuits) -> List[float]:
+    def executor(circuits) -> list[float]:
         return [1.0] * len(circuits)
 
     if factory is PolyFactory or factory is PolyExpFactory:
