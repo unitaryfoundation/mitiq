@@ -7,7 +7,7 @@ import copy
 from collections import defaultdict
 from numbers import Number
 from collections.abc import Iterable, Callable, Set
-from typing import Any, Optional, Union, cast
+from typing import Any, Optional, Union, cast, List
 
 import cirq
 import numpy as np

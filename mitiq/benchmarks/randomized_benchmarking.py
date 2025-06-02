@@ -10,7 +10,7 @@
 
 """Functions for generating randomized benchmarking circuits."""
 
-from typing import Optional
+from typing import List, Optional
 
 import cirq
 import numpy as np

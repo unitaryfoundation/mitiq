@@ -5,7 +5,7 @@
 
 """Functions to create a QPE circuit."""
 
-from typing import Optional
+from typing import List, Optional
 
 import cirq
 

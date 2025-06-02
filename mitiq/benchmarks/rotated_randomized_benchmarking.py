@@ -5,7 +5,7 @@
 
 """Functions for generating rotated randomized benchmarking circuits."""
 
-from typing import Optional, cast
+from typing import List, Optional, cast
 
 import cirq
 import numpy as np

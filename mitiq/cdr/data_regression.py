@@ -5,7 +5,7 @@
 
 """The data regression portion of Clifford data regression."""
 
-from typing import Sequence
+from typing import List, Sequence
 
 import numpy as np
 import numpy.typing as npt

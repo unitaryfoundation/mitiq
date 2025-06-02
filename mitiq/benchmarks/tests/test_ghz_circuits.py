@@ -11,7 +11,6 @@ import pytest
 from mitiq import SUPPORTED_PROGRAM_TYPES
 from mitiq.benchmarks import ghz_circuits
 
-
 @pytest.mark.parametrize("nqubits", [1, 5])
 def test_ghz_circuits(nqubits):
     # test GHZ creation

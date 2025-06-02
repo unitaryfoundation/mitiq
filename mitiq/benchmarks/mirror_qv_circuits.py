@@ -6,7 +6,7 @@
 """Functions to create a Mirror Quantum Volume Benchmarking circuit
 as defined in https://arxiv.org/abs/2303.02108."""
 
-from typing import Optional, cast
+from typing import List, Optional, cast
 
 import cirq
 

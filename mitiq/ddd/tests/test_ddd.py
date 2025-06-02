@@ -9,7 +9,7 @@
 import cirq
 import numpy as np
 from pytest import mark
-
+from typing import List
 from mitiq import QPROGRAM, SUPPORTED_PROGRAM_TYPES, Executor
 from mitiq.ddd import (
     construct_circuits,

@@ -5,7 +5,7 @@
 
 """Functions for creating GHZ circuits for benchmarking purposes."""
 
-from typing import Optional
+from typing import List, Optional
 
 import cirq
 

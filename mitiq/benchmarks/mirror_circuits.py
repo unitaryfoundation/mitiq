@@ -7,7 +7,7 @@
 :cite:`Proctor_2021_NatPhys` for benchmarking quantum computers
 (with error mitigation)."""
 
-from typing import Optional
+from typing import List, Tuple, Optional
 
 import cirq
 import networkx as nx
