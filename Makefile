@@ -42,6 +42,10 @@ docs-clean:
 	uv run make -C docs clean
 	uv run make -C docs html
 
+.PHONY: docs-lite
+docs-lite:
+	uv run env DOCS_LITE=1 make -C docs html
+
 .PHONY: linkcheck
 linkcheck:
 	uv run make -C docs linkcheck
