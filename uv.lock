@@ -1532,6 +1532,7 @@ name = "mitiq"
 source = { editable = "." }
 dependencies = [
     { name = "cirq-core" },
+    { name = "matplotlib" },
     { name = "numpy" },
     { name = "scipy" },
     { name = "tabulate" },
@@ -1572,7 +1573,6 @@ dev = [
 docs = [
     { name = "bqskit" },
     { name = "jupytext" },
-    { name = "matplotlib" },
     { name = "myst-nb" },
     { name = "myst-parser" },
     { name = "nbsphinx" },
@@ -1602,6 +1602,7 @@ requires-dist = [
     { name = "cirq-core", specifier = ">=1.4.0,<1.5.0" },
     { name = "cirq-ionq", marker = "extra == 'braket'", specifier = ">=1.4.0,<1.5.0" },
     { name = "cirq-rigetti", marker = "extra == 'pyquil'", specifier = ">=1.4.0,<1.5.0" },
+    { name = "matplotlib", specifier = ">=3.8" },
     { name = "numpy", specifier = ">=1.22.0,<2.0.0" },
     { name = "pennylane", marker = "extra == 'pennylane'", specifier = "~=0.36.0" },
     { name = "pennylane-qiskit", marker = "extra == 'pennylane'", specifier = "~=0.36.0" },
@@ -1628,7 +1629,6 @@ dev = [
 docs = [
     { name = "bqskit", specifier = "==1.1.1" },
     { name = "jupytext", specifier = "==1.16.1" },
-    { name = "matplotlib", specifier = "==3.8.1" },
     { name = "myst-nb", specifier = "==1.1.1" },
     { name = "myst-parser", specifier = "==4.0.0" },
     { name = "nbsphinx", specifier = "==0.9.3" },
