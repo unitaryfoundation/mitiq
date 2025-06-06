@@ -1532,6 +1532,7 @@ name = "mitiq"
 source = { editable = "." }
 dependencies = [
     { name = "cirq-core" },
+    { name = "matplotlib" },
     { name = "numpy" },
     { name = "scipy" },
     { name = "tabulate" },
@@ -1572,7 +1573,6 @@ dev = [
 docs = [
     { name = "bqskit" },
     { name = "jupytext" },
-    { name = "matplotlib" },
     { name = "myst-nb" },
     { name = "myst-parser" },
     { name = "nbsphinx" },
@@ -1602,6 +1602,7 @@ requires-dist = [
     { name = "cirq-core", specifier = ">=1.4.0,<1.5.0" },
     { name = "cirq-ionq", marker = "extra == 'braket'", specifier = ">=1.4.0,<1.5.0" },
     { name = "cirq-rigetti", marker = "extra == 'pyquil'", specifier = ">=1.4.0,<1.5.0" },
+    { name = "matplotlib", specifier = ">=3.8" },
     { name = "numpy", specifier = ">=1.22.0,<2.0.0" },
     { name = "pennylane", marker = "extra == 'pennylane'", specifier = "~=0.36.0" },
     { name = "pennylane-qiskit", marker = "extra == 'pennylane'", specifier = "~=0.36.0" },
@@ -1610,7 +1611,7 @@ requires-dist = [
     { name = "qibo", marker = "extra == 'qibo'", specifier = "~=0.2.16" },
     { name = "qiskit", marker = "extra == 'qiskit'", specifier = "~=1.4.2" },
     { name = "qiskit-aer", marker = "extra == 'qiskit'", specifier = "~=0.17.0" },
-    { name = "qiskit-ibm-runtime", marker = "extra == 'qiskit'", specifier = "~=0.37.0" },
+    { name = "qiskit-ibm-runtime", marker = "extra == 'qiskit'", specifier = ">=0.37,<0.41" },
     { name = "scipy", specifier = ">=1.10.1,<=1.15.2" },
     { name = "tabulate" },
 ]
@@ -1628,7 +1629,6 @@ dev = [
 docs = [
     { name = "bqskit", specifier = "==1.1.1" },
     { name = "jupytext", specifier = "==1.16.1" },
-    { name = "matplotlib", specifier = "==3.8.1" },
     { name = "myst-nb", specifier = "==1.1.1" },
     { name = "myst-parser", specifier = "==4.0.0" },
     { name = "nbsphinx", specifier = "==0.9.3" },
@@ -3001,7 +3001,7 @@ wheels = [
 
 [[package]]
 name = "qiskit-ibm-runtime"
-version = "0.37.0"
+version = "0.40.1"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "ibm-platform-services" },
@@ -3013,11 +3013,10 @@ dependencies = [
     { name = "requests" },
     { name = "requests-ntlm" },
     { name = "urllib3" },
-    { name = "websocket-client" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/f8/33/b9085d55d7e1fb51444092cb6c6e3592c4ff5a0dd9ba68bff4bb37748928/qiskit_ibm_runtime-0.37.0.tar.gz", hash = "sha256:656e8c97730125cd82c910722eefd3dc5bd4d22a7a8f868735629001995646e1", size = 3055745, upload-time = "2025-03-13T23:23:10.647Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/b0/90/c16c0a83400b29aa9f76f463ebeb3b5a4abc711eebd6ddd27509fa0a02b4/qiskit_ibm_runtime-0.40.1.tar.gz", hash = "sha256:83fd172357a28d69b3289009a724ec14d70c4367dbb5aa140ffd63aa101c3ae1", size = 3198615, upload-time = "2025-06-05T15:59:51.692Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/7f/eb/a2c5eb434851e63e1fd0085fe5cd027506392cf92442af990c960013c897/qiskit_ibm_runtime-0.37.0-py3-none-any.whl", hash = "sha256:d671cf398617e13844e8310187eb261636b1f82954edf0a060bfe37673065dac", size = 3052000, upload-time = "2025-03-13T23:23:08.413Z" },
+    { url = "https://files.pythonhosted.org/packages/a0/2e/7ef9afa14f94affb7afd472edd70358c1a0c66e5cbeac1b2a29ce84b8a5d/qiskit_ibm_runtime-0.40.1-py3-none-any.whl", hash = "sha256:5a67e4c55b6e0a2bc9041c1ec7b8c5adc43a50f7dfb8a2521a0c2f3ed4aaa712", size = 3196409, upload-time = "2025-06-05T15:59:49.117Z" },
 ]
 
 [[package]]
