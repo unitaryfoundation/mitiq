@@ -124,7 +124,7 @@ print(f"Expected bitstring (list format from mirror_circuit): {expected_bitstrin
 To demonstrate the benefits of each mitigation technique, we need a noise model that incorporates various error sources. Our model uses parameters that are representative of noise levels seen in current superconducting quantum processors:
 
 - **Coherent phase errors**: ~0.005 radians (~0.29 degrees) corresponds to realistic over/under-rotation errors in single-qubit gates on many hardware platforms. This is applied after every moment in the circuit.
-- **Readout errors**: ~0.004 bit-flip probability per qubit is comparable to readout fidelities of 99.6%, which is achievable on high-quality qubits. This is applied once before measurement.
+- **Readout errors**: ~0.008 bit-flip probability per qubit is comparable to readout fidelities of 99.6%, which is achievable on high-quality qubits. This is applied once before measurement.
 - **Depolarizing noise**: ~0.002 probability is in line with single-qubit gate error rates on state-of-the-art hardware. This is applied to the circuit after the coherent phase errors.
 
 These values are deliberately chosen to be somewhat optimistic but realistic, representing a high-quality near-term device where error mitigation techniques would provide meaningful benefits without completely overwhelming the quantum signal.
@@ -133,7 +133,7 @@ These values are deliberately chosen to be somewhat optimistic but realistic, re
 def execute_with_noise(
     circuit_to_run: cirq.Circuit,
     rz_angle_param: float = 0.005,    
-    p_readout_param: float = 0.004,  
+    p_readout_param: float = 0.008,  
     depol_prob_param: float = 0.002, 
     repetitions: int = 4000          
 ) -> MeasurementResult:
