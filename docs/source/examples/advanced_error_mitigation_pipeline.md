@@ -406,11 +406,11 @@ Let's summarize the expectation values and errors obtained.
 ```{code-cell} ipython3
 results_summary = {
     "Ideal": ideal_result_val,
-    "Unmitigated Noisy": noisy_result_val,
+    "Unmitigated": noisy_result_val,
     "PT only": pt_result_val,
     "DDD only": ddd_result_val,
     "REM only": rem_result_val,
-    "ZNE only (Linear)": zne_result_val,
+    "ZNE only": zne_result_val,
     "REM→ZNE Pipeline": rem_zne_pipeline_result_val, 
     "Full Pipeline": full_pipeline_result_val
 }
@@ -423,11 +423,12 @@ for name, val_obj in results_summary.items():
     print(f"{name:<35}: Value = {val:+.6f}, Abs Error = {error:.6f}")
 ```
 
-## Visualizing Overall Improvements
-
-A bar chart can effectively illustrate the reduction in error at each stage and with the full pipeline.
+Visually, we can see these results in a bar chart comparing errors of each method.
 
 ```{code-cell} ipython3
+:dropdown: true
+:tags: [hide-input]
+
 labels = list(results_summary.keys())
 values_for_plot = [
     v.real if hasattr(v, 'real') else float(v) for v in results_summary.values()
@@ -441,40 +442,19 @@ x_pos = np.arange(len(filtered_labels))
 
 fig, ax1 = plt.subplots(figsize=(12, 7))
 
-color_error = 'salmon'
-ax1.set_xlabel('Mitigation Strategy', fontsize=12)
-ax1.set_ylabel('Absolute Error (from Ideal)', color=color_error, fontsize=12)
+ax1.set_ylabel('Absolute Error')
 bars_error = ax1.bar(
-    x_pos, 
-    filtered_errors, 
-    width=0.6, 
-    label='Absolute Error', 
-    color=color_error, 
-    alpha=0.7
+    x_pos,
+    filtered_errors
 )
-ax1.tick_params(axis='y', labelcolor=color_error, labelsize=10)
+ax1.tick_params(axis='y')
 ax1.set_xticks(x_pos)
-ax1.set_xticklabels(filtered_labels, rotation=45, ha="right", fontsize=10)
+ax1.set_xticklabels(filtered_labels, rotation=45, ha="right")
 ax1.grid(True, axis='y', linestyle=':', alpha=0.7)
 
-for bar_idx, bar in enumerate(bars_error):
-    yval = bar.get_height()
-    offset = 0.001 
-    plt.text(
-        bar.get_x() + bar.get_width()/2.0, 
-        yval + offset, 
-        f'{yval:.4f}', 
-        ha='center', 
-        va='bottom', 
-        fontsize=9, 
-        color='black'
-    )
+plt.title('Pipeline Performance')
 
-fig.tight_layout()
-plt.title('Error Mitigation Pipeline: Absolute Error by Mitigation Strategy', fontsize=14)
-ax1.legend(loc='upper right', fontsize=10) 
-
-plt.show()
+plt.show();
 ```
 
 ## Conclusion
