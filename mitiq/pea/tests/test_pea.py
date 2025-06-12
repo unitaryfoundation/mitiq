@@ -5,8 +5,6 @@
 
 """Unit tests for PEA."""
 
-from typing import List, Optional
-
 import cirq
 import numpy as np
 import pytest
@@ -24,12 +22,8 @@ from mitiq.pec.pec import LargeSampleWarning
 # Noisy representations of Pauli and CNOT operations for testing.
 def get_pauli_and_cnot_representations(
     base_noise: float,
-    qubits: Optional[List[cirq.Qid]] = None,
-) -> List[OperationRepresentation]:
-    if qubits is None:
-        qreg = cirq.LineQubit.range(2)
-    else:
-        qreg = qubits
+) -> list[OperationRepresentation]:
+    qreg = cirq.LineQubit.range(2)
 
     # Generate all ideal single-qubit Pauli operations for both qubits
     pauli_gates = [cirq.X, cirq.Y, cirq.Z]
@@ -80,7 +74,6 @@ def test_precision_option_used_in_num_samples(precision):
 
 
 def test_precision_ignored_when_num_samples_present():
-    """Check precision is ignored when num_samples is given."""
     num_expected_circuits = 123
     scaled_circuits, _, _ = construct_circuits(
         oneq_circ,
@@ -121,26 +114,15 @@ def test_large_sample_size_warning():
         )
 
 
-def test_full_output():
-    assert isinstance(
-        construct_circuits(
-            oneq_circ,
-            scale_factors=[1, 3, 5, 7],
-            noise_model="global_depolarizing",
-            epsilon=0.02,
-            num_samples=5,
-            full_output=True,
-        ),
-        tuple,
+@pytest.mark.parametrize("scale_factors", [[1, 3, 5], [1, 3, 5, 7]])
+def test_scale_factors(scale_factors):
+    scaled_circuits, _, _ = construct_circuits(
+        oneq_circ,
+        scale_factors,
+        noise_model="global_depolarizing",
+        epsilon=0.02,
+        num_samples=50,
+        full_output=True,
+        random_state=1,
     )
-    assert not isinstance(
-        construct_circuits(
-            oneq_circ,
-            scale_factors=[1, 3, 5, 7],
-            noise_model="global_depolarizing",
-            epsilon=0.02,
-            num_samples=5,
-            full_output=False,
-        ),
-        tuple,
-    )
+    assert len(scaled_circuits) == len(scale_factors)

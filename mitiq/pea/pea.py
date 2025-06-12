@@ -6,7 +6,6 @@
 """High-level probabilistic error amplification tools."""
 
 import warnings
-from typing import List, Optional
 
 import numpy as np
 from cirq import Circuit
@@ -22,16 +21,16 @@ from mitiq.typing import QPROGRAM
 
 def construct_circuits(
     circuit: Circuit,
-    scale_factors: List[float],
+    scale_factors: list[float],
     noise_model: str,
     epsilon: float,
-    random_state: Optional[np.random.RandomState] = None,
+    random_state: int | np.random.RandomState | None = None,
     precision: float = 0.1,
-    num_samples: Optional[int] = None,
+    num_samples: int | None = None,
     full_output: bool = True,
 ) -> (
-    List[List[QPROGRAM]]
-    | tuple[List[List[QPROGRAM]], List[List[int]], List[float]]
+    list[list[QPROGRAM]]
+    | tuple[list[list[QPROGRAM]], list[list[int]], list[float]]
 ):
     """Samples lists of implementable circuits from the noise-amplified
     representation of the input ideal circuit at each input noise scale

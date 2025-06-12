@@ -7,7 +7,7 @@
 operations.
 """
 
-from typing import Sequence
+from collections.abc import Sequence
 
 from cirq import Circuit
 
@@ -20,7 +20,7 @@ from mitiq.pec import OperationRepresentation
 
 def scale_circuit_amplifications(
     ideal_circuit: Circuit,
-    scale_factors: float,
+    scale_factor: float,
     noise_model: str,
     epsilon: float,
 ) -> Sequence[OperationRepresentation]:
@@ -31,7 +31,7 @@ def scale_circuit_amplifications(
     Args:
         ideal_circuit: The ideal circuit from which an implementable
             sequence is sampled.
-        scale_factors: A list of (positive) numbers by which the baseline
+        scale_factor: A list of (positive) numbers by which the baseline
             noise level is to be amplified.
         noise_model: A string describing the noise model to be used for the
             noise-scaled representations, e.g. "local_depolarizing" or
@@ -51,4 +51,4 @@ def scale_circuit_amplifications(
         raise ValueError("Noise model not supported")
         # TODO allow use of custom noise model
 
-    return amp_fn(ideal_circuit, (scale_factors - 1) * epsilon)
+    return amp_fn(ideal_circuit, scale_factor * epsilon)

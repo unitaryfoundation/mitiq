@@ -24,6 +24,7 @@ from mitiq.pea.amplifications.amplify_depolarizing import (
     amplify_noisy_ops_in_circuit_with_global_depolarizing_noise,
     amplify_noisy_ops_in_circuit_with_local_depolarizing_noise,
 )
+from mitiq.typing import SUPPORTED_PROGRAM_TYPES
 from mitiq.utils import _equal
 
 
@@ -71,7 +72,7 @@ def test_three_qubit_local_depolarizing_amplification_error():
         )
 
 
-@pytest.mark.parametrize("circuit_type", ["cirq", "qiskit", "pyquil"])
+@pytest.mark.parametrize("circuit_type", SUPPORTED_PROGRAM_TYPES.keys())
 def test_amplify_operations_in_circuit_global(circuit_type: str):
     """Tests all operation amplifications are created."""
     qreg = LineQubit.range(2)
@@ -95,7 +96,7 @@ def test_amplify_operations_in_circuit_global(circuit_type: str):
     assert len(amps) == 3
 
 
-@pytest.mark.parametrize("circuit_type", ["cirq", "qiskit", "pyquil"])
+@pytest.mark.parametrize("circuit_type", SUPPORTED_PROGRAM_TYPES.keys())
 def test_amplify_operations_in_circuit_local(circuit_type: str):
     """Tests all operation amplifications are created."""
     qreg = LineQubit.range(2)

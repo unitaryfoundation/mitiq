@@ -1,4 +1,4 @@
-# Copyright (C) Unitary Fund
+# Copyright (C) Unitary Foundation
 #
 # This source code is licensed under the GPL license (v3) found in the
 # LICENSE file in the root directory of this source tree.
@@ -7,18 +7,19 @@
 
 import copy
 from itertools import product
-from typing import List
 
 from cirq import Circuit, Operation, X, Y, Z, is_measurement
 
 from mitiq import QPROGRAM
 from mitiq.interface.conversions import (
+    accept_any_qprogram_as_input,
     append_cirq_circuit_to_qprogram,
     convert_to_mitiq,
 )
 from mitiq.pec.types import NoisyOperation, OperationRepresentation
 
 
+@accept_any_qprogram_as_input
 def amplify_noisy_op_with_global_depolarizing_noise(
     ideal_operation: QPROGRAM,
     noise_level: float,
@@ -53,10 +54,10 @@ def amplify_noisy_op_with_global_depolarizing_noise(
     """
     circuit_copy = copy.deepcopy(ideal_operation)
     converted_circ, _ = convert_to_mitiq(circuit_copy)
-    post_ops: List[List[Operation]]
+    post_ops: list[list[Operation]]
     qubits = converted_circ.all_qubits()
 
-    # The single-qubit case: linear combination of 1Q Paulis
+    # The single-qubit case: linear combination of Paulis on one qubit
     if len(qubits) == 1:
         q = tuple(qubits)[0]
 
@@ -65,9 +66,9 @@ def amplify_noisy_op_with_global_depolarizing_noise(
 
         alphas = [alpha_pos] + 3 * [alpha_neg]
         post_ops = [[]]  # for alpha_pos, we do nothing, rather than I
-        post_ops += [[P(q)] for P in [X, Y, Z]]  # 1Q Paulis
+        post_ops += [[P(q)] for P in [X, Y, Z]]  # Paulis on one qubit
 
-    # The two-qubit case: linear combination of 2Q Paulis
+    # The two-qubit case: linear combination of Paulis on each qubit
     elif len(qubits) == 2:
         q0, q1 = qubits
 
@@ -76,11 +77,11 @@ def amplify_noisy_op_with_global_depolarizing_noise(
 
         alphas = [alpha_pos] + 15 * [alpha_neg]
         post_ops = [[]]  # for alpha_pos, we do nothing, rather than I x I
-        post_ops += [[P(q0)] for P in [X, Y, Z]]  # 1Q Paulis for q0
-        post_ops += [[P(q1)] for P in [X, Y, Z]]  # 1Q Paulis for q1
+        post_ops += [[P(q0)] for P in [X, Y, Z]]  # Paulis on q0
+        post_ops += [[P(q1)] for P in [X, Y, Z]]  # Paulis on q1
         post_ops += [
             [Pi(q0), Pj(q1)] for Pi in [X, Y, Z] for Pj in [X, Y, Z]
-        ]  # 2Q Paulis
+        ]  # Paulis on q0 and q1
 
     else:
         raise ValueError(
@@ -105,6 +106,7 @@ def amplify_noisy_op_with_global_depolarizing_noise(
     )
 
 
+@accept_any_qprogram_as_input
 def amplify_noisy_op_with_local_depolarizing_noise(
     ideal_operation: QPROGRAM,
     noise_level: float,
@@ -209,7 +211,7 @@ def amplify_noisy_op_with_local_depolarizing_noise(
 
 def amplify_noisy_ops_in_circuit_with_global_depolarizing_noise(
     ideal_circuit: QPROGRAM, noise_level: float
-) -> List[OperationRepresentation]:
+) -> list[OperationRepresentation]:
     """Iterates over all unique operations of the input ``ideal_circuit`` and,
     for each of them, generates the corresponding noise-amplified
     representation (linear combination of implementable noisy operations).
@@ -227,7 +229,7 @@ def amplify_noisy_ops_in_circuit_with_global_depolarizing_noise(
         the operations of the input ``ideal_circuit``.
 
     .. note::
-        Measurement gates are ignored (not represented).
+        Measurement gates are ignored.
 
     .. note::
         The returned amplifications are always defined in terms of
@@ -251,7 +253,7 @@ def amplify_noisy_ops_in_circuit_with_global_depolarizing_noise(
 
 def amplify_noisy_ops_in_circuit_with_local_depolarizing_noise(
     ideal_circuit: QPROGRAM, noise_level: float
-) -> List[OperationRepresentation]:
+) -> list[OperationRepresentation]:
     """Iterates over all unique operations of the input ``ideal_circuit`` and,
     for each of them, generates the corresponding quasi-probability
     amplification (linear combination of implementable noisy operations).
@@ -260,9 +262,6 @@ def amplify_noisy_ops_in_circuit_with_local_depolarizing_noise(
     depolarizing channels affects each implemented operation, where
     ``k`` is the number of qubits associated to the operation.
 
-    This function internally calls
-    :func:`amplify_operation_with_local_depolarizing_noise` (more details
-    about the quasi-probability amplification can be found in its docstring).
 
     Args:
         ideal_circuit: The ideal circuit, whose ideal operations should be
@@ -274,9 +273,9 @@ def amplify_noisy_ops_in_circuit_with_local_depolarizing_noise(
         the operations of the input ``ideal_circuit``.
 
     .. note::
-        Measurement gates are ignored (not represented).
+        Measurement gates are ignored.
 
-    .. note::
+    .. warning::
         The returned amplifications are always defined in terms of
         Cirq circuits, even if the input is not a ``cirq.Circuit``.
     """
