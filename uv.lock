@@ -74,7 +74,7 @@ wheels = [
 
 [[package]]
 name = "amazon-braket-sdk"
-version = "1.91.2"
+version = "1.93.0"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "amazon-braket-default-simulator" },
@@ -92,9 +92,9 @@ dependencies = [
     { name = "oqpy" },
     { name = "sympy" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/72/8a/85b2c854042c044b0d5f30ae8b06756aae513fd5cea8bc9359e47eda68f0/amazon_braket_sdk-1.91.2.tar.gz", hash = "sha256:197738a1b2c9bdf8a079292fcca5f092ed12644dcdf40feaba4e5308e48853d9", size = 412322, upload-time = "2025-04-22T16:15:15.714Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/5e/36/66d35b569d400466e753ff250d1886c1c0f5be22a38d6bba2375096e4f33/amazon_braket_sdk-1.93.0.tar.gz", hash = "sha256:b5a8ade1734c01e0bf155b224544022a3435e2b94cb485f0026480f3cf1c7637", size = 422976, upload-time = "2025-06-11T16:14:13.883Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/a4/d6/f9b3d1dae2346c710f5531d291a557e9688d4269b33dea5f3b50becf890f/amazon_braket_sdk-1.91.2-py3-none-any.whl", hash = "sha256:83f0b8f294325e27dfbad3586f7b7e10e4a7590e0d3457ade1cb01475521c71b", size = 317281, upload-time = "2025-04-22T16:15:13.761Z" },
+    { url = "https://files.pythonhosted.org/packages/d2/62/71923a83f018c4202c4ed0edf6e23432c1fd31121b70539e8ae54dbf8f90/amazon_braket_sdk-1.93.0-py3-none-any.whl", hash = "sha256:11acebfeaf1fee190b95c4527cd848b05f2b7af67ab1005ec41b20fc35f30cdd", size = 322988, upload-time = "2025-06-11T16:14:11.895Z" },
 ]
 
 [[package]]
@@ -1532,6 +1532,7 @@ name = "mitiq"
 source = { editable = "." }
 dependencies = [
     { name = "cirq-core" },
+    { name = "matplotlib" },
     { name = "numpy" },
     { name = "scipy" },
     { name = "tabulate" },
@@ -1572,7 +1573,6 @@ dev = [
 docs = [
     { name = "bqskit" },
     { name = "jupytext" },
-    { name = "matplotlib" },
     { name = "myst-nb" },
     { name = "myst-parser" },
     { name = "nbsphinx" },
@@ -1598,10 +1598,11 @@ docs = [
 
 [package.metadata]
 requires-dist = [
-    { name = "amazon-braket-sdk", marker = "extra == 'braket'", specifier = "~=1.91.0" },
+    { name = "amazon-braket-sdk", marker = "extra == 'braket'", specifier = ">=1.91,<1.94" },
     { name = "cirq-core", specifier = ">=1.4.0,<1.5.0" },
     { name = "cirq-ionq", marker = "extra == 'braket'", specifier = ">=1.4.0,<1.5.0" },
     { name = "cirq-rigetti", marker = "extra == 'pyquil'", specifier = ">=1.4.0,<1.5.0" },
+    { name = "matplotlib", specifier = ">=3.8" },
     { name = "numpy", specifier = ">=1.22.0,<2.0.0" },
     { name = "pennylane", marker = "extra == 'pennylane'", specifier = "~=0.36.0" },
     { name = "pennylane-qiskit", marker = "extra == 'pennylane'", specifier = "~=0.36.0" },
@@ -1628,7 +1629,6 @@ dev = [
 docs = [
     { name = "bqskit", specifier = "==1.1.1" },
     { name = "jupytext", specifier = "==1.16.1" },
-    { name = "matplotlib", specifier = "==3.8.1" },
     { name = "myst-nb", specifier = "==1.1.1" },
     { name = "myst-parser", specifier = "==4.0.0" },
     { name = "nbsphinx", specifier = "==0.9.3" },
