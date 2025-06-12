@@ -221,9 +221,12 @@ DDD inserts sequences of pulses to decouple qubits from certain types of environ
 
 ```{code-cell} ipython3
 ddd_circuit = ddd.insert_ddd_sequences(circuit, ddd.rules.xyxy)
-ddd_result_val = obs.expectation(ddd_circuit, noisy_exec).real
+ddd_measurements = execute_with_noise(ddd_circuit)
+ddd_result_val = obs._expectation_from_measurements([ddd_measurements]).real
 print(f"DDD mitigated expectation value: {ddd_result_val:.6f}")
-print(f"Absolute error after DDD: {abs(ideal_result_val - ddd_result_val):.6f}")
+print(
+    f"Absolute error after DDD: {abs(ideal_result_val - ddd_result_val):.6f}"
+)
 ```
 
 ### 3. Readout Error Mitigation (REM)
