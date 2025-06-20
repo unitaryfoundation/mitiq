@@ -41,7 +41,7 @@ pennylane = [
     "pennylane~=0.36.0",
 ]
 pyquil = [
-    "pyquil~=4.11.0",
+    "pyquil>=4.11,<4.17",
     "cirq-rigetti>=1.4.0,<1.5.0",
 ]
 qibo = [
