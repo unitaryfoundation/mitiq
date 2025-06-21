@@ -43,4 +43,5 @@ GGI Summer School ZNE Hands-On Tutorial <ggi_summer_school_unsolved.md>
 Composing techniques: REM + ZNE <combine_rem_zne.md>
 Composing techniques: DDD + ZNE <combine_ddd_zne.md>
 The Mitiq paper code <mitiq-paper/mitiq-paper-codeblocks.md>
+Interactive ZNE noise slider <interactive-zne-slider.md>
 ```
