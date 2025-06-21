@@ -92,10 +92,16 @@ def plot_expectation(noise_rate, noise_type):
 ```
 
 ```{code-cell}
-rate_slider = widgets.FloatSlider(value=0.01, min=0.0, max=0.3, step=0.01, description="noise rate")
-noise_choice = widgets.ToggleButtons(options=["depolarizing", "dephasing"], description="noise type")
-widgets.interactive_output(plot_expectation, {"noise_rate": rate_slider, "noise_type": noise_choice})
-display(noise_choice, rate_slider)
+rate_slider = widgets.FloatSlider(
+    value=0.01, min=0.0, max=0.3, step=0.01, description="noise rate"
+)
+noise_choice = widgets.ToggleButtons(
+    options=["depolarizing", "dephasing"], description="noise type"
+)
+out = widgets.interactive_output(
+    plot_expectation, {"noise_rate": rate_slider, "noise_type": noise_choice}
+)
+display(noise_choice, rate_slider, out)
 ```
 
 Move the slider to explore how ZNE recovers the correct expectation value as the noise increases.
