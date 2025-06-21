@@ -87,6 +87,7 @@ docs = [
     "pyqrack==1.32.27",
     "ucc==0.4.4; python_version == '3.12'",
     "pytket-cirq==0.39.0",
+    "ipywidgets>=8.1.7",
 ]
 
 [project.urls]
