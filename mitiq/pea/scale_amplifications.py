@@ -31,8 +31,8 @@ def scale_circuit_amplifications(
     Args:
         ideal_circuit: The ideal circuit from which an implementable
             sequence is sampled.
-        scale_factor: A list of (positive) numbers by which the baseline
-            noise level is to be amplified.
+        scale_factor: A (positive) number by which the baseline noise
+            level is to be amplified.
         noise_model: A string describing the noise model to be used for the
             noise-scaled representations, e.g. "local_depolarizing" or
             "global_depolarizing".
