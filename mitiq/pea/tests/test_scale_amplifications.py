@@ -48,7 +48,7 @@ def test_scale_circuit_amplifications(epsilon, noise_model, noise_function):
         scaled_amps = scale_circuit_amplifications(
             circ, s, noise_model, epsilon
         )
-    assert amps == scaled_amps
+        assert amps == scaled_amps
 
 
 def test_noise_model_not_implemented_error():

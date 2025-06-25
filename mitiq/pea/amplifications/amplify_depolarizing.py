@@ -30,7 +30,7 @@ def amplify_noisy_op_with_global_depolarizing_noise(
     representation, which is a linear combination of noisy implementable
     operations :math:`\sum_\alpha \eta_{\alpha} \mathcal{O}_{\alpha}`.
 
-    This function assumes a depolarizing noise model and, more precicely,
+    This function assumes a depolarizing noise model and, more precisely,
     that the following noisy operations are implementable
     :math:`\mathcal{O}_{\alpha} = \mathcal{D} \circ \mathcal P_\alpha
     \circ \mathcal{U}`, where :math:`\mathcal{U}` is the unitary associated
@@ -118,7 +118,7 @@ def amplify_noisy_op_with_local_depolarizing_noise(
     operations :math:`\sum_\alpha \eta_{\alpha} \mathcal{O}_{\alpha}`.
 
     This function assumes a (local) single-qubit depolarizing noise model even
-    for multi-qubit operations. More precicely, it assumes that the following
+    for multi-qubit operations. More precisely, it assumes that the following
     noisy operations are implementable :math:`\mathcal{O}_{\alpha} =
     \mathcal{D}^{\otimes k} \circ \mathcal P_\alpha \circ \mathcal{U}`,
     where :math:`\mathcal{U}` is the unitary associated
