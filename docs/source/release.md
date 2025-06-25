@@ -115,15 +115,14 @@ In case the action for releasing on PyPI fails, the Python commands to
 release Mitiq are:
 
 ```bash
-python -m pip install --upgrade pip
-pip install build twine
-python -m build
-twine upload dist/*
+uv build
+uv publish
 ```
 
 ```{note}
 You need to be a registered maintainer of Mitiq project on PyPI to
-upload a new release on PyPI from your local machine.
+upload a new release on PyPI from your local machine as a token is 
+required for authentication.
 ```
 
 ## Update the new development version
