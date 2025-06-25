@@ -22,7 +22,8 @@ def execute_with_qse(
     check_operators: Sequence[PauliString],
     code_hamiltonian: Observable,
     observable: Observable,
-    pauli_string_to_expectation_cache: Dict[PauliString, complex] | None = None,
+    pauli_string_to_expectation_cache: dict[PauliString, complex]
+    | None = None,
 ) -> float:
     """Function for the calculation of an observable from some circuit of
     interest to be mitigated with quantum subspace expansion (QSE).
@@ -72,7 +73,8 @@ def mitigate_executor(
     check_operators: Sequence[PauliString],
     code_hamiltonian: Observable,
     observable: Observable,
-    pauli_string_to_expectation_cache: dict[PauliString, complex] | None = None,
+    pauli_string_to_expectation_cache: dict[PauliString, complex]
+    | None = None,
 ) -> Callable[[QPROGRAM], float]:
     """Returns a modified version of the input 'executor' which is
     error-mitigated with quantum subspace expansion (QSE).
@@ -129,7 +131,8 @@ def qse_decorator(
     check_operators: Sequence[PauliString],
     code_hamiltonian: Observable,
     observable: Observable,
-    pauli_string_to_expectation_cache: dict[PauliString, complex] | None = None,
+    pauli_string_to_expectation_cache: dict[PauliString, complex]
+    | None = None,
 ) -> Callable[
     [Callable[[QPROGRAM], QuantumResult]], Callable[[QPROGRAM], float]
 ]:

@@ -21,7 +21,8 @@ def get_projector(
     executor: Executor | Callable[[QPROGRAM], QuantumResult],
     check_operators: Sequence[PauliString],
     code_hamiltonian: Observable,
-    pauli_string_to_expectation_cache: dict[PauliString, complex] | None = None,
+    pauli_string_to_expectation_cache: dict[PauliString, complex]
+    | None = None,
 ) -> Observable:
     """Computes the projector onto the code space defined by the
     check_operators provided that minimizes the code_hamiltonian.
@@ -65,8 +66,9 @@ def get_expectation_value_for_observable(
     This function modifies pauli_string_to_expectation_cache in place.
     """
 
-    if pauli_expectation_cache is None:
-        pauli_expectation_cache = {}
+    cache: dict[PauliString, complex] = (
+        pauli_expectation_cache if pauli_expectation_cache is not None else {}
+    )
 
     final_executor = (
         executor if isinstance(executor, Executor) else Executor(executor)
@@ -76,10 +78,10 @@ def get_expectation_value_for_observable(
         pauli_string: PauliString,
     ) -> float:
         cache_key = pauli_string.with_coeff(1)
-        pauli_expectation_cache[cache_key] = final_executor.evaluate(
+        cache[cache_key] = final_executor.evaluate(
             circuit, Observable(cache_key)
         )[0]
-        return (pauli_expectation_cache[cache_key] * pauli_string.coeff).real
+        return (cache[cache_key] * pauli_string.coeff).real
 
     paulis = (
         [observable]
