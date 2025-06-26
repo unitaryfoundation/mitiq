@@ -49,18 +49,16 @@ More information on the layerwise folding technique can be found in
 
 ```{code-cell} ipython3
 import numpy as np
-import os
-import cirq
 import qiskit
 import matplotlib.pyplot as plt
+from qiskit import QuantumCircuit
 
 from mitiq import zne
 from mitiq.zne.scaling.layer_scaling import layer_folding, get_layer_folding
-from mitiq.interface.mitiq_qiskit.qiskit_utils import initialized_depolarizing_noise
-from mitiq.interface.mitiq_qiskit.conversions import to_qiskit
-from mitiq.interface.mitiq_cirq.cirq_utils import sample_bitstrings
-
-from cirq.contrib.svg import SVGCircuit
+from mitiq.interface.mitiq_qiskit.qiskit_utils import (
+    initialized_depolarizing_noise,
+    sample_bitstrings,
+)
 from qiskit_aer import QasmSimulator
 
 # Default to a simulator.
@@ -78,8 +76,10 @@ will be useful when analyzing how much folding increases the noise on a given
 layer.
 
 ```{code-cell} ipython3
-def apply_num_folds_to_all_layers(circuit: cirq.Circuit, num_folds: int = 1) -> list[cirq.Circuit]:
-    """List of circuits where ith circuit is folded `num_folds` times."""
+def apply_num_folds_to_all_layers(
+    circuit: QuantumCircuit, num_folds: int = 1
+) -> list[QuantumCircuit]:
+    """List of circuits where ``i``-th circuit is folded ``num_folds`` times."""
     return [
         layer_folding(circuit, [0] * i + [num_folds] + [0] * (len(circuit) - i))
         for i in range(len(circuit))
@@ -89,13 +89,11 @@ def apply_num_folds_to_all_layers(circuit: cirq.Circuit, num_folds: int = 1) -> 
 For instance, consider the following circuit.
 
 ```{code-cell} ipython3
-# Define a basic circuit for
-q0, q1 = cirq.LineQubit.range(2)
-circuit = cirq.Circuit(
-    [cirq.ops.H(q0)],
-    [cirq.ops.CNOT(q0, q1)],
-    [cirq.measure(cirq.LineQubit(0))],
-)
+# Define a basic circuit for demonstration
+circuit = QuantumCircuit(2, 1)
+circuit.h(0)
+circuit.cx(0, 1)
+circuit.measure(0, 0)
 print(circuit)
 ```
 
@@ -125,7 +123,10 @@ We will use the following circuit to analyze, but of course, you could use
 other circuits here as well.
 
 ```{code-cell} ipython3
-circuit = cirq.Circuit([cirq.X(cirq.LineQubit(0))] * 10, cirq.measure(cirq.LineQubit(0)))
+circuit = QuantumCircuit(1, 1)
+for _ in range(10):
+    circuit.x(0)
+circuit.measure(0, 0)
 print(circuit)
 ```
 
@@ -161,15 +162,15 @@ $$
 $$
 
 ```{code-cell} ipython3
-def tvd(circuit: cirq.Circuit, num_folds: int = 1, shots: int = 10_000) -> list[float]:
+def tvd(circuit: QuantumCircuit, num_folds: int = 1, shots: int = 10_000) -> list[float]:
     """Compute the total variational distance (TVD) between ideal circuit and folded circuit(s)."""
-    circuit_dist = sample_bitstrings(circuit=circuit, shots=shots).prob_distribution()
+    circuit_dist = sample_bitstrings(circuit, backend=backend, shots=shots).prob_distribution()
 
     folded_circuits = apply_num_folds_to_all_layers(circuit, num_folds)
 
     distances: dict[int, float] = {}
     for i, folded_circuit in enumerate(folded_circuits):
-        folded_circuit_dist = sample_bitstrings(circuit=folded_circuit, shots=shots).prob_distribution()
+        folded_circuit_dist = sample_bitstrings(folded_circuit, backend=backend, shots=shots).prob_distribution()
 
         res: float = 0.0
         for bitstring in circuit_dist.keys():
@@ -184,7 +185,7 @@ def tvd(circuit: cirq.Circuit, num_folds: int = 1, shots: int = 10_000) -> list[
 We can plot the impact of applying layer inversions to the circuit.
 
 ```{code-cell} ipython3
-def plot_single_vs_multiple_folding(circuit: cirq.Circuit) -> None:
+def plot_single_vs_multiple_folding(circuit: QuantumCircuit) -> None:
     """Plot how single vs. multiple folding impact the error at a given layer."""
     single_tvd = tvd(circuit, num_folds=1).values()
     multiple_tvd = tvd(circuit, num_folds=5).values()
@@ -225,18 +226,16 @@ folds on that layer are increased.
 Next, we define an executor function that will allow us to run our experiment
 
 ```{code-cell} ipython3
-def executor(circuit: cirq.Circuit, shots: int = 10_000) -> float:
+def executor(circuit: QuantumCircuit, shots: int = 10_000) -> float:
     """Returns the expectation value to be mitigated.
 
     Args:
         circuit: Circuit to run.
         shots: Number of times to execute the circuit to compute the expectation value.
     """
-    qiskit_circuit = to_qiskit(circuit)
-
     # Transpile the circuit so it can be properly run
     exec_circuit = qiskit.transpile(
-        qiskit_circuit,
+        circuit,
         backend=backend,
         basis_gates=noise_model.basis_gates if noise_model else None,
         optimization_level=0, # Important to preserve folded gates.
