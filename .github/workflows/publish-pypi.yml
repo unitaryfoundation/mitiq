@@ -28,9 +28,6 @@ jobs:
         with:
           python-version: "3.12"
 
-      - name: Install Python dependencies
-        run: make install
-
       - name: Build package
         run: uv build
 
