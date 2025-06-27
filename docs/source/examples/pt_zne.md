@@ -452,7 +452,7 @@ for strength in noise_strength:
             noise_scaled_circuit, num_circuits=NUM_TWIRLED_VARIANTS
         )
         noise_scaled_expvals.append(
-            sum(noisy_executor(pt_variant) for pt_variant in pt_variants)
+            sum(executor(pt_variant) for pt_variant in pt_variants)
             / NUM_TWIRLED_VARIANTS
         )
 
