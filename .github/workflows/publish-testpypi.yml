@@ -1,12 +1,12 @@
-# This workflow will upload a Python Package using Twine when a release is created
-# For more information see: https://help.github.com/en/actions/language-and-framework-guides/using-python-with-github-actions#publishing-to-package-registries
+# This workflow will upload a Python Package using uv when a release is created
+# For more information see: https://docs.github.com/en/actions/how-tos/use-cases-and-examples/building-and-testing/building-and-testing-python#publishing-to-pypi
 
 name: Nightly Upload to Test PyPI
 
 on:
   schedule:
     - cron: "0 0 * * *"
-  workflow_dispatch: 
+  workflow_dispatch:
     inputs: {}
 
 jobs:
@@ -14,40 +14,28 @@ jobs:
     name: Build Mitiq
     if: github.repository_owner == 'unitaryfoundation'
     runs-on: ubuntu-latest
-    steps:
-      - name: Check out mitiq
-        uses: actions/checkout@v4
-      - name: Install uv
-        uses: astral-sh/setup-uv@v6
-        with:
-          python-version: "3.12"
-      - name: change mitiq version
-        run: |
-          truncate -s -1 VERSION.txt
-          echo "$(date +"%Y%m%d")" >> VERSION.txt
-      - name: Build mitiq
-        run: uv build
-      - name: Store build artifacts
-        uses: actions/upload-artifact@v4
-        with:
-          name: build
-          path: dist/*
-
-  test-publish:
-    name: Upload release to test PyPi
-    runs-on: ubuntu-latest
-    needs: build
     environment:
       name: testpypi
       url: https://test.pypi.org/p/mitiq/
     permissions:
       id-token: write
     steps:
-      - name: Fetch build artifacts
-        uses: actions/download-artifact@v4
+      - name: Check out mitiq
+        uses: actions/checkout@v4
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v6
         with:
-          name: build
-          path: dist/
+          python-version: "3.12"
+
+      - name: change mitiq version
+        run: |
+          truncate -s -1 VERSION.txt
+          echo "$(date +"%Y%m%d")" >> VERSION.txt
+
+      - name: Build mitiq
+        run: uv build
+
       - name: Publish package distributions to TestPyPI
         uses: pypa/gh-action-pypi-publish@release/v1
         with:

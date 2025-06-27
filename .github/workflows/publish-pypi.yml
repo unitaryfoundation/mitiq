@@ -1,5 +1,5 @@
-# This workflow will upload a Python Package using Twine when a release is created
-# For more information see: https://help.github.com/en/actions/language-and-framework-guides/using-python-with-github-actions#publishing-to-package-registries
+# This workflow will upload a Python Package using uv when a release is created
+# For more information see: https://docs.github.com/en/actions/how-tos/use-cases-and-examples/building-and-testing/building-and-testing-python#publishing-to-pypi
 
 name: Upload Release Package to PyPI
 
