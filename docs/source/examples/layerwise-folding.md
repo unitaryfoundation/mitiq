@@ -16,41 +16,39 @@ kernelspec:
 
 # ZNE with Qiskit: Layerwise folding
 
-
 This tutorial shows an example of how to mitigate noise on IBMQ backends using
 layerwise folding in contrast with global folding.
 
 One may ask why folding by layer is potentially beneficial to consider. One
 reason is that applying global folding will increase the length of the entire
 circuit while layerwise folding on a subset of only the noisiest layers will
-increase the circuit by a smaller factor. 
+increase the circuit by a smaller factor.
 
 If running a circuit on hardware is bottle-necked by the cost of running a long
 circuit, this technique could potentially be used to arrive at a better result
 (although not as good as global folding) but with less monetary cost.
 
-More information on the layerwise folding technique can be found in 
-*Calderon et al. Quantum (2023)* {cite}`Calderon_2023_Quantum`.
-
+More information on the layerwise folding technique can be found in
+_Calderon et al. Quantum (2023)_ {cite}`Calderon_2023_Quantum`.
 
 ## Setup
 
 ```{code-cell} ipython3
+import matplotlib.pyplot as plt
 import numpy as np
 import qiskit
-import matplotlib.pyplot as plt
 from qiskit import QuantumCircuit
+from qiskit_aer import QasmSimulator
+from qiskit_aer.noise import NoiseModel
+from qiskit_aer.noise.errors.standard_errors import depolarizing_error
 
 from mitiq import zne
-from mitiq.zne.scaling.layer_scaling import layer_folding, get_layer_folding
-from mitiq.interface.mitiq_qiskit.qiskit_utils import (
-    initialized_depolarizing_noise,
-    sample_bitstrings,
-)
-from qiskit_aer import QasmSimulator
+from mitiq.interface.mitiq_qiskit.qiskit_utils import sample_bitstrings
+from mitiq.zne.scaling.layer_scaling import layer_folding
 
-# Default to a simulator.
-noise_model = initialized_depolarizing_noise(noise_level=0.02)
+noise_model = NoiseModel()
+noise_model.add_all_qubit_quantum_error(depolarizing_error(0.02, 1), ["x"])
+
 backend = QasmSimulator(noise_model=noise_model)
 
 shots = 10_000
@@ -69,7 +67,9 @@ def apply_num_folds_to_all_layers(
 ) -> list[QuantumCircuit]:
     """List of circuits where ``i``-th circuit is folded ``num_folds`` times."""
     return [
-        layer_folding(circuit, [0] * i + [num_folds] + [0] * (len(circuit) - i))
+        layer_folding(
+            circuit, [0] * i + [num_folds] + [0] * (len(circuit) - i)
+        )
         for i in range(len(circuit))
     ]
 ```
@@ -133,16 +133,16 @@ $$
 as the probability distribution over measurement outcomes at the output of a
 circuit $C$ where $k \in B^n$ with $B^n$ being the set of all $n$-length bit
 strings where $\langle \langle k |$ is the vectorized POVM element that
-corresponds to measuring bit string $k$. 
+corresponds to measuring bit string $k$.
 
-The *impact* of applying an inversion is given by
+The _impact_ of applying an inversion is given by
 
 $$
 d \left[p(\cdot|C), p(\cdot|C^{(i)})\right]
 $$
 
-where $d$ is some distance measure. In 
-*Calderon et al. Quantum (2023)* {cite}`Calderon_2023_Quantum` the authors used the total variational distance
+where $d$ is some distance measure. In
+_Calderon et al. Quantum (2023)_ {cite}`Calderon_2023_Quantum` the authors used the total variational distance
 (TVD) measure where
 
 $$
@@ -150,25 +150,37 @@ $$
 $$
 
 ```{code-cell} ipython3
-def tvd(circuit: QuantumCircuit, num_folds: int = 1, shots: int = 10_000) -> list[float]:
-    """Compute the total variational distance (TVD) between ideal circuit and folded circuit(s)."""
-    circuit_dist = sample_bitstrings(circuit, backend=backend, shots=shots).prob_distribution()
+def tvd(
+    circuit: QuantumCircuit, num_folds: int = 1, shots: int = 10_000
+) -> list[float]:
+    """Compute the total variational distance (TVD) between ideal circuit and
+    folded circuit(s)."""
+    circuit_dist = sample_bitstrings(
+        circuit, backend=backend, shots=shots
+    ).prob_distribution()
 
     folded_circuits = apply_num_folds_to_all_layers(circuit, num_folds)
 
     distances: dict[int, float] = {}
     for i, folded_circuit in enumerate(folded_circuits):
-        folded_circuit_dist = sample_bitstrings(folded_circuit, backend=backend, shots=shots).prob_distribution()
+        folded_circuit_dist = sample_bitstrings(
+            folded_circuit,
+            backend=backend,
+            noise_model=noise_model,
+            shots=shots,
+        ).prob_distribution()
 
         res: float = 0.0
         for bitstring in circuit_dist.keys():
-            res += np.abs(circuit_dist[bitstring] - folded_circuit_dist[bitstring])
+            res += np.abs(
+                circuit_dist[bitstring] - folded_circuit_dist[bitstring]
+            )
         distances[i] = res / 2
 
     return distances
 ```
 
-## Impact of single vs. multiple folding 
+## Impact of single vs. multiple folding
 
 We can plot the impact of applying layer inversions to the circuit.
 
@@ -183,8 +195,8 @@ def plot_single_vs_multiple_folding(circuit: QuantumCircuit) -> None:
     width = 0.35  # the width of the bars
 
     fig, ax = plt.subplots()
-    rects1 = ax.bar(x - width/2, single_tvd, width, label="single")
-    rects2 = ax.bar(x + width/2, multiple_tvd, width, label="multiple")
+    rects1 = ax.bar(x - width / 2, single_tvd, width, label="single")
+    rects2 = ax.bar(x + width / 2, multiple_tvd, width, label="multiple")
 
     # Add some text for labels, title and custom x-axis tick labels, etc.
     ax.set_xlabel(r"$L_{G_i \theta_i}$")
@@ -226,7 +238,7 @@ def executor(circuit: QuantumCircuit, shots: int = 10_000) -> float:
         circuit,
         backend=backend,
         basis_gates=noise_model.basis_gates if noise_model else None,
-        optimization_level=0, # Important to preserve folded gates.
+        optimization_level=0,  # Important to preserve folded gates.
     )
     # Run the circuit
     job = backend.run(exec_circuit, shots=shots)
@@ -234,7 +246,9 @@ def executor(circuit: QuantumCircuit, shots: int = 10_000) -> float:
     # Convert from raw measurement counts to the expectation value
     counts = job.result().get_counts()
 
-    expectation_value = 0.0 if counts.get("0") is None else counts.get("0") / shots
+    expectation_value = (
+        0.0 if counts.get("0") is None else counts.get("0") / shots
+    )
     return expectation_value
 ```
 
@@ -247,7 +261,9 @@ against the unmitigated value.
 ```{code-cell} ipython3
 unmitigated = executor(circuit)
 
-linear_factory = zne.inference.LinearFactory(scale_factors=[1.0, 1.5, 2.0, 2.5, 3.0])
+linear_factory = zne.inference.LinearFactory(
+    scale_factors=[1.0, 1.5, 2.0, 2.5, 3.0]
+)
 mitigated = zne.execute_with_zne(circuit, executor, factory=linear_factory)
 
 print(f"Unmitigated result {unmitigated:.3f}")
@@ -268,7 +284,9 @@ tvds = tvd(circuit, num_folds=3)
 layer_to_fold = max(tvds, key=tvds.get)
 fold_layer_func = zne.scaling.get_layer_folding(layer_to_fold)
 
-mitigated = zne.execute_with_zne(circuit, executor, scale_noise=fold_layer_func, factory=linear_factory)
+mitigated = zne.execute_with_zne(
+    circuit, executor, scale_noise=fold_layer_func, factory=linear_factory
+)
 print(f"Mitigated (layerwise folding) result {mitigated:.3f}")
 print(f"Unmitigated result {unmitigated:.3f}")
 ```
