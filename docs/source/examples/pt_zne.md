@@ -270,7 +270,7 @@ twirled_circuits = generate_pauli_twirl_variants(
 print("Example ideal twirled circuit", twirled_circuits[-1], sep="\n")
 ```
 
-Now, lets add coherent noise to the CNOT gate in each twirled circuit.
+Now, let's add coherent noise to the CNOT gate in each twirled circuit.
 
 ```{code-cell} ipython3
 noisy_twirled_circuits = []
