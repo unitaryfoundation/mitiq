@@ -152,7 +152,7 @@ $$
 ```{code-cell} ipython3
 def tvd(
     circuit: QuantumCircuit, num_folds: int = 1, shots: int = 10_000
-) -> list[float]:
+) -> dict[int, float]:
     """Compute the total variational distance (TVD) between ideal circuit and
     folded circuit(s)."""
     circuit_dist = sample_bitstrings(
