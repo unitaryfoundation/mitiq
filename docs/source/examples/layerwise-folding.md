@@ -33,18 +33,6 @@ More information on the layerwise folding technique can be found in
 *Calderon et al. Quantum (2023)* {cite}`Calderon_2023_Quantum`.
 
 
-- [ZNE with Qiskit: Layerwise folding](#zne-with-qiskit-layerwise-folding)
-  - [Setup](#setup)
-  - [Helper functions](#helper-functions)
-  - [Define circuit to analyze](#define-circuit-to-analyze)
-  - [Total variational distance metric](#total-variational-distance-metric)
-  - [Impact of single vs. multiple folding](#impact-of-single-vs-multiple-folding)
-  - [Executor](#executor)
-  - [Global folding with linear extrapolation](#global-folding-with-linear-extrapolation)
-  - [Layerwise folding with linear extrapolation](#layerwise-folding-with-linear-extrapolation)
-
-+++
-
 ## Setup
 
 ```{code-cell} ipython3
