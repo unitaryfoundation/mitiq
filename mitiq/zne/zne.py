@@ -54,7 +54,7 @@ def combine_results(
         results: An array storing the results of running the scaled circuits.
         extrapolation_method: The function for scaling the noise of a
             quantum circuit. A list of built-in functions can be found
-            in ``mitiq.zne.scaling``.
+            in ``mitiq.zne.inference``.
 
     Returns:
         The expectation value estimated with ZNE.
