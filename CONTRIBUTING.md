@@ -27,7 +27,7 @@ make install
 
 You should now have a development environment set up to work on Mitiq! 🎉 To go forward with making the desired changes, please consult the ["Making changes" section](https://www.asmeurer.com/git-workflow/#making-changes) of the `git` workflow article. If you've encountered any problems thus far, please let us know by opening an issue! More information about workflow can be found below in the [lifecycle](#lifecycle) section.
 
-> [!Note]
+> [!NOTE]
 > Since uv uses a virtual environment, any commands to be run inside the virtual environment will need to be prefaced with `uv run` or the uv [managed virtual environment](https://docs.astral.sh/uv/pip/environments/#using-a-virtual-environment) will need to be activated by running `source .venv/bin/activate` in your shell. 
 >
 > Running `make` commands do NOT require prepending `uv run`.
