@@ -292,9 +292,9 @@ The twirled PTM is averaged over each noisy twirled circuit such that the new PT
 
 ![](../img/pt_zne.gif)
 
-The off-diagonal values in the heatmap fade steadily as the number of twirled circuits averaged over is increased. In particular, for the last plot, the PTM of 100 Pauli twirled circuits is equivalent to the ideal CNOT PTM.
+In the above `gif`, the off-diagonal values in the heatmap fade steadily as the number of twirled circuits averaged over is increased. In particular, for the last transition, the PTM of 100 Pauli twirled circuits is equivalent to the ideal CNOT PTM.
 
-## Adding coherent noise to a circuit of interest
+## Coherent noise, ZNE and PT
 
 Let's define a larger circuit of CNOT and H gates.
 
@@ -308,8 +308,8 @@ print(circuit)
 
 In this section, we are going to add coherent noise to this circuit and then 
 
-- the error-mitigated expectation value through ZNE. For a detailed discussion on this, refer to the [ZNE user guide](../guide/zne-1-intro.md).
-- the Pauli twirled expectation value through PT. Additional information is available in the [PT user guide](../guide/pt-1-intro.md)
+- get the error-mitigated expectation value through ZNE. For a detailed discussion on this, refer to the [ZNE user guide](../guide/zne-1-intro.md).
+- get the Pauli twirled expectation value through PT. Additional information is available in the [PT user guide](../guide/pt-1-intro.md)
 - tailor the circuit noise with twirling to get the error mitigated result through ZNE. 
 
 As we are using a simulator, we have to make sure the noise model adds coherent noise to CZ/CNOT gates in our circuit. For this, `get_noise_model` is used to add noise to CZ/CNOT gates. See [PT user guide](../guide/pt-1-intro.md) for more.
@@ -357,7 +357,6 @@ NOISE_LEVEL = 0.2
 ideal_value = execute(circuit, noise_level=0.0)
 noisy_value = execute(circuit, noise_level=NOISE_LEVEL)
 
-print(f"Error without ZNE or Pauli Twirling: {abs(ideal_value - noisy_value) :.3}")
 ```
 
 ### ZNE with coherent noise
@@ -369,7 +368,7 @@ To get the error mitigated expectation value, we apply ZNE to the noisy circuit.
 from mitiq import zne
 from functools import partial
 
-scale_factors = [5]
+scale_factors = [1, 3, 5, 7]
 
 noise_scaled_circuits = zne.construct_circuits(circuit, scale_factors)
 noisy_executor = partial(execute, noise_level=NOISE_LEVEL)
@@ -381,7 +380,7 @@ print(f"Error with mitigation (ZNE): {abs(ideal_value - mitigated_result):.{3}}"
 
 ```
 
-As expected, using ZNE on its own in the presence of coherent noise can do more harm as the noise is further amplified through unitary folding. 
+As expected, using ZNE on its own in the presence of coherent noise can do more harm that good because the effect of coherent noise in the circuit is further amplified through unitary folding. 
 
 ### Pauli Twirling with coherent noise
 
@@ -412,7 +411,10 @@ Depending on the noise strength, type of coherent noise etc. this transformation
 
 ### Combining Pauli Twirling with ZNE
 
-To combine Pauli twirling with ZNE, we'll first generate the noise-scaled circuits with `mitiq.zne.construct_circuits`, then apply twirling.
+To combine Pauli twirling with ZNE, we'll first generate the noise-scaled circuits with `mitiq.zne.construct_circuits`, apply twirling to the noisy circuits, average over the twirled expectation values and then use Richardson extrapolation to get the twirled error mitigated expectation value. 
+
+This chosen order ensures the final results take advantage of averaging over the twirled results. We cannot straightforwardly twirl the end result of ZNE as it is an error-mitigated expectation value. Ideally, Pauli twirling should be utilized as a compiler pass that compiles multiple Pauli twirled variants of the input circuit into a new circuit where the effects of coherent noise have been reduced. Finally, ZNE can then be applied directly on the new circuit which is now only affected by incoherent noise. 
+
 
 ```{code-cell} ipython3
 from mitiq import zne
@@ -436,16 +438,20 @@ for noise_scaled_circuit in noise_scaled_circuits:
 extrapolation_method = zne.inference.RichardsonFactory(
     scale_factors=scale_factors
 ).extrapolate
-mitigated_result = zne.combine_results(
+pt_mitigated_result = zne.combine_results(
     scale_factors, noise_scaled_expvals, extrapolation_method
 )
 
 print(f"Error without twirling: {abs(ideal_value - noisy_value) :.3}")
 print(f"Error with twirling: {abs(ideal_value - twirled_result) :.3}")
-print(f"Error with ZNE + PT: {abs(ideal_value - mitigated_result) :.3}")
+print(f"Error with mitigation (ZNE): {abs(ideal_value - mitigated_result):.{3}}")
+print(f"Error with ZNE + PT: {abs(ideal_value - pt_mitigated_result) :.3}")
 ```
 
-Again, depending on the noise strength, type of noise, etc. a combination of PT and ZNE do not work that well compared to just PT or ZNE. Thus, it is important to understand when combining a noisy tailoring technique with an error mitigation technique provides a significant advantage.
+Again, depending on the noise strength, type of noise, etc. a combination of PT and ZNE might not work that well compared to just PT or ZNE. Thus, it is important to understand when combining a noisy tailoring technique with an error mitigation technique provides a significant advantage.
+
+Now, we will vary the circuit noise over a range of values to visually understand when combining PT and ZNE is advantageous over using each technique
+on its own. 
 
 ```{code-cell} ipython3
 import matplotlib.pyplot as plt
@@ -537,6 +543,12 @@ plt.title(
 )
 plt.legend()
 plt.show()
+```
+
+```{note}
+For now, we are unsure of the cause behind the unexpectedly 'clean' result when the noise strength is approximately 0.5 for the `|Ideal - ZNE|` curve.
+
+If you have a definitive idea for why this might be so, feel free to start a discussion at <https://github.com/unitaryfoundation/mitiq/discussions>
 ```
 
 As we are plotting the difference between the ideal expectation value and the noisy, error-mitigated and/or noise-tailored
