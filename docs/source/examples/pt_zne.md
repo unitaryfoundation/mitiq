@@ -115,7 +115,7 @@ $$
 \text{i.e. } \cos(\theta) \propto {\theta}^2,\quad \sin(\theta) \propto \theta
 $$(taylor_approx)
 
-Thus, the off-diagonal terms (coherent noise) of the PTM are quadratically worse $\sqrt{{\theta}^2}$ than the terms along the diagonal (incoherent noise) ${\theta}^2$ where ${\theta}^2$ denotes the average gate infidelity.
+Thus, the off-diagonal terms (coherent noise) of the PTM are quadratically worse ($\sqrt{{\theta}^2}$) than the incoherent noise terms along the diagonal ((${\theta}^2$ where ${\theta}^2$ denotes the average gate infidelity).
 
 As shown below in Eq. {math:numref}`r_e_values` these error-rate values can be connected to the notation introduced in an [earlier section](#coherent-noise-vs-incoherent-noise) differentiating the two types of noise.
 
@@ -380,7 +380,7 @@ print(f"Error with mitigation (ZNE): {abs(ideal_value - mitigated_result):.{3}}"
 
 ```
 
-As expected, using ZNE on its own in the presence of coherent noise can do more harm that good because the effect of coherent noise in the circuit is further amplified through unitary folding. 
+As expected, using ZNE on its own in the presence of coherent noise can do more harm that good because the effect of coherent noise in the circuit is further amplified unfavorably through unitary folding. 
 
 ### Pauli Twirling with coherent noise
 
@@ -407,13 +407,13 @@ print(f"Error with twirling: {abs(ideal_value - twirled_result) :.3}")
 
 It is worth noting that Pauli twirling's goal is to only tailor the noise from coherent to incoherent.
 
-Depending on the noise strength, type of coherent noise etc. this transformation might not give better results after the Pauli twirled circuit is executed. See the plot in the [next section](#combining-pauli-twirling-with-zne) for an example.
+Depending on the noise strength, type of coherent noise etc. this transformation might not result in better expectation values after the Pauli twirled circuit is executed. See the plot in the [next section](#combining-pauli-twirling-with-zne) for an example.
 
 ### Combining Pauli Twirling with ZNE
 
-To combine Pauli twirling with ZNE, we'll first generate the noise-scaled circuits with `mitiq.zne.construct_circuits`, apply twirling to the noisy circuits, average over the twirled expectation values and then use Richardson extrapolation to get the twirled error mitigated expectation value. 
+To combine Pauli twirling with ZNE, we'll first generate the noise-scaled circuits with {func}`.zne.construct_circuits`, apply twirling to the noisy circuits, average over the twirled expectation values and then use Richardson extrapolation to get the noise-tailored error mitigated expectation value. 
 
-This chosen order ensures the final results take advantage of averaging over the twirled results. We cannot straightforwardly twirl the end result of ZNE as it is an error-mitigated expectation value. Ideally, Pauli twirling should be utilized as a compiler pass that compiles multiple Pauli twirled variants of the input circuit into a new circuit where the effects of coherent noise have been reduced. Finally, ZNE can then be applied directly on the new circuit which is now only affected by incoherent noise. 
+This chosen order ensures the final results take advantage of averaging over the Pauli twirled circuits. We cannot straightforwardly twirl the expectation value obtained from ZNE. Ideally, Pauli twirling should be utilized as a compiler pass that compiles multiple Pauli twirled variants of the input circuit into a new circuit where the effects of coherent noise have been reduced. Finally, ZNE can then be applied directly to the new circuit which is now only affected by incoherent noise. 
 
 
 ```{code-cell} ipython3
