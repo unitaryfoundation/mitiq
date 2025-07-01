@@ -294,7 +294,7 @@ The twirled PTM is averaged over each noisy twirled circuit such that the new PT
 
 The off-diagonal values in the heatmap fade steadily as the number of twirled circuits averaged over is increased. In particular, for the last plot, the PTM of 100 Pauli twirled circuits is equivalent to the ideal CNOT PTM.
 
-## Noisy ZNE
+## Adding coherent noise to a circuit of interest
 
 Let's define a larger circuit of CNOT and H gates.
 
@@ -306,7 +306,11 @@ circuit = generate_ghz_circuit(n_qubits=7)
 print(circuit)
 ```
 
-We are going to add coherent noise to this circuit and then get the error-mitigated expectation value. For a detailed discussion on this, refer to the [ZNE user guide](../guide/zne-1-intro.md).
+In this section, we are going to add coherent noise to this circuit and then 
+
+- the error-mitigated expectation value through ZNE. For a detailed discussion on this, refer to the [ZNE user guide](../guide/zne-1-intro.md).
+- the Pauli twirled expectation value through PT. Additional information is available in the [PT user guide](../guide/pt-1-intro.md)
+- tailor the circuit noise with twirling to get the error mitigated result through ZNE. 
 
 As we are using a simulator, we have to make sure the noise model adds coherent noise to CZ/CNOT gates in our circuit. For this, `get_noise_model` is used to add noise to CZ/CNOT gates. See [PT user guide](../guide/pt-1-intro.md) for more.
 
@@ -353,6 +357,36 @@ NOISE_LEVEL = 0.2
 ideal_value = execute(circuit, noise_level=0.0)
 noisy_value = execute(circuit, noise_level=NOISE_LEVEL)
 
+print(f"Error without ZNE or Pauli Twirling: {abs(ideal_value - noisy_value) :.3}")
+```
+
+### ZNE with coherent noise
+
+To get the error mitigated expectation value, we apply ZNE to the noisy circuit. 
+
+```{code-cell} ipython3
+
+from mitiq import zne
+from functools import partial
+
+scale_factors = [5]
+
+noise_scaled_circuits = zne.construct_circuits(circuit, scale_factors)
+noisy_executor = partial(execute, noise_level=NOISE_LEVEL)
+
+mitigated_result = zne.execute_with_zne(circuit, noisy_executor)
+
+print(f"Error without ZNE or Pauli Twirling: {abs(ideal_value - noisy_value) :.3}")
+print(f"Error with mitigation (ZNE): {abs(ideal_value - mitigated_result):.{3}}")
+
+```
+
+As expected, using ZNE on its own in the presence of coherent noise can do more harm as the noise is further amplified through unitary folding. 
+
+### Pauli Twirling with coherent noise
+
+```{code-cell} ipython3
+
 NUM_TWIRLED_VARIANTS = 300
 twirled_circuits = generate_pauli_twirl_variants(
     circuit, num_circuits=NUM_TWIRLED_VARIANTS
@@ -368,7 +402,7 @@ pt_vals = Executor(partial(execute, noise_level=NOISE_LEVEL)).evaluate(
 twirled_result = np.average(pt_vals)
 
 
-print(f"Error without twirling: {abs(ideal_value - noisy_value) :.3}")
+print(f"Error without ZNE or Pauli twirling: {abs(ideal_value - noisy_value) :.3}")
 print(f"Error with twirling: {abs(ideal_value - twirled_result) :.3}")
 ```
 
@@ -376,12 +410,13 @@ It is worth noting that Pauli twirling's goal is to only tailor the noise from c
 
 Depending on the noise strength, type of coherent noise etc. this transformation might not give better results after the Pauli twirled circuit is executed. See the plot in the [next section](#combining-pauli-twirling-with-zne) for an example.
 
-## Combining Pauli Twirling with ZNE
+### Combining Pauli Twirling with ZNE
 
 To combine Pauli twirling with ZNE, we'll first generate the noise-scaled circuits with `mitiq.zne.construct_circuits`, then apply twirling.
 
 ```{code-cell} ipython3
 from mitiq import zne
+from functools import partial
 
 scale_factors = [1, 3, 5]
 
