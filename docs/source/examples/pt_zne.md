@@ -267,7 +267,7 @@ twirled_circuits = generate_pauli_twirl_variants(
     circuit,
     num_circuits=NUM_TWIRLED_VARIANTS,
 )
-print("Example ideal twirled circuit", twirled_circuits[-1], sep="\n")
+print(f"Example twirled circuit\n{twirled_circuits[-1]}")
 ```
 
 Now, let's add coherent noise to the CNOT gate in each twirled circuit.
@@ -285,7 +285,7 @@ for circ in twirled_circuits:
     )
     noisy_twirled_circuits.append(split_circuit)
 
-print("Example noisy twirled circuit", noisy_twirled_circuits[-1], sep="\n")
+print(f"Example noisy twirled circuit\n{noisy_twirled_circuits[-1]}")
 ```
 
 The twirled PTM is averaged over each noisy twirled circuit such that the new PTM is close to that of the PTM of incoherent noise. We skip the step in this section as we require a very large number of twirled circuits to demonstrate the desired effect of averaging over multiple numpy arrays. The variations in Pauli twirled PTMs are shown below when averaged over a different number of Pauli twirled circuits.
@@ -308,25 +308,27 @@ print(circuit)
 
 In this section, we are going to add coherent noise to this circuit and then 
 
-- get the error-mitigated expectation value through ZNE. For a detailed discussion on this, refer to the [ZNE user guide](../guide/zne-1-intro.md).
-- get the Pauli twirled expectation value through PT. Additional information is available in the [PT user guide](../guide/pt-1-intro.md)
-- tailor the circuit noise with twirling to get the error mitigated result through ZNE. 
+1. use ZNE to compute an expectation value
+2. use Pauli twirling to compute an expectation value
+3. combine ZNE and Pauli twirling to compute an expectation value
 
-As we are using a simulator, we have to make sure the noise model adds coherent noise to CZ/CNOT gates in our circuit. For this, `get_noise_model` is used to add noise to CZ/CNOT gates. See [PT user guide](../guide/pt-1-intro.md) for more.
+```{tip}
+As we are using a simulator, we have to make sure the noise model adds a coherent overrotation to CNOT gates in our circuit.
+To implement this, we'll substitute each CNOT gate with the gate itself followed by an Ry rotation on the output qubits.
+```
 
 ```{code-cell} ipython3
 from cirq import CircuitOperation, CXPowGate, CZPowGate, DensityMatrixSimulator
 from cirq.devices.noise_model import GateSubstitutionNoiseModel
 
 
-def get_noise_model(noise_level: float) -> GateSubstitutionNoiseModel:
-    """Substitute each CZ and CNOT gate in the circuit
-    with the gate itself followed by an Ry rotation on the output qubits.
-    """
-    rads = np.pi / 2 * noise_level
+def coherent_cnot(over_rotation: float) -> GateSubstitutionNoiseModel:
+    """Substitute each CNOT gate in the circuit with the gate itself followed
+    by an Ry rotation on the output qubits."""
+    rads = over_rotation * np.pi / 2
 
-    def noisy_c_gate(op):
-        if isinstance(op.gate, (CZPowGate, CXPowGate)):
+    def cnot_ry(op):
+        if isinstance(op.gate, CXPowGate):
             return CircuitOperation(
                 Circuit(
                     op.gate.on(*op.qubits),
@@ -335,13 +337,13 @@ def get_noise_model(noise_level: float) -> GateSubstitutionNoiseModel:
             )
         return op
 
-    return GateSubstitutionNoiseModel(noisy_c_gate)
+    return GateSubstitutionNoiseModel(cnot_ry)
 
 
 def execute(circuit: Circuit, noise_level: float):
     """Returns Tr[ρ |0⟩⟨0|] where ρ is the state prepared by the circuit."""
     return (
-        DensityMatrixSimulator(noise=get_noise_model(noise_level=noise_level))
+        DensityMatrixSimulator(noise=coherent_cnot(noise_level))
         .simulate(circuit)
         .final_density_matrix[0, 0]
         .real
@@ -385,19 +387,18 @@ As expected, using ZNE on its own in the presence of coherent noise can do more 
 ### Pauli Twirling with coherent noise
 
 ```{code-cell} ipython3
+from functools import partial
+from mitiq import Executor
+
 
 NUM_TWIRLED_VARIANTS = 300
 twirled_circuits = generate_pauli_twirl_variants(
     circuit, num_circuits=NUM_TWIRLED_VARIANTS
 )
 
-# Average results executed over twirled circuits
-from functools import partial
-from mitiq import Executor
-
-pt_vals = Executor(partial(execute, noise_level=NOISE_LEVEL)).evaluate(
-    twirled_circuits
-)
+pt_vals = [
+    execute(twirled, noise_level=NOISE_LEVEL) for twirled in twirled_circuits
+]
 twirled_result = np.average(pt_vals)
 
 
@@ -405,33 +406,33 @@ print(f"Error without ZNE or Pauli twirling: {abs(ideal_value - noisy_value) :.3
 print(f"Error with twirling: {abs(ideal_value - twirled_result) :.3}")
 ```
 
-It is worth noting that Pauli twirling's goal is to only tailor the noise from coherent to incoherent.
-
-Depending on the noise strength, type of coherent noise etc. this transformation might not result in better expectation values after the Pauli twirled circuit is executed. See the plot in the [next section](#combining-pauli-twirling-with-zne) for an example.
+Depending on the noise strength, type of coherent noise, and other factors, this transformation might not lead to better expectation values when the Pauli-twirled circuit is executed.
+See the plot in the [next section](#combining-pauli-twirling-with-zne) for an example.
 
 ### Combining Pauli Twirling with ZNE
 
 To combine Pauli twirling with ZNE, we'll first generate the noise-scaled circuits with {func}`.zne.construct_circuits`, apply twirling to the noisy circuits, average over the twirled expectation values and then use Richardson extrapolation to get the noise-tailored error mitigated expectation value. 
 
-This chosen order ensures the final results take advantage of averaging over the Pauli twirled circuits. We cannot straightforwardly twirl the expectation value obtained from ZNE. Ideally, Pauli twirling should be utilized as a compiler pass that compiles multiple Pauli twirled variants of the input circuit into a new circuit where the effects of coherent noise have been reduced. Finally, ZNE can then be applied directly to the new circuit which is now only affected by incoherent noise. 
+This chosen order ensures the final results take advantage of averaging over the Pauli twirled circuits.
+The alternative would be to twirl the input circuit before applying ZNE, but this would result in the the added twirling gates being folded as part of the ZNE protocol, which would not yield the desired results.
+Hence, the ZNE noise scaled circuits are generated first, then twirled, so they will only affected by incoherent noise.
 
 
 ```{code-cell} ipython3
 from mitiq import zne
-from functools import partial
+
 
 scale_factors = [1, 3, 5]
 
 noise_scaled_circuits = zne.construct_circuits(circuit, scale_factors)
-noisy_executor = partial(execute, noise_level=NOISE_LEVEL)
+noisy_executor = Executor(partial(execute, noise_level=NOISE_LEVEL))
 noise_scaled_expvals = []
 for noise_scaled_circuit in noise_scaled_circuits:
     pt_variants = generate_pauli_twirl_variants(
         noise_scaled_circuit, num_circuits=NUM_TWIRLED_VARIANTS
     )
     noise_scaled_expvals.append(
-        sum(noisy_executor(pt_variant) for pt_variant in pt_variants)
-        / NUM_TWIRLED_VARIANTS
+        np.average(noisy_executor.evaluate(pt_variants))
     )
 
 
@@ -448,10 +449,10 @@ print(f"Error with mitigation (ZNE): {abs(ideal_value - mitigated_result):.{3}}"
 print(f"Error with ZNE + PT: {abs(ideal_value - pt_mitigated_result) :.3}")
 ```
 
-Again, depending on the noise strength, type of noise, etc. a combination of PT and ZNE might not work that well compared to just PT or ZNE. Thus, it is important to understand when combining a noisy tailoring technique with an error mitigation technique provides a significant advantage.
+Again, depending on the noise strength, type of noise, etc. a combination of PT and ZNE might not work that well compared to just PT or ZNE.
+Thus, it is important to understand when combining a noisy tailoring technique with an error mitigation technique provides a significant advantage.
 
-Now, we will vary the circuit noise over a range of values to visually understand when combining PT and ZNE is advantageous over using each technique
-on its own. 
+Now, we will vary the circuit noise over a range of values to visually understand when combining PT and ZNE is advantageous over using each technique on its own. 
 
 ```{code-cell} ipython3
 import matplotlib.pyplot as plt
@@ -539,27 +540,28 @@ plt.xlabel(
 )
 plt.ylabel("Absolute Error")
 plt.title(
-    "Comparison of expectation values with ideal as a function of noise strength"
+    "Technique error as a function of noise strength"
 )
 plt.legend()
 plt.show()
 ```
 
 ```{note}
-For now, we are unsure of the cause behind the unexpectedly 'clean' result when the noise strength is approximately 0.5 for the `|Ideal - ZNE|` curve.
+We haven't fully diagnosed the reason behind the unexpected perfect result from ZNE when the noise strength is approximately 0.5.
+It likely has something to do with the gate $R_Y\left(\frac{\pi}{4}\right) = Y^{1/4}$.
 
-If you have a definitive idea for why this might be so, feel free to start a discussion at <https://github.com/unitaryfoundation/mitiq/discussions>
+If you have any insights, please open a discussion at <https://github.com/unitaryfoundation/mitiq/discussions>!
 ```
 
 As we are plotting the difference between the ideal expectation value and the noisy, error-mitigated and/or noise-tailored
 expectation values, the closer the curve is to `0.0` on the Y-axis, the technique provides an advantage.
 
 ```{warning}
-You can get better results if you control the number of samples in `noise_strength` in addition to using a higher number for
-`NUM_TWIRLED_VARIANTS`. We have chosen to not do so to reduce execution time for this tutorial.
+Better results can be obtained by increasing the number of Pauli twirled circuits used in the averaging step.
+We have chosen to not do so to reduce execution time for this tutorial.
 ```
 
 ## Conclusion
 
-In this tutorial, we've shown how to use a noise tailoring method with Zero-Noise Extrapolation.
+In this tutorial, we've shown how to use Pauli Twirling as a noise tailoring method with Zero-Noise Extrapolation.
 If you're interested in finding out more about these techniques, check out their respective sections of the users guide: [ZNE](../guide/zne.md), [Pauli Twirling](../guide/pt.md).
