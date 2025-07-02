@@ -378,7 +378,7 @@ noisy_executor = partial(execute, noise_level=NOISE_LEVEL)
 mitigated_result = zne.execute_with_zne(circuit, noisy_executor)
 
 print(f"Error without ZNE or Pauli Twirling: {abs(ideal_value - noisy_value) :.3}")
-print(f"Error with mitigation (ZNE): {abs(ideal_value - mitigated_result):.{3}}")
+print(f"Error with mitigation (ZNE): {abs(ideal_value - mitigated_result):.3}")
 
 ```
 
