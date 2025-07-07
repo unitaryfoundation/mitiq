@@ -166,26 +166,21 @@ def execute_with_noise(
 First, let's determine the ideal (noiseless) expectation value and the unmitigated noisy expectation value with our adjusted (lower) noise settings.
 
 ```{code-cell} ipython3
-sim = cirq.Simulator()
-result = sim.simulate(circuit)
-a, b, c, d = list(circuit.all_qubits())
-ps = cirq.PauliString(
-    cirq.I(a) * cirq.Y(b) * cirq.I(c) * cirq.Y(d)
-) + cirq.PauliString(cirq.Y(a) * cirq.I(b) * cirq.Y(c) * cirq.I(d))
-ideal_result_val = np.real(
-    ps.expectation_from_state_vector(
-        result.final_state_vector,
-        qubit_map={a: 0, b: 1, c: 2, d: 3},
-    )
+noiseless_exec = partial(
+    execute_with_noise,
+    rz_angle_param=0.0,     # Turn off coherent phase error
+    p_readout_param=0.0,    # Turn off readout error
+    depol_prob_param=0.0    # Turn off depolarizing noise
 )
 
-print(f"Ideal expectation value: {ideal_result_val:.4f}")
+ideal_result_val = obs.expectation(circuit, noiseless_exec).real
+print(f"Ideal expectation value: {ideal_result_val:.6f}")
 
-noisy_result_val = obs.expectation(circuit, execute_with_noise).real
-print(f"Unmitigated noisy expectation value: {noisy_result_val:.4f}")
-print(
-    f"Initial relative error: {abs(ideal_result_val - noisy_result_val) / ideal_result_val:.4%}"
-)
+noisy_exec = execute_with_noise  
+
+noisy_result_val = obs.expectation(circuit, noisy_exec).real
+print(f"Unmitigated noisy expectation value: {noisy_result_val:.6f}")
+print(f"Initial absolute error: {abs(ideal_result_val - noisy_result_val):.6f}")
 ```
 
 ## Applying Individual Error Mitigation Techniques
