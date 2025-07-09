@@ -1,5 +1,53 @@
 # Changelog
 
+## Version 0.46.0
+
+([Full Changelog](https://github.com/unitaryfoundation/mitiq/compare/v0.45.1...v0.46.0))
+
+### Highlights
+
+Happy Summer!
+This release got started with a bang thanks to unitaryHACK 2025 which took place May 28-June 11.
+We had 5 issues closed by 4 different first time contributors!
+
+- @q-inho added support for custom circuits in the `Calibrator` class, allowing users to specify their own circuits when running calibration experments.
+  They also added a new function `mitiq.zne.visualize_fits` to plot ZNE results with multiple extrapolation techniques, which is useful for comparing the performance of different extrapolation methods.
+- @MChang360686 added a new page to the user guide showing how to use Mitiq's two-stage technique approach to understand the resources required when running a specific protocol.
+- @ACE07-Sev upgraded typehints across the mitiq codebase to remove deprecated features, and use the latest functionality.
+- @ahkatlio added a new tutorial demonstrating how to combine Pauli Twirling, Digital Dynamical Decoupling, Zero Noise Extrapolation, and Readout Error Mitigation.
+
+#### ✨ Enhancements
+
+- Create `scale_amplifications.py` for Probabilistic Error Amplification (PEA) (#2655) [@Misty-W]
+- add `visualize_fits` to plot ZNE results with multiple extrapolation techniques (#2777) [@q-inho] (unitaryHACK)
+- add custom circuit support in `Calibrator` (#2779) [@q-inho] (unitaryHACK)
+
+#### 🐛 Bug fixes
+
+- Fix mutable default args (#2756) [@willzeng]
+
+#### 📓 Documentation
+
+- Switch order of PT/ZNE in tutorial (#2800) [@natestemen]
+- adding a diagram for VD workflow in the docs (#2801) [@FarLab]
+- Use qiskit throught layerwise folding tutorial (#2799) [@natestemen]
+- added to documentation (#2788) [@MChang360686] (unitaryHACK)
+- use latest contributor covenant CoC (#2781) [@natestemen]
+
+#### 🧑🏽‍💻 Developer Improvements
+
+- Lighter docs build option (#2743) [@natestemen]
+- Fix deprecated typings (#2775) [@ACE07-Sev] (unitaryHACK)
+- upgrade pypi publish workflow (#2798) [@natestemen + @bdg221]
+
+#### 📦 Dependency Updates
+
+- Bump qibo from 0.2.16 to 0.2.18 (#2753) [@dependabot]
+- Bump amazon-braket-sdk from 1.91.2 to 1.93.0 (#2792) [@dependabot]
+- Bump astral-sh/setup-uv from 5 to 6 (#2749) [@dependabot]
+- Bump setuptools from 80.0.0 to 80.9.0 (#2763) [@dependabot]
+
+
 ## Version 0.45.1
 
 Fix packaging issue that caused `import mitiq` to fail due to missing VERSION.txt in wheel.
