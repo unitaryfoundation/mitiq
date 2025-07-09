@@ -150,7 +150,7 @@ You can use Mitiq with any backend you have access to that can interface with su
 
 If you use Mitiq in your research, please reference the [Mitiq whitepaper](https://quantum-journal.org/papers/q-2022-08-11-774/) using the bibtex entry found in [`CITATION.bib`](https://github.com/unitaryfoundation/mitiq/blob/main/CITATION.bib).
 
-A list of papers citing Mitiq can be found on [Google Scholar](https://scholar.google.com/scholar?oi=bibs&hl=en&cites=1985661232443186918) / [Semantic Scholar](https://api.semanticscholar.org/CorpusID:221555755?).
+A list of papers citing Mitiq can be found on [Google Scholar](https://scholar.google.com/scholar?cites=1985661232443186918) / [Semantic Scholar](https://api.semanticscholar.org/CorpusID:221555755?).
 
 ## License
 
