@@ -6,7 +6,7 @@
 
 ### Highlights
 
-Happy Summer!
+Happy solstice season!
 This release got started with a bang thanks to unitaryHACK 2025 which took place May 28-June 11.
 We had 5 issues closed by 4 different first time contributors!
 
