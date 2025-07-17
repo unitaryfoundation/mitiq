@@ -38,6 +38,7 @@ from mitiq.utils import (
     _simplify_circuit_exponents,
     _simplify_gate_exponent,
     arbitrary_tensor_product,
+    compare_cost,
     matrix_kronecker_product,
     matrix_to_vector,
     operator_ptm_vector_rep,
@@ -444,3 +445,53 @@ def test_qem_methods_basic():
         prefix, suffix = module.split(".")
         assert prefix == "mitiq"
         assert len(suffix) <= 3
+
+
+def test_compare_cost_basic():
+    q0, q1 = cirq.LineQubit.range(2)
+    base = cirq.Circuit(
+        cirq.H(q0),
+        cirq.CNOT(q0, q1),
+        cirq.measure(q0, q1),
+    )
+    qem_circuits = [
+        cirq.Circuit(
+            cirq.H(q0),
+            cirq.CNOT(q0, q1),
+            cirq.measure(q0, q1),
+        ),
+        cirq.Circuit(
+            cirq.H(q0),
+            cirq.CNOT(q0, q1),
+            cirq.H(q1),
+            cirq.measure(q0, q1),
+        ),
+    ]
+    cost = compare_cost(base, qem_circuits)
+    assert cost["extra_circuits"] == 1
+    assert cost["gate_overhead"] == {"1q": 2, "2q": 1, "nq": 0}
+    assert "total_shots" not in cost
+
+
+def test_compare_cost_with_shots():
+    q0, q1 = cirq.LineQubit.range(2)
+    base = cirq.Circuit(
+        cirq.H(q0),
+        cirq.CNOT(q0, q1),
+        cirq.measure(q0, q1),
+    )
+    qem_circuits = [
+        cirq.Circuit(
+            cirq.H(q0),
+            cirq.CNOT(q0, q1),
+            cirq.measure(q0, q1),
+        ),
+        cirq.Circuit(
+            cirq.H(q0),
+            cirq.CNOT(q0, q1),
+            cirq.H(q1),
+            cirq.measure(q0, q1),
+        ),
+    ]
+    cost = compare_cost(base, qem_circuits, shots=100)
+    assert cost["total_shots"] == 200
