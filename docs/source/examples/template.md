@@ -42,18 +42,18 @@ As you can see, markdown is parsed as expected. Embedding images should work as 
 For example, here's the MyST-NB logo:
 
 ```md
-![myst-nb logo](../img/unitary_fund_logo.png)
+![myst-nb logo](../img/unitary_foundation_logo.png)
 ```
 
-![myst-nb logo](../img/unitary_fund_logo.png)
+![myst-nb logo](../img/unitary_foundation_logo.png)
 
 By adding `"html_image"` to the `myst_enable_extensions` list in the sphinx configuration ([see here](https://myst-parser.readthedocs.io/en/latest/syntax/optional.html#html-images)), you can even add HTML `img` tags with attributes:
 
 ```html
-<img src="../img/unitary_fund_logo.png" alt="logo" width="200px" class="shadow mb-2">
+<img src="../img/unitary_foundation_logo.png" alt="logo" width="200px" class="shadow mb-2">
 ```
 
-<img src="../img/unitary_fund_logo.png" alt="logo" width="200px"  class="shadow mb-2">
+<img src="../img/unitary_foundation_logo.png" alt="logo" width="200px"  class="shadow mb-2">
 
 Because MyST-NB is using the MyST-markdown parser, you can include rich markdown with Sphinx in your notebook.
 For example, here's a note admonition block:
