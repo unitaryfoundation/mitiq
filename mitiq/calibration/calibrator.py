@@ -466,7 +466,7 @@ def execute_with_mitigation(
             mitigation strategy to execute the circuit.
 
     Returns:
-        The error mitigated expectation expectation value.
+        The error mitigated expectation value.
     """
 
     if calibrator.results.is_missing_data():

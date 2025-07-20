@@ -180,7 +180,7 @@ class Executor:
                 "Expected observable to be hermitian. Continue with caution."
             )
 
-        # Check executor and observable compatability with type hinting
+        # Check executor and observable compatibility with type hinting
         # If FloatLike is specified as a return and observable is used
         if self._executor_return_type in FloatLike and observable is not None:
             # Type hinted as FloatLike and observable passed
@@ -203,7 +203,7 @@ class Executor:
                     "When using a density matrix result, an observable "
                     "is required."
                 )
-            # Type hinted as MeasurementResulteLike but no observable is set
+            # Type hinted as MeasurementResultLike but no observable is set
             elif self._executor_return_type in MeasurementResultLike:
                 raise ValueError(
                     "When using a measurement, or bitstring, like result, an "

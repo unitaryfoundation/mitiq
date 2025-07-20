@@ -28,7 +28,7 @@ in the `conf.py` file.
 ### Add/change Sphinx features in the conf.py file
 
 To add specific feature to the documentation, Sphinx extensions can be added to the build.
-As and example, to add classes and functions to the API doc, make sure that autodoc
+As an example, to add classes and functions to the API doc, make sure that autodoc
 extension is enabled in the `conf.py` file.
 
 ```python

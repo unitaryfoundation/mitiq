@@ -253,7 +253,7 @@ def get_5_1_3_code_check_operators_and_code_hamiltonian() -> tuple:
 
 def prepare_logical_0_state_for_5_1_3_code():
     """
-    To simplify the testing logic. We hardcode the the logical 0 and logical 1
+    To simplify the testing logic. We hardcode the logical 0 and logical 1
     states of the [[5,1,3]] code, copied from:
     https://en.wikipedia.org/wiki/Five-qubit_error_correcting_code
     We then use Gram-Schmidt orthogonalization to fill up the rest of the
