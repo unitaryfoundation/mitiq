@@ -292,7 +292,7 @@ class Calibrator:
             for problem in self.problems:
                 if problem.type == "custom" and not problem.ideal_distribution:
                     circ = problem.circuit.copy()
-                    circ.append(cirq.measure(circ.all_qubits()))
+                    circ.append(cirq.measure(sorted(circ.all_qubits())))
                     result = cast(
                         MeasurementResult,
                         self._ideal_cirq_executor.run([circ])[0],
@@ -434,7 +434,7 @@ def convert_to_expval_executor(executor: Executor, bitstring: str) -> Executor:
         circuit_with_meas = circuit.copy()
         if not cirq.is_measurement(circuit_with_meas):
             circuit_with_meas.append(
-                cirq.measure(circuit_with_meas.all_qubits())
+                cirq.measure(sorted(circuit_with_meas.all_qubits()))
             )
         raw = cast(MeasurementResult, executor.run([circuit_with_meas])[0])
         distribution = raw.prob_distribution()
