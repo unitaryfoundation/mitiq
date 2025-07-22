@@ -351,7 +351,7 @@ class Calibrator:
         for problem in self.problems:
             # Benchmark circuits have no measurements, so we append them.
             circuit = problem.circuit.copy()
-            circuit.append(cirq.measure(circuit.all_qubits()))
+            circuit.append(cirq.measure(sorted(circuit.all_qubits())))
 
             bitstring_to_measure = problem.most_likely_bitstring()
             expval_executor = convert_to_expval_executor(
