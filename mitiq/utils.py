@@ -5,9 +5,10 @@
 
 """Utility functions."""
 
+from collections.abc import Sequence
 from copy import deepcopy
 from itertools import product
-from typing import Any, Sequence
+from typing import Any
 
 import cirq
 import numpy as np
@@ -420,8 +421,8 @@ def compare_cost(
 
     Returns:
         Dictionary summarizing circuit and gate overhead. If ``shots`` is
-        provided, the dictionary includes ``total_shots`` equal to ``shots``
-        multiplied by ``len(qem_circuits)``.
+        provided, the dictionary includes ``shots_per_circuit`` equal to
+        ``shots`` divided by ``len(qem_circuits)``.
     """
 
     base = convert_to_mitiq(circuit)[0]
@@ -435,8 +436,7 @@ def compare_cost(
             total_counts[key] += counts[key]
 
     gate_overhead = {
-        key: total_counts[key] - base_counts.get(key, 0)
-        for key in total_counts
+        key: total_counts[key] - base_counts[key] for key in total_counts
     }
 
     result: dict[str, int | dict[str, int]] = {
@@ -444,5 +444,5 @@ def compare_cost(
         "gate_overhead": gate_overhead,
     }
     if shots is not None:
-        result["total_shots"] = shots * len(qem_circuits)
+        result["shots_per_circuit"] = shots // len(qem_circuits)
     return result

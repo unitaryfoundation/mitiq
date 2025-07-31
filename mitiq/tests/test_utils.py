@@ -470,7 +470,7 @@ def test_compare_cost_basic():
     cost = compare_cost(base, qem_circuits)
     assert cost["extra_circuits"] == 1
     assert cost["gate_overhead"] == {"1q": 2, "2q": 1, "nq": 0}
-    assert "total_shots" not in cost
+    assert "shots_per_circuit" not in cost
 
 
 def test_compare_cost_with_shots():
@@ -494,4 +494,4 @@ def test_compare_cost_with_shots():
         ),
     ]
     cost = compare_cost(base, qem_circuits, shots=100)
-    assert cost["total_shots"] == 200
+    assert cost["shots_per_circuit"] == 50
