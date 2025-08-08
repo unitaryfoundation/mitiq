@@ -26,6 +26,8 @@ from cirq import (
     ops,
 )
 
+from mitiq import SUPPORTED_PROGRAM_TYPES
+from mitiq.interface import convert_from_mitiq
 from mitiq.utils import (
     _append_measurements,
     _are_close_dict,
@@ -447,7 +449,8 @@ def test_qem_methods_basic():
         assert len(suffix) <= 3
 
 
-def test_compare_cost_basic():
+@pytest.mark.parametrize("circuit_type", SUPPORTED_PROGRAM_TYPES.keys())
+def test_compare_cost_basic(circuit_type):
     q0, q1 = cirq.LineQubit.range(2)
     base = cirq.Circuit(
         cirq.H(q0),
@@ -467,13 +470,16 @@ def test_compare_cost_basic():
             cirq.measure(q0, q1),
         ),
     ]
-    cost = compare_cost(base, qem_circuits)
+    base_native = convert_from_mitiq(base, circuit_type)
+    qem_native = [convert_from_mitiq(c, circuit_type) for c in qem_circuits]
+    cost = compare_cost(base_native, qem_native)
     assert cost["extra_circuits"] == 1
     assert cost["gate_overhead"] == {"1q": 2, "2q": 1, "nq": 0}
     assert "shots_per_circuit" not in cost
 
 
-def test_compare_cost_with_shots():
+@pytest.mark.parametrize("circuit_type", SUPPORTED_PROGRAM_TYPES.keys())
+def test_compare_cost_with_shots(circuit_type):
     q0, q1 = cirq.LineQubit.range(2)
     base = cirq.Circuit(
         cirq.H(q0),
@@ -493,5 +499,7 @@ def test_compare_cost_with_shots():
             cirq.measure(q0, q1),
         ),
     ]
-    cost = compare_cost(base, qem_circuits, shots=100)
+    base_native = convert_from_mitiq(base, circuit_type)
+    qem_native = [convert_from_mitiq(c, circuit_type) for c in qem_circuits]
+    cost = compare_cost(base_native, qem_native, shots=100)
     assert cost["shots_per_circuit"] == 50
