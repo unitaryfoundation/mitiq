@@ -391,7 +391,6 @@ def qem_methods() -> dict[str, str]:
     return techniques
 
 
-
 def _count_gate_arities_cirq(circuit: cirq.Circuit) -> dict[str, int]:
     """Counts gates in a Cirq circuit grouped by arity."""
     counts = {"1q": 0, "2q": 0, "nq": 0}
