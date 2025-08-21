@@ -471,3 +471,37 @@ def test_conversions_in_sample_circuit():
     assert len(signs) == 3
     assert set(signs).issubset({1.0, -1.0})
     assert np.isclose(norm, 1.0)
+
+
+def test_sample_circuit_qiskit_with_reset():
+    """sampling should work on a Qiskit circuit that includes a reset op."""
+    qreg = QuantumRegister(2, name="q")
+    creg = ClassicalRegister(1, name="c")
+    circuit = QuantumCircuit(qreg, creg)
+    circuit.h(qreg[0])
+    circuit.y(qreg[1])
+    circuit.reset(qreg[1])
+    circuit.cx(qreg[0], qreg[1])
+    circuit.measure(qreg[0], creg[0])
+
+    cnot_circuit = QuantumCircuit(qreg)
+    cnot_circuit.cx(qreg[0], qreg[1])
+    rep = represent_operation_with_global_depolarizing_noise(
+        cnot_circuit,
+        noise_level=0.0,  # simplest: no extra noise so structure is clearer
+    )
+
+    sampled_circuits, signs, norm = sample_circuit(
+        circuit, [rep], num_samples=5
+    )
+
+    for out in sampled_circuits:
+        # Basic type / PEC outputs
+        assert isinstance(out, QuantumCircuit)
+        assert set(out.qregs) == set(circuit.qregs)
+        assert set(out.cregs) == set(circuit.cregs)
+        assert set(signs).issubset({1, -1})
+        assert norm >= 1.0
+
+        # Also sanity check via count_ops for robustness across qiskit versions
+        assert out.count_ops()["reset"] == 1
