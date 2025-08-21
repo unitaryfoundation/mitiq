@@ -6,7 +6,6 @@
 import copy
 from collections import defaultdict
 from collections.abc import Callable, Iterable
-from numbers import Number
 from typing import Any, cast
 
 import cirq
@@ -15,6 +14,7 @@ import numpy.typing as npt
 
 from mitiq import QPROGRAM, MeasurementResult, QuantumResult
 from mitiq.observable.pauli import PauliString, PauliStringCollection
+from mitiq.typing import Numeric
 
 
 class Observable:
@@ -76,9 +76,9 @@ class Observable:
         return len(self.qubit_indices)
 
     def __mul__(
-        self, other: "Observable | PauliString | Number"
+        self, other: "Observable | PauliString | Numeric"
     ) -> "Observable":
-        if isinstance(other, (PauliString, Number)):
+        if isinstance(other, (PauliString, int, float, complex)):
             return Observable(*[pauli * other for pauli in self._paulis])
         elif isinstance(other, Observable):
             return Observable(
@@ -90,10 +90,8 @@ class Observable:
             )
         return NotImplemented
 
-    def __rmul__(self, other: "PauliString | Number") -> "Observable":
-        if isinstance(other, (PauliString, Number)):
-            return Observable(*[other * pauli for pauli in self._paulis])
-        return NotImplemented
+    def __rmul__(self, other: "PauliString | Numeric") -> "Observable":
+        return Observable(*[other * pauli for pauli in self._paulis])
 
     @property
     def groups(self) -> list[PauliStringCollection]:

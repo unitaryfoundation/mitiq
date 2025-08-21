@@ -26,7 +26,7 @@ classifiers = [
 dependencies = [
     "numpy>=1.22.0,<2.0.0",
     "scipy>=1.10.1,<=1.15.2",
-    "cirq-core>=1.4.0,<1.5.0",
+    "cirq-core>=1.5.0,<1.6.0",
     "tabulate",
     "matplotlib>=3.8",
 ]
@@ -34,14 +34,14 @@ dependencies = [
 [project.optional-dependencies]
 braket = [
     "amazon-braket-sdk>=1.91,<1.94",
-    "cirq-ionq>=1.4.0,<1.5.0",
+    "cirq-ionq>=1.5.0,<1.6.0",
 ]
 pennylane = [
     "pennylane-qiskit~=0.36.0",
     "pennylane~=0.36.0",
 ]
 pyquil = [
-    "pyquil~=4.11.0",
+    "pyquil~=4.14.0",
     "qbraid~=0.9.10",
 ]
 qibo = [

@@ -18,7 +18,7 @@ from collections import Counter
 from collections.abc import Sequence
 from dataclasses import dataclass
 from enum import Enum, EnumMeta
-from typing import Any, Union, cast
+from typing import Any, TypeAlias, Union, cast
 
 import numpy as np
 import numpy.typing as npt
@@ -234,3 +234,5 @@ class MeasurementResult:
 # - MeasurementResult: Sampled bitstrings.
 # - np.ndarray: Density matrix.
 QuantumResult = float | MeasurementResult | np.ndarray
+
+Numeric: TypeAlias = int | float | complex

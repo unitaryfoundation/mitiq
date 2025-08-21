@@ -213,7 +213,19 @@ def test_convert_with_qft():
     cirq_circuit = cirq.Circuit(
         [cirq.ops.H.on(qreg[0]), cirq.ops.measure(qreg[0], key="meas")]
     )
-    assert _equal(cirq_circuit, qft_cirq)
+    assert cirq.equal_up_to_global_phase(
+        cirq_circuit.unitary(), qft_cirq.unitary()
+    )
+
+
+def test_convert_qiskit_reset_to_cirq():
+    """Tests converting a Qiskit circuit with a reset to a Cirq circuit."""
+    qreg = qiskit.QuantumRegister(1)
+    circuit = qiskit.QuantumCircuit(qreg)
+    circuit.reset(qreg[0])
+    cirq_circuit = from_qiskit(circuit)
+    assert len(cirq_circuit) == 1
+    assert isinstance(cirq_circuit[0].operations[0].gate, cirq.ResetChannel)
 
 
 @pytest.mark.parametrize("as_qasm", (True, False))

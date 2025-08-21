@@ -5,7 +5,6 @@
 
 from collections import Counter
 from collections.abc import Sequence
-from numbers import Number
 from typing import Any, cast
 
 import cirq
@@ -14,6 +13,7 @@ import numpy.typing as npt
 
 from mitiq import QPROGRAM, MeasurementResult
 from mitiq.interface import atomic_converter
+from mitiq.typing import Numeric
 from mitiq.utils import _cirq_pauli_to_string
 
 
@@ -150,19 +150,17 @@ class PauliString:
             measurements
         )
 
-    def __mul__(self, other: "PauliString | Number") -> "PauliString":
+    def __mul__(self, other: "PauliString | Numeric") -> "PauliString":
         if isinstance(other, PauliString):
             return PauliString.from_cirq_pauli_string(
                 self._pauli * other._pauli
             )
-        elif isinstance(other, Number):
+        elif isinstance(other, (int, float, complex)):
             return PauliString.from_cirq_pauli_string(self._pauli * other)
         return NotImplemented
 
-    def __rmul__(self, other: Number) -> "PauliString":
-        if isinstance(other, Number):
-            return self.__mul__(other)
-        return NotImplemented
+    def __rmul__(self, other: Numeric) -> "PauliString":
+        return self.__mul__(other)
 
     def __eq__(self, other: Any) -> bool:
         return self._pauli == other._pauli
