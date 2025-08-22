@@ -9,14 +9,18 @@ import cirq
 import numpy as np
 import pytest
 
+from mitiq.interface import convert_from_mitiq, convert_to_mitiq
+from mitiq.interface.mitiq_cirq import compute_density_matrix
+from mitiq.pea import combine_results, construct_circuits, execute_with_pea
 from mitiq.pea.amplifications.amplify_depolarizing import (
     amplify_noisy_ops_in_circuit_with_local_depolarizing_noise,
 )
-from mitiq.pea.pea import construct_circuits
 from mitiq.pec import (
     OperationRepresentation,
 )
 from mitiq.pec.pec import LargeSampleWarning
+from mitiq.typing import QPROGRAM, SUPPORTED_PROGRAM_TYPES
+from mitiq.zne.inference import LinearFactory
 
 
 # Noisy representations of Pauli and CNOT operations for testing.
@@ -123,3 +127,67 @@ def test_scale_factors(scale_factors):
         random_state=1,
     )
     assert len(scaled_circuits) == len(scale_factors)
+
+
+extrapolation_method = LinearFactory.extrapolate
+
+
+def test_combining_results():
+    """simple arithmetic test"""
+    scaled_results = [[0.1, 0.2, 0.3], [0.12, 0.24, 0.36], [0.16, 0.32, 0.48]]
+    scale_factors = [1, 1.2, 1.6]
+    scaled_norms = [23, 27.6, 36.8]
+    scaled_signs = [[1, -1, 1], [1, -1, 1], [1, -1, 1]]
+    pea_estimate = combine_results(
+        scale_factors,
+        scaled_results,
+        scaled_norms,
+        scaled_signs,
+        extrapolation_method,
+    )
+
+    assert np.isclose(pea_estimate, -2.55, atol=0.01)
+
+
+BASE_NOISE = 0.02
+
+
+def executor(circuit: QPROGRAM, noise: float = BASE_NOISE) -> float:
+    """A noisy executor function which executes the input circuit with `noise`
+    depolarizing noise and returns the expectation value of the ground state
+    projector. Simulation will be slow for "large circuits" (> a few qubits).
+    """
+    circuit, _ = convert_to_mitiq(circuit)
+    return compute_density_matrix(
+        circuit, noise_model_function=cirq.depolarize, noise_level=(noise,)
+    )[0, 0].real
+
+
+@pytest.mark.parametrize("circuit", [oneq_circ, twoq_circ])
+@pytest.mark.parametrize("circuit_type", SUPPORTED_PROGRAM_TYPES.keys())
+def test_execute_with_pea_mitigates_noise(circuit, circuit_type):
+    """Tests that execute_with_pea mitigates the error of a noisy
+    expectation value.
+    """
+    circuit = convert_from_mitiq(circuit, circuit_type)
+
+    true_noiseless_value = executor(circuit, noise=0.0)
+    unmitigated = executor(circuit)
+
+    scale_factors = [1, 1.2, 1.6]
+    epsilon = 0.02
+    noise_model = "local_depolarizing"
+    mitigated = execute_with_pea(
+        circuit,
+        executor,
+        scale_factors,
+        noise_model,
+        epsilon,
+        extrapolation_method,
+        random_state=101,
+    )
+    error_unmitigated = abs(unmitigated - true_noiseless_value)
+    error_mitigated = abs(mitigated - true_noiseless_value)
+
+    assert error_mitigated < error_unmitigated
+    assert np.isclose(mitigated, true_noiseless_value, atol=0.1)
