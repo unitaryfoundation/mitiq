@@ -18,7 +18,7 @@ from mitiq.pea.amplifications.amplify_depolarizing import (
 from mitiq.pec import (
     OperationRepresentation,
 )
-from mitiq.pec.pec import LargeSampleWarning
+from mitiq.pec.pec import LargeSampleWarning, sample_circuit
 from mitiq.typing import QPROGRAM, SUPPORTED_PROGRAM_TYPES
 from mitiq.zne.inference import LinearFactory
 
@@ -48,8 +48,6 @@ def get_pauli_and_cnot_representations(
 
 
 BASE_NOISE = 0.02
-pauli_representations = get_pauli_and_cnot_representations(BASE_NOISE)
-noiseless_pauli_representations = get_pauli_and_cnot_representations(0.0)
 
 # Simple circuits for testing.
 q0, q1 = cirq.LineQubit.range(2)
@@ -129,23 +127,19 @@ def test_scale_factors(scale_factors):
     assert len(scaled_circuits) == len(scale_factors)
 
 
-extrapolation_method = LinearFactory.extrapolate
-
-
 def test_combining_results():
     """simple arithmetic test"""
-    scaled_results = [[0.1, 0.2, 0.3], [0.12, 0.24, 0.36], [0.16, 0.32, 0.48]]
-    scale_factors = [1, 1.2, 1.6]
-    scaled_norms = [23, 27.6, 36.8]
-    scaled_signs = [[1, -1, 1], [1, -1, 1], [1, -1, 1]]
     pea_estimate = combine_results(
-        scale_factors,
-        scaled_results,
-        scaled_norms,
-        scaled_signs,
-        extrapolation_method,
+        scale_factors=[1, 1.2, 1.6],
+        scaled_results=[
+            [0.1, 0.2, 0.3],
+            [0.12, 0.24, 0.36],
+            [0.16, 0.32, 0.48],
+        ],
+        scaled_norms=[23, 27.6, 36.8],
+        scaled_signs=[[1, -1, 1], [1, -1, 1], [1, -1, 1]],
+        extrapolation_method=LinearFactory.extrapolate,
     )
-
     assert np.isclose(pea_estimate, -2.55, atol=0.01)
 
 
@@ -174,16 +168,13 @@ def test_execute_with_pea_mitigates_noise(circuit, circuit_type):
     true_noiseless_value = executor(circuit, noise=0.0)
     unmitigated = executor(circuit)
 
-    scale_factors = [1, 1.2, 1.6]
-    epsilon = 0.02
-    noise_model = "local_depolarizing"
     mitigated = execute_with_pea(
         circuit,
         executor,
-        scale_factors,
-        noise_model,
-        epsilon,
-        extrapolation_method,
+        scale_factors=[1, 1.2, 1.6],
+        noise_model="local_depolarizing",
+        epsilon=0.02,
+        extrapolation_method=LinearFactory.extrapolate,
         random_state=101,
     )
     error_unmitigated = abs(unmitigated - true_noiseless_value)
@@ -191,3 +182,43 @@ def test_execute_with_pea_mitigates_noise(circuit, circuit_type):
 
     assert error_mitigated < error_unmitigated
     assert np.isclose(mitigated, true_noiseless_value, atol=0.1)
+
+
+def test_pea_data_with_full_output():
+    """Tests that execute_with_pea mitigates the error of a noisy
+    expectation value.
+    """
+    precision = 0.5
+    epsilon = 0.02
+    pea_value, pea_data = execute_with_pea(
+        twoq_circ,
+        executor,
+        scale_factors=[1, 1.2, 1.6],
+        noise_model="local_depolarizing",
+        epsilon=epsilon,
+        extrapolation_method=LinearFactory.extrapolate,
+        random_state=102,
+        precision=precision,
+        full_output=True,
+    )
+    # Get num samples from precision
+    _, _, norm = sample_circuit(
+        twoq_circ,
+        amplify_noisy_ops_in_circuit_with_local_depolarizing_noise(
+            twoq_circ, epsilon
+        ),
+        num_samples=1,
+    )
+    num_samples = int((norm / precision) ** 2)
+
+    # Manually get raw expectation values
+    scaled_exp_values = [
+        [executor(c) for c in s_circ]
+        for s_circ in pea_data["scaled_sampled_circuits"]
+    ]
+    assert pea_data["num_samples"] == num_samples
+    assert pea_data["precision"] == precision
+    assert np.isclose(pea_data["pea_value"], pea_value)
+    assert np.allclose(
+        pea_data["scaled_expectation_values"], scaled_exp_values
+    )
