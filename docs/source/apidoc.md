@@ -111,6 +111,15 @@ See Ref. {cite}`Czarnik_2021_Quantum` for more details on these methods.
    :members:
 ```
 
+### Probabilistic Error Amplification
+
+#### Probabilistic Error Amplification (High-Level Tools)
+
+```{eval-rst}
+.. automodule:: mitiq.pea.pea
+   :members:
+```
+
 ### Probabilistic Error Cancellation
 
 #### Probabilistic Error Cancellation (High-Level Tools)
