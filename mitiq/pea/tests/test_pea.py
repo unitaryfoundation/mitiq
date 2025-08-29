@@ -143,9 +143,6 @@ def test_combining_results():
     assert np.isclose(pea_estimate, -2.55, atol=0.01)
 
 
-BASE_NOISE = 0.02
-
-
 def executor(circuit: QPROGRAM, noise: float = BASE_NOISE) -> float:
     """A noisy executor function which executes the input circuit with `noise`
     depolarizing noise and returns the expectation value of the ground state
