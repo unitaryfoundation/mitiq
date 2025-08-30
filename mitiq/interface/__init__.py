@@ -15,3 +15,5 @@ from mitiq.interface.conversions import (
     CircuitConversionError,
     UnsupportedCircuitError,
 )
+
+from .utils import compare_cost

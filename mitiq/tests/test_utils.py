@@ -27,7 +27,7 @@ from cirq import (
 )
 
 from mitiq import SUPPORTED_PROGRAM_TYPES
-from mitiq.interface import convert_from_mitiq
+from mitiq.interface import compare_cost, convert_from_mitiq
 from mitiq.utils import (
     _append_measurements,
     _are_close_dict,
@@ -40,7 +40,6 @@ from mitiq.utils import (
     _simplify_circuit_exponents,
     _simplify_gate_exponent,
     arbitrary_tensor_product,
-    compare_cost,
     matrix_kronecker_product,
     matrix_to_vector,
     operator_ptm_vector_rep,
