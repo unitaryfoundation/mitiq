@@ -52,16 +52,9 @@ def construct_circuits(
             Default is 0.1.
         num_samples: The number of noisy circuits to be sampled for PEA.
             If not given, this is deduced from the 'precision'.
-        full_output: If ``full_output`` is True, a list of lists of signs and a
-            list of norms, corresponding to each noise scale factor are
-            returned.
 
     Returns:
-        A list of lists of sampled circuits, where each list of circuits
-        corresponds to an input noise scale factor times the baseline noise
-        level. If ``full_output`` is True, also returns a list of lists of
-        signs and a list of norms, corresponding to each noise scale factor.
-
+        The scaled circuits, their signs and norms at each scale factor.
     Raises:
         ValueError: If the precision is not within the interval (0, 1].
     """
