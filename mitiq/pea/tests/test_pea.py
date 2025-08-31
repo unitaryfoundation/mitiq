@@ -194,7 +194,6 @@ def test_pea_data_with_full_output():
         noise_model="local_depolarizing",
         epsilon=epsilon,
         extrapolation_method=LinearFactory.extrapolate,
-        random_state=102,
         precision=precision,
         full_output=True,
     )
