@@ -36,6 +36,7 @@ Thanks to @q-inho, @bdg221, @natestemen, @Misty-W, and first-time contributor @m
 
 #### 📦 Dependency Updates
 
+- Bump actions/setup-python from 5 to 6 (#2825) [@dependabot]
 - Bump actions/checkout from 4 to 5 (#2820) [@dependabot]
 - Bump actions/first-interaction from 2 to 3 (#2819) [@dependabot]
 - Bump actions/first-interaction from 1 to 2 (#2807) [@dependabot]
