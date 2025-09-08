@@ -809,7 +809,7 @@ def test_full_output_keyword_cov_std():
 
 
 def test_params_cov_and_zne_std():
-    """Tests the variance of the parametes and of the zne are produced."""
+    """Tests the variance of the parameters and of the zne are produced."""
     x_values = [0, 0, 1]
     y_values = [-1, 1, 0]
     zne_limit = PolyFactory.extrapolate(x_values, y_values, order=1)
