@@ -60,7 +60,7 @@ First, we get our devices set up depending on whether we would like to use real 
 
 ```{warning}
 This notebook may not run when `USE_REAL_HARDWARE = True` due to recent changes in Qiskit and Pennylane.
-We are working on mointoring and updating this in https://github.com/unitaryfoundation/mitiq/issues/2659.
+We are working on monitoring and updating this in https://github.com/unitaryfoundation/mitiq/issues/2659.
 ```
 
 ```{code-cell} ipython3
@@ -90,7 +90,7 @@ else:
     )
 ```
 
-With `dev` set to the desired device, we can now use PennyLane's [`mitigate_with_zne`](https://pennylane.readthedocs.io/en/stable/code/api/pennylane.transforms.mitigate_with_zne.html) function, in conjuction with a noise scaling method, and inference technique from Mitiq.
+With `dev` set to the desired device, we can now use PennyLane's [`mitigate_with_zne`](https://pennylane.readthedocs.io/en/stable/code/api/pennylane.transforms.mitigate_with_zne.html) function, in conjunction with a noise scaling method, and inference technique from Mitiq.
 
 ```{code-cell} ipython3
 from mitiq.zne.scaling import fold_global
