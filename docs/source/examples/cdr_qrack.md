@@ -28,7 +28,7 @@ To start, relevant modules and libraries are imported. Please ensure that the fo
 +++
 
 ```{note}
-In the code below the environmental variable, `QRACK_MAX_CPU_QB`, is set to `-1`. This enviroment variable sets the maximum on how many qubits can be allocated on a single QEngineCPU instance. More information can be found on the [Qrack README page](https://github.com/unitaryfoundation/qrack/blob/main/README.md#maximum-allocation-guard).
+In the code below the environmental variable, `QRACK_MAX_CPU_QB`, is set to `-1`. This environment variable sets the maximum on how many qubits can be allocated on a single QEngineCPU instance. More information can be found on the [Qrack README page](https://github.com/unitaryfoundation/qrack/blob/main/README.md#maximum-allocation-guard).
 ```
 
 ```{code-cell}
@@ -139,7 +139,7 @@ def qiskit_noisy(circuit: cirq.Circuit, shots=1000):
 
 ### Cirq Simulator for exact result
 
-The `compute_density_matrix` is the Cirq density matrix simulator with a Mitiq wrapper. It is used to obtain the exact `00` expectation value. This is then used to determine the accuracy of the mitigated and unmitigated reuslts.
+The `compute_density_matrix` is the Cirq density matrix simulator with a Mitiq wrapper. It is used to obtain the exact `00` expectation value. This is then used to determine the accuracy of the mitigated and unmitigated results.
 
 ```{code-cell}
 def cirq_simulate(circuit: cirq.Circuit) -> np.ndarray:
