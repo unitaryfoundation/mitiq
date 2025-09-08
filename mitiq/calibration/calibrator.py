@@ -69,7 +69,7 @@ class ExperimentResults:
 
     @staticmethod
     def _performance_str(noisy_error: float, mitigated_error: float) -> str:
-        """Get human readable performance representaion."""
+        """Get human readable performance representation."""
         return (
             f"{'✔' if mitigated_error < noisy_error else '✘'}\n"
             f"Noisy error: {round(noisy_error, 4)}\n"
@@ -196,7 +196,7 @@ class ExperimentResults:
         return (self.ideal - self.mitigated) ** 2
 
     def best_strategy_id(self) -> int:
-        """Returns the stategy id that corresponds to the strategy that
+        """Returns the strategy id that corresponds to the strategy that
         maintained the smallest error across all ``BenchmarkProblem``
         instances."""
         errors = self.squared_errors()
