@@ -26,6 +26,7 @@ Want to know more?
 - For code, repo, or theory questions, especially those requiring more detailed responses, submit a [Discussion](https://github.com/unitaryfoundation/mitiq/discussions).
 - For casual or time sensitive questions, chat with us on [Discord](http://discord.unitary.foundation).
 - Join our weekly community call on [Discord](http://discord.unitary.foundation) ([public agenda](https://docs.google.com/document/d/1lZfct4AOCS7fdyWkudcGyER0n0nsCxSFKSicUEeJgtA/)).
+- Contributions to mitiq are elligible for compensation! More details [here](https://unitary.foundation/posts/2025_merit_systems_uf/)!
 
 ## Quickstart
 
