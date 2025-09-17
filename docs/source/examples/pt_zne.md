@@ -42,7 +42,7 @@ If $\mathcal{F}$ is the average noisy gate fidelity {cite}`Nielsen_2002` definin
 
 **Incoherent noise** is a process that results in the quantum system entangling with its environment i.e. this type of noise is irreversible. The system and the environment end up in a mixed state. This type of noise scales linearly in the small error limit. The noise channel can be described using Pauli operators which makes it easy to analyze and simulate. Worst case error rate is directly proportional to the **average gate infidelity**.
 
-See the example in the [PTM and Average Gate Infideltiy](#ptm-and-average-gate-infidelity) section for more information on how
+See the example in the [PTM and Average Gate Infidelity](#ptm-and-average-gate-infidelity) section for more information on how
 the error-rate scales for coherent and incoherent noise.
 
 In scenarios where we want to reduce the effect of coherent noise, noise tailoring techniques like Pauli twirling are utilized
@@ -382,7 +382,7 @@ print(f"Error with mitigation (ZNE): {abs(ideal_value - mitigated_result):.3}")
 
 ```
 
-As expected, using ZNE on its own in the presence of coherent noise can do more harm that good because the effect of coherent noise in the circuit is further amplified unfavorably through unitary folding. 
+As expected, using ZNE on its own in the presence of coherent noise can do more harm than good because the effect of coherent noise in the circuit is further amplified unfavorably through unitary folding. 
 
 ### Pauli Twirling with coherent noise
 
@@ -414,7 +414,7 @@ See the plot in the [next section](#combining-pauli-twirling-with-zne) for an ex
 To combine Pauli twirling with ZNE, we'll first generate the noise-scaled circuits with {func}`.zne.construct_circuits`, apply twirling to the noisy circuits, average over the twirled expectation values and then use Richardson extrapolation to get the noise-tailored error mitigated expectation value. 
 
 This chosen order ensures the final results take advantage of averaging over the Pauli twirled circuits.
-The alternative would be to twirl the input circuit before applying ZNE, but this would result in the the added twirling gates being folded as part of the ZNE protocol, which would not yield the desired results.
+The alternative would be to twirl the input circuit before applying ZNE, but this would result in the added twirling gates being folded as part of the ZNE protocol, which would not yield the desired results.
 Hence, the ZNE noise scaled circuits are generated first, then twirled, so they will only affected by incoherent noise.
 
 
