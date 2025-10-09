@@ -380,13 +380,9 @@ class Settings:
             elif circuit_type == "custom":
                 # ideal distribution already set above (may be empty)
                 pass
-            elif circuit_type == "custom":
-                # ideal distribution already set above (may be empty)
-                pass
             else:
                 raise ValueError(
                     "invalid value passed for `circuit_types`. Must be "
-                    "one of `ghz`, `rb`, `mirror`, `w`, `qv`, or `custom`, "
                     "one of `ghz`, `rb`, `mirror`, `w`, `qv`, or `custom`, "
                     f"but got {circuit_type}."
                 )
