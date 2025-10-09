@@ -306,11 +306,8 @@ mitigation:
   circuits by implementing techniques such as gate set tomography
   (GST) and randomized benchmarking.
 
-This is just a selection of open-source projects related to quantum
-error mitigation.
-A more comprehensive collection of quantum computing related software can be found
-[here](https://github.com/qosf/awesome-quantum-software) and on [Unitary
-Fund](https://unitary.foundation/grants.html)\'s list of supported projects.
+This is just a selection of open-source projects related to quantum error mitigation.
+A more comprehensive collection of quantum computing related software can be found [here](https://github.com/qosf/awesome-quantum-software) and on [Unitary Foundation](https://unitary.foundation/grants.html)\'s list of supported projects.
 
 ### Resources on noise in quantum computers
 
