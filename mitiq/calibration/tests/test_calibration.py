@@ -25,6 +25,7 @@ from mitiq.calibration.settings import (
     MitigationTechnique,
     Strategy,
     build_settings_from_pipelines,
+    default_zne_strategy_dicts,
 )
 from mitiq.interface import convert_to_mitiq
 from mitiq.pec.representations import (
@@ -195,6 +196,24 @@ def test_pipeline_settings_builder_creates_expected_strategies():
 
 def test_pipeline_calibration_workflow():
     settings = build_settings_from_pipelines(["rem | zne"])
+    cal = Calibrator(damping_execute, frontend="cirq", settings=settings)
+    cal.run()
+    best = cal.best_strategy()
+    assert best.technique is MitigationTechnique.PIPELINE
+
+
+def test_pipeline_settings_builder_with_pt_stage():
+    settings = build_settings_from_pipelines(["pt | zne"])
+    strategies = settings.make_strategies()
+    assert strategies
+    assert len(strategies) == len(default_zne_strategy_dicts()) * 2
+    first_strategy = strategies[0]
+    stages = first_strategy.technique_params["stages"]
+    assert [stage["name"] for stage in stages] == ["pt", "zne"]
+
+
+def test_pipeline_calibration_with_pauli_twirling():
+    settings = build_settings_from_pipelines(["pt | zne"])
     cal = Calibrator(damping_execute, frontend="cirq", settings=settings)
     cal.run()
     best = cal.best_strategy()

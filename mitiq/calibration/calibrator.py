@@ -30,6 +30,7 @@ from mitiq.calibration.settings import (
     build_settings_from_pipelines,
 )
 from mitiq.interface import convert_from_mitiq
+from mitiq.pt import generate_pauli_twirl_variants
 from mitiq.rem import mitigate_executor as rem_mitigate_executor
 from mitiq.zne import mitigate_executor as zne_mitigate_executor
 
@@ -251,7 +252,11 @@ class Calibrator:
                 "pipelines, but not both."
             )
         if pipelines is not None:
-            settings = build_settings_from_pipelines(pipelines)
+            settings_obj = build_settings_from_pipelines(pipelines)
+        elif settings is not None:
+            settings_obj = settings
+        else:
+            settings_obj = ZNE_SETTINGS
 
         self.executor = (
             executor if isinstance(executor, Executor) else Executor(executor)
@@ -261,7 +266,7 @@ class Calibrator:
             if ideal_executor and not isinstance(ideal_executor, Executor)
             else ideal_executor
         )
-        self.settings = settings if settings is not None else ZNE_SETTINGS
+        self.settings = settings_obj
         self.problems = self.settings.make_problems()
         self.strategies = self.settings.make_strategies()
         self.results = ExperimentResults(
@@ -443,6 +448,24 @@ class Calibrator:
         return np.eye(dim, dtype=np.float64)
 
     @staticmethod
+    def _combine_measurement_results(
+        results: Sequence[MeasurementResult],
+    ) -> MeasurementResult:
+        if not results:
+            raise ValueError("No measurement results provided to combine.")
+
+        qubit_indices = results[0].qubit_indices
+        for res in results:
+            if res.qubit_indices != qubit_indices:
+                raise ValueError(
+                    "All measurement results must have matching qubit indices "
+                    "to be combined."
+                )
+
+        concatenated = np.concatenate([res.asarray for res in results], axis=0)
+        return MeasurementResult(concatenated.tolist(), qubit_indices)
+
+    @staticmethod
     def _extract_expectation_from_result(
         result: QuantumResult, bitstring: str
     ) -> float:
@@ -546,6 +569,35 @@ class Calibrator:
                     ),
                 )
                 current_type = "measurement"
+            elif name == "pt":
+                num_variants = max(1, int(params.get("num_circuits", 5)))
+                previous_executor = current_executor
+                input_type = current_type
+
+                def pt_executor(circ: cirq.Circuit) -> Any:
+                    variants = generate_pauli_twirl_variants(
+                        circ,
+                        num_circuits=num_variants,
+                    )
+                    results = [previous_executor(var) for var in variants]
+                    if input_type == "measurement":
+                        measurements = []
+                        for res in results:
+                            if not isinstance(res, MeasurementResult):
+                                raise TypeError(
+                                    "Pauli twirling stage expected measurement"
+                                    f" results but received {type(res)}."
+                                )
+                            measurements.append(res)
+                        return self._combine_measurement_results(measurements)
+
+                    expectations = [
+                        self._extract_expectation_from_result(res, bitstring)
+                        for res in results
+                    ]
+                    return float(np.mean(expectations))
+
+                current_executor = pt_executor
             elif name == "zne":
                 factory = self._factory_from_stage_params(params)
                 scale_noise = params["scale_noise"]

@@ -385,6 +385,11 @@ class Strategy:
                 stage["name"].upper() for stage in stages
             )
             for stage in stages:
+                if stage["name"] == "pt":
+                    summary.setdefault(
+                        "pt_num_circuits", stage["params"].get("num_circuits")
+                    )
+                    continue
                 if stage["name"] == "zne":
                     factory = _factory_from_stage_params(stage["params"])
                     summary["factory"] = factory.__class__.__name__
@@ -438,6 +443,11 @@ class Strategy:
         elif self.technique is MitigationTechnique.PIPELINE:
             circuits = 1
             for stage in self.technique_params.get("stages", []):
+                if stage["name"] == "pt":
+                    circuits *= max(
+                        1, int(stage["params"].get("num_circuits", 1))
+                    )
+                    continue
                 if stage["name"] == "zne":
                     factory = _factory_from_stage_params(
                         stage["params"], fresh=True
@@ -457,6 +467,10 @@ PIPELINE_STAGE_SPECS: dict[str, dict[str, Any]] = {
     "zne": {
         "input": {"measurement", "expectation"},
         "output": "expectation",
+    },
+    "pt": {
+        "input": {"measurement", "expectation"},
+        "output": "same",
     },
 }
 
@@ -487,7 +501,9 @@ def _validate_pipeline_tokens(tokens: tuple[str, ...], original: str) -> None:
                 f"Pipeline '{original}' is invalid. Stage '{stage_name}' "
                 f"expects input of type {expected}, received {current_type}."
             )
-        current_type = spec["output"]
+        output_type = spec["output"]
+        if output_type != "same":
+            current_type = output_type
 
 
 def _stage_variants(stage_name: str) -> list[dict[str, Any]]:
@@ -514,6 +530,17 @@ def _stage_variants(stage_name: str) -> list[dict[str, Any]]:
                 }
             )
         return variants
+    if stage_name == "pt":
+        num_circuit_options = [4, 8]
+        return [
+            {
+                "name": "pt",
+                "params": {
+                    "num_circuits": option,
+                },
+            }
+            for option in num_circuit_options
+        ]
     raise ValueError(f"Unsupported pipeline stage '{stage_name}'.")
 
 
