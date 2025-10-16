@@ -3,7 +3,8 @@
 # This source code is licensed under the GPL license (v3) found in the
 # LICENSE file in the root directory of this source tree.
 
-from collections.abc import Callable
+import copy
+from collections.abc import Callable, Sequence
 from dataclasses import asdict, dataclass
 from enum import Enum, auto
 from functools import partial
@@ -40,6 +41,7 @@ class MitigationTechnique(Enum):
     ZNE = auto()
     PEC = auto()
     RAW = auto()
+    PIPELINE = auto()
 
     @property
     def mitigation_function(self) -> Callable[..., float]:
@@ -49,12 +51,150 @@ class MitigationTechnique(Enum):
             return cast(Callable[..., float], execute_with_pec)
         elif self is MitigationTechnique.RAW:
             return execute
+        elif self is MitigationTechnique.PIPELINE:
+
+            def _pipeline_not_supported(*_args: Any, **_kwargs: Any) -> float:
+                raise NotImplementedError(
+                    "Pipeline mitigation functions are orchestrated by the "
+                    "Calibrator and cannot be invoked directly."
+                )
+
+            return _pipeline_not_supported
+        else:
+            raise ValueError(f"Unsupported mitigation technique: {self!r}.")
 
 
 calibration_supported_techniques = {
     "ZNE": MitigationTechnique.ZNE,
     "PEC": MitigationTechnique.PEC,
+    "PIPELINE": MitigationTechnique.PIPELINE,
 }
+
+
+DEFAULT_CALIBRATION_BENCHMARKS: list[dict[str, Any]] = [
+    {
+        "circuit_type": "ghz",
+        "num_qubits": 2,
+    },
+    {
+        "circuit_type": "w",
+        "num_qubits": 2,
+    },
+    {
+        "circuit_type": "rb",
+        "num_qubits": 2,
+        "circuit_depth": 7,
+    },
+    {
+        "circuit_type": "mirror",
+        "num_qubits": 2,
+        "circuit_depth": 7,
+        "circuit_seed": 1,
+    },
+]
+
+
+def default_calibration_benchmarks() -> list[dict[str, Any]]:
+    """Returns a deep copy of the default benchmark specifications."""
+
+    return copy.deepcopy(DEFAULT_CALIBRATION_BENCHMARKS)
+
+
+DEFAULT_ZNE_FACTORY_SPECS: list[dict[str, Any]] = [
+    {
+        "factory_ctor": RichardsonFactory,
+        "factory_args": ([1.0, 2.0, 3.0],),
+        "factory_kwargs": {},
+        "scale_noise": fold_global,
+    },
+    {
+        "factory_ctor": RichardsonFactory,
+        "factory_args": ([1.0, 3.0, 5.0],),
+        "factory_kwargs": {},
+        "scale_noise": fold_global,
+    },
+    {
+        "factory_ctor": LinearFactory,
+        "factory_args": ([1.0, 2.0, 3.0],),
+        "factory_kwargs": {},
+        "scale_noise": fold_global,
+    },
+    {
+        "factory_ctor": LinearFactory,
+        "factory_args": ([1.0, 3.0, 5.0],),
+        "factory_kwargs": {},
+        "scale_noise": fold_global,
+    },
+    {
+        "factory_ctor": RichardsonFactory,
+        "factory_args": ([1.0, 2.0, 3.0],),
+        "factory_kwargs": {},
+        "scale_noise": fold_gates_at_random,
+    },
+    {
+        "factory_ctor": RichardsonFactory,
+        "factory_args": ([1.0, 3.0, 5.0],),
+        "factory_kwargs": {},
+        "scale_noise": fold_gates_at_random,
+    },
+    {
+        "factory_ctor": LinearFactory,
+        "factory_args": ([1.0, 2.0, 3.0],),
+        "factory_kwargs": {},
+        "scale_noise": fold_gates_at_random,
+    },
+    {
+        "factory_ctor": LinearFactory,
+        "factory_args": ([1.0, 3.0, 5.0],),
+        "factory_kwargs": {},
+        "scale_noise": fold_gates_at_random,
+    },
+]
+
+
+def default_zne_strategy_dicts() -> list[dict[str, Any]]:
+    """Generates the default ZNE strategy specifications."""
+
+    strategies: list[dict[str, Any]] = []
+    for spec in DEFAULT_ZNE_FACTORY_SPECS:
+        factory = spec["factory_ctor"](
+            *spec["factory_args"], **spec["factory_kwargs"]
+        )
+        strategies.append(
+            {
+                "technique": "zne",
+                "scale_noise": spec["scale_noise"],
+                "factory": factory,
+            }
+        )
+    return strategies
+
+
+def default_pec_strategy_dicts() -> list[dict[str, Any]]:
+    """Generates the default PEC strategy specifications."""
+
+    return [
+        {
+            "technique": "pec",
+            "representation_function": (
+                represent_operation_with_local_depolarizing_noise
+            ),
+            "is_qubit_dependent": False,
+            "noise_level": 0.001,
+            "num_samples": 200,
+            "force_run_all": False,
+        },
+        {
+            "technique": "pec",
+            "representation_function": (
+                represent_operation_with_local_depolarizing_noise
+            ),
+            "is_qubit_dependent": False,
+            "noise_level": 0.01,
+            "num_samples": 200,
+            "force_run_all": False,
+        },
+    ]
 
 
 @dataclass
@@ -235,6 +375,29 @@ class Strategy:
                 "is_qubit_dependent"
             ]
             summary["num_samples"] = self.technique_params["num_samples"]
+        elif self.technique is MitigationTechnique.PIPELINE:
+            stages = self.technique_params.get("stages", [])
+            summary["pipeline"] = self.technique_params.get(
+                "pipeline_label",
+                " -> ".join(stage["name"].upper() for stage in stages),
+            )
+            summary["stages"] = " -> ".join(
+                stage["name"].upper() for stage in stages
+            )
+            for stage in stages:
+                if stage["name"] == "zne":
+                    factory = _factory_from_stage_params(stage["params"])
+                    summary["factory"] = factory.__class__.__name__
+                    summary["scale_factors"] = getattr(
+                        factory, "_scale_factors", None
+                    )
+                    summary["scale_method"] = stage["params"][
+                        "scale_noise"
+                    ].__name__
+                    summary["num_to_average"] = stage["params"].get(
+                        "num_to_average", 1
+                    )
+                    break
         return summary
 
     def to_pretty_dict(self) -> dict[str, str]:
@@ -247,6 +410,11 @@ class Strategy:
             summary["representation_function"] = summary[
                 "representation_function"
             ][25:]
+        elif self.technique is MitigationTechnique.PIPELINE:
+            if "scale_factors" in summary and summary["scale_factors"]:
+                summary["scale_factors"] = str(summary["scale_factors"])[1:-1]
+            if "factory" in summary and summary["factory"]:
+                summary["factory"] = summary["factory"][:-7]
         return summary
 
     def __repr__(self) -> str:
@@ -267,7 +435,152 @@ class Strategy:
             return summary["num_samples"]
         elif self.technique is MitigationTechnique.RAW:
             return 1
+        elif self.technique is MitigationTechnique.PIPELINE:
+            circuits = 1
+            for stage in self.technique_params.get("stages", []):
+                if stage["name"] == "zne":
+                    factory = _factory_from_stage_params(
+                        stage["params"], fresh=True
+                    )
+                    scale_factors = getattr(factory, "_scale_factors", [])
+                    num_to_average = stage["params"].get("num_to_average", 1)
+                    circuits *= len(scale_factors) * num_to_average
+            return circuits
         return None
+
+
+PIPELINE_STAGE_SPECS: dict[str, dict[str, Any]] = {
+    "rem": {
+        "input": {"measurement"},
+        "output": "measurement",
+    },
+    "zne": {
+        "input": {"measurement", "expectation"},
+        "output": "expectation",
+    },
+}
+
+
+def _normalize_pipeline_string(pipeline: str) -> tuple[str, ...]:
+    tokens = [segment.strip().lower() for segment in pipeline.split("|")]
+    normalized = tuple(token for token in tokens if token)
+    if not normalized:
+        raise ValueError(
+            "Pipeline specification must contain at least one stage."
+        )
+    return normalized
+
+
+def _validate_pipeline_tokens(tokens: tuple[str, ...], original: str) -> None:
+    current_type = "measurement"
+    for stage_name in tokens:
+        if stage_name not in PIPELINE_STAGE_SPECS:
+            supported = ", ".join(sorted(PIPELINE_STAGE_SPECS))
+            raise ValueError(
+                f"Unsupported pipeline stage '{stage_name}' in '{original}'. "
+                f"Supported stages: {supported}."
+            )
+        spec = PIPELINE_STAGE_SPECS[stage_name]
+        if current_type not in spec["input"]:
+            expected = ", ".join(sorted(spec["input"]))
+            raise ValueError(
+                f"Pipeline '{original}' is invalid. Stage '{stage_name}' "
+                f"expects input of type {expected}, received {current_type}."
+            )
+        current_type = spec["output"]
+
+
+def _stage_variants(stage_name: str) -> list[dict[str, Any]]:
+    if stage_name == "rem":
+        return [
+            {
+                "name": "rem",
+                "params": {"inverse_confusion_matrix": "identity"},
+            }
+        ]
+    if stage_name == "zne":
+        variants: list[dict[str, Any]] = []
+        for spec in DEFAULT_ZNE_FACTORY_SPECS:
+            variants.append(
+                {
+                    "name": "zne",
+                    "params": {
+                        "factory_ctor": spec["factory_ctor"],
+                        "factory_args": spec["factory_args"],
+                        "factory_kwargs": spec["factory_kwargs"],
+                        "scale_noise": spec["scale_noise"],
+                        "num_to_average": spec.get("num_to_average", 1),
+                    },
+                }
+            )
+        return variants
+    raise ValueError(f"Unsupported pipeline stage '{stage_name}'.")
+
+
+def _build_pipeline_strategy_dicts(
+    tokens: tuple[str, ...], pipeline_label: str
+) -> list[dict[str, Any]]:
+    stage_options: list[list[dict[str, Any]]] = [[]]
+    for stage_name in tokens:
+        variants = _stage_variants(stage_name)
+        stage_options = [
+            option + [copy.deepcopy(variant)]
+            for option in stage_options
+            for variant in variants
+        ]
+
+    normalized_label = " | ".join(stage.upper() for stage in tokens)
+    strategies: list[dict[str, Any]] = []
+    for stage_list in stage_options:
+        stages = [
+            {
+                "name": stage["name"],
+                "params": stage["params"],
+            }
+            for stage in stage_list
+        ]
+        strategies.append(
+            {
+                "technique": "pipeline",
+                "pipeline_label": pipeline_label or normalized_label,
+                "stages": stages,
+            }
+        )
+    return strategies
+
+
+def _factory_from_stage_params(params: dict[str, Any], *, fresh: bool = False):
+    factory = params.get("factory")
+    if factory is not None:
+        return factory.reset() if fresh else factory
+
+    factory_ctor = params.get("factory_ctor")
+    if factory_ctor is None:
+        raise ValueError(
+            "Pipeline stage parameters must include either 'factory' or "
+            "'factory_ctor'."
+        )
+    args = params.get("factory_args", ())
+    kwargs = params.get("factory_kwargs", {})
+    return factory_ctor(*args, **kwargs)
+
+
+def build_settings_from_pipelines(pipelines: Sequence[str]) -> "Settings":
+    """Constructs calibration settings from user-provided pipeline strings."""
+
+    if not pipelines:
+        raise ValueError("At least one pipeline must be provided.")
+
+    strategy_dicts: list[dict[str, Any]] = []
+    for pipeline in pipelines:
+        tokens = _normalize_pipeline_string(pipeline)
+        _validate_pipeline_tokens(tokens, pipeline)
+        strategy_dicts.extend(_build_pipeline_strategy_dicts(tokens, pipeline))
+
+    return Settings(
+        default_calibration_benchmarks(),
+        strategy_dicts,
+    )
 
 
 class Settings:
@@ -421,115 +734,13 @@ class Settings:
 
 
 ZNE_SETTINGS = Settings(
-    benchmarks=[
-        {
-            "circuit_type": "ghz",
-            "num_qubits": 2,
-        },
-        {
-            "circuit_type": "w",
-            "num_qubits": 2,
-        },
-        {
-            "circuit_type": "rb",
-            "num_qubits": 2,
-            "circuit_depth": 7,
-        },
-        {
-            "circuit_type": "mirror",
-            "num_qubits": 2,
-            "circuit_depth": 7,
-            "circuit_seed": 1,
-        },
-    ],
-    strategies=[
-        {
-            "technique": "zne",
-            "scale_noise": fold_global,
-            "factory": RichardsonFactory([1.0, 2.0, 3.0]),
-        },
-        {
-            "technique": "zne",
-            "scale_noise": fold_global,
-            "factory": RichardsonFactory([1.0, 3.0, 5.0]),
-        },
-        {
-            "technique": "zne",
-            "scale_noise": fold_global,
-            "factory": LinearFactory([1.0, 2.0, 3.0]),
-        },
-        {
-            "technique": "zne",
-            "scale_noise": fold_global,
-            "factory": LinearFactory([1.0, 3.0, 5.0]),
-        },
-        {
-            "technique": "zne",
-            "scale_noise": fold_gates_at_random,
-            "factory": RichardsonFactory([1.0, 2.0, 3.0]),
-        },
-        {
-            "technique": "zne",
-            "scale_noise": fold_gates_at_random,
-            "factory": RichardsonFactory([1.0, 3.0, 5.0]),
-        },
-        {
-            "technique": "zne",
-            "scale_noise": fold_gates_at_random,
-            "factory": LinearFactory([1.0, 2.0, 3.0]),
-        },
-        {
-            "technique": "zne",
-            "scale_noise": fold_gates_at_random,
-            "factory": LinearFactory([1.0, 3.0, 5.0]),
-        },
-    ],
+    benchmarks=default_calibration_benchmarks(),
+    strategies=default_zne_strategy_dicts(),
 )
 
 PEC_SETTINGS = Settings(
-    benchmarks=[
-        {
-            "circuit_type": "ghz",
-            "num_qubits": 2,
-        },
-        {
-            "circuit_type": "w",
-            "num_qubits": 2,
-        },
-        {
-            "circuit_type": "rb",
-            "num_qubits": 2,
-            "circuit_depth": 7,
-        },
-        {
-            "circuit_type": "mirror",
-            "num_qubits": 2,
-            "circuit_depth": 7,
-            "circuit_seed": 1,
-        },
-    ],
-    strategies=[
-        {
-            "technique": "pec",
-            "representation_function": (
-                represent_operation_with_local_depolarizing_noise
-            ),
-            "is_qubit_dependent": False,
-            "noise_level": 0.001,
-            "num_samples": 200,
-            "force_run_all": False,
-        },
-        {
-            "technique": "pec",
-            "representation_function": (
-                represent_operation_with_local_depolarizing_noise
-            ),
-            "is_qubit_dependent": False,
-            "noise_level": 0.01,
-            "num_samples": 200,
-            "force_run_all": False,
-        },
-    ],
+    benchmarks=default_calibration_benchmarks(),
+    strategies=default_pec_strategy_dicts(),
 )
 
 DefaultStrategy = Strategy(0, MitigationTechnique.RAW, {})

@@ -21,7 +21,11 @@ from mitiq.calibration.calibrator import (
     MissingResultsError,
     convert_to_expval_executor,
 )
-from mitiq.calibration.settings import Strategy
+from mitiq.calibration.settings import (
+    MitigationTechnique,
+    Strategy,
+    build_settings_from_pipelines,
+)
 from mitiq.interface import convert_to_mitiq
 from mitiq.pec.representations import (
     represent_operation_with_local_biased_noise,
@@ -174,6 +178,27 @@ def test_PEC_workflow():
     cal.run()
     assert isinstance(cal.results, ExperimentResults)
     assert isinstance(cal.best_strategy(), Strategy)
+
+
+def test_pipeline_settings_builder_creates_expected_strategies():
+    settings = build_settings_from_pipelines(["rem | zne"])
+    strategies = settings.make_strategies()
+    assert strategies
+    assert all(
+        strategy.technique is MitigationTechnique.PIPELINE
+        for strategy in strategies
+    )
+    first_strategy = strategies[0]
+    stages = first_strategy.technique_params["stages"]
+    assert [stage["name"] for stage in stages] == ["rem", "zne"]
+
+
+def test_pipeline_calibration_workflow():
+    settings = build_settings_from_pipelines(["rem | zne"])
+    cal = Calibrator(damping_execute, frontend="cirq", settings=settings)
+    cal.run()
+    best = cal.best_strategy()
+    assert best.technique is MitigationTechnique.PIPELINE
 
 
 @pytest.mark.parametrize("circuit_type", SUPPORTED_PROGRAM_TYPES.keys())

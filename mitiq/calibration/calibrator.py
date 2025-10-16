@@ -7,7 +7,7 @@ import warnings
 from collections.abc import Callable, Sequence
 from enum import Enum
 from operator import itemgetter
-from typing import cast
+from typing import Any, cast
 
 import cirq
 import numpy as np
@@ -24,10 +24,14 @@ from mitiq import (
 from mitiq.calibration.settings import (
     ZNE_SETTINGS,
     BenchmarkProblem,
+    MitigationTechnique,
     Settings,
     Strategy,
+    build_settings_from_pipelines,
 )
 from mitiq.interface import convert_from_mitiq
+from mitiq.rem import mitigate_executor as rem_mitigate_executor
+from mitiq.zne import mitigate_executor as zne_mitigate_executor
 
 
 class MissingResultsError(Exception):
@@ -220,8 +224,10 @@ class Calibrator:
     Args:
         executor: An unmitigated executor returning a
             :class:`.MeasurementResult`.
-        settings: A ``Settings`` object which specifies the type and amount of
-            circuits/error mitigation methods to run.
+        settings: Optional ``Settings`` specifying the benchmark problems and
+            mitigation strategies to explore.
+        pipelines: Optional list of pipeline strings (e.g., ``"rem | zne"``)
+            used to automatically construct calibration settings.
         frontend: The executor frontend as a string. For a list of supported
             frontends see ``mitiq.SUPPORTED_PROGRAM_TYPES.keys()``,
         ideal_executor: An optional simulated executor returning the ideal
@@ -233,11 +239,20 @@ class Calibrator:
         executor: Executor | Callable[[QPROGRAM], QuantumResult],
         *,
         frontend: str,
-        settings: Settings = ZNE_SETTINGS,
+        settings: Settings | None = None,
+        pipelines: Sequence[str] | None = None,
         ideal_executor: Executor
         | Callable[[QPROGRAM], QuantumResult]
         | None = None,
     ):
+        if settings is not None and pipelines is not None:
+            raise ValueError(
+                "Provide either an explicit Settings instance or a list of "
+                "pipelines, but not both."
+            )
+        if pipelines is not None:
+            settings = build_settings_from_pipelines(pipelines)
+
         self.executor = (
             executor if isinstance(executor, Executor) else Executor(executor)
         )
@@ -246,9 +261,9 @@ class Calibrator:
             if ideal_executor and not isinstance(ideal_executor, Executor)
             else ideal_executor
         )
-        self.settings = settings
-        self.problems = settings.make_problems()
-        self.strategies = settings.make_strategies()
+        self.settings = settings if settings is not None else ZNE_SETTINGS
+        self.problems = self.settings.make_problems()
+        self.strategies = self.settings.make_strategies()
         self.results = ExperimentResults(
             strategies=self.strategies, problems=self.problems
         )
@@ -361,9 +376,16 @@ class Calibrator:
             for strategy in self.strategies:
                 with warnings.catch_warnings():
                     warnings.simplefilter("ignore", UserWarning)
-                    mitigated_value = strategy.mitigation_function(
-                        circuit, expval_executor
-                    )
+                    if strategy.technique is MitigationTechnique.PIPELINE:
+                        mitigated_value = self._evaluate_pipeline_strategy(
+                            strategy,
+                            circuit,
+                            bitstring_to_measure,
+                        )
+                    else:
+                        mitigated_value = strategy.mitigation_function(
+                            circuit, expval_executor
+                        )
                 self.results.add_result(
                     strategy,
                     problem,
@@ -412,6 +434,158 @@ class Calibrator:
         return execute_with_mitigation(
             circuit, expval_executor, observable, calibrator=self
         )
+
+    @staticmethod
+    def _identity_inverse_confusion_matrix(
+        num_qubits: int,
+    ) -> npt.NDArray[np.float64]:
+        dim = 2**num_qubits
+        return np.eye(dim, dtype=np.float64)
+
+    @staticmethod
+    def _extract_expectation_from_result(
+        result: QuantumResult, bitstring: str
+    ) -> float:
+        if isinstance(result, MeasurementResult) or hasattr(
+            result, "prob_distribution"
+        ):
+            distribution = cast(MeasurementResult, result).prob_distribution()
+            return float(distribution.get(bitstring, 0.0))
+
+        if isinstance(result, (list, tuple)):
+            if not result:
+                raise ValueError("Executor returned an empty result list.")
+            result = result[0]
+
+        if isinstance(result, np.ndarray):
+            if result.size == 0:
+                raise ValueError("Executor returned an empty ndarray result.")
+            result = result.flat[0]
+
+        if isinstance(result, complex):
+            return float(result.real)
+
+        if isinstance(result, (np.floating, np.integer)):
+            return float(result)
+
+        if isinstance(result, float):
+            return result
+
+        raise TypeError(
+            "Unsupported result type returned from mitigation pipeline: "
+            f"{type(result)}"
+        )
+
+    def _measurement_executor_callable(
+        self,
+    ) -> Callable[[cirq.Circuit], MeasurementResult]:
+        base_executor = self.cirq_executor
+
+        def _execute(circ: cirq.Circuit) -> MeasurementResult:
+            result = base_executor.run([circ])[0]
+            return cast(MeasurementResult, result)
+
+        return _execute
+
+    @staticmethod
+    def _factory_from_stage_params(params: dict[str, Any]) -> Any:
+        factory = params.get("factory")
+        if factory is not None:
+            return factory.reset()
+        factory_ctor = params.get("factory_ctor")
+        if factory_ctor is None:
+            raise ValueError(
+                "Pipeline stage parameters must include either 'factory' or "
+                "'factory_ctor'."
+            )
+        args = params.get("factory_args", ())
+        kwargs = params.get("factory_kwargs", {})
+        return factory_ctor(*args, **kwargs)
+
+    def _evaluate_pipeline_strategy(
+        self,
+        strategy: Strategy,
+        circuit: cirq.Circuit,
+        bitstring: str,
+    ) -> float:
+        stages = strategy.technique_params.get("stages", [])
+        if not stages:
+            raise ValueError(
+                "Pipeline strategy is missing stage definitions. "
+                f"Strategy: {strategy}"
+            )
+
+        current_executor: Callable[[cirq.Circuit], Any] = (
+            self._measurement_executor_callable()
+        )
+        current_type = "measurement"
+        num_qubits = len(circuit.all_qubits())
+
+        for stage in stages:
+            name = stage["name"]
+            params = stage.get("params", {})
+
+            if name == "rem":
+                icm = params.get("inverse_confusion_matrix")
+                if isinstance(icm, str) and icm == "identity":
+                    icm_array = self._identity_inverse_confusion_matrix(
+                        num_qubits
+                    )
+                elif icm is None:
+                    icm_array = self._identity_inverse_confusion_matrix(
+                        num_qubits
+                    )
+                else:
+                    icm_array = np.asarray(icm, dtype=np.float64)
+
+                current_executor = cast(
+                    Callable[[cirq.Circuit], MeasurementResult],
+                    rem_mitigate_executor(
+                        current_executor,
+                        inverse_confusion_matrix=icm_array,
+                    ),
+                )
+                current_type = "measurement"
+            elif name == "zne":
+                factory = self._factory_from_stage_params(params)
+                scale_noise = params["scale_noise"]
+                num_to_average = params.get("num_to_average", 1)
+
+                if current_type == "measurement":
+                    measurement_executor = current_executor
+
+                    def expectation_executor(
+                        circ: cirq.Circuit,
+                    ) -> float:
+                        measurement = measurement_executor(circ)
+                        return (
+                            cast(MeasurementResult, measurement)
+                            .prob_distribution()
+                            .get(bitstring, 0.0)
+                        )
+
+                    base_executor_for_zne: Callable[[cirq.Circuit], float] = (
+                        expectation_executor
+                    )
+                else:
+                    base_executor_for_zne = cast(
+                        Callable[[cirq.Circuit], float], current_executor
+                    )
+
+                current_executor = zne_mitigate_executor(
+                    base_executor_for_zne,
+                    factory=factory,
+                    scale_noise=scale_noise,
+                    num_to_average=num_to_average,
+                )
+                current_type = "expectation"
+            else:
+                raise ValueError(
+                    f"Unsupported pipeline stage '{name}' encountered."
+                )
+
+        final_result = current_executor(circuit)
+        return self._extract_expectation_from_result(final_result, bitstring)
 
 
 def convert_to_expval_executor(executor: Executor, bitstring: str) -> Executor:
@@ -483,5 +657,10 @@ def execute_with_mitigation(
             return None
 
     strategy = calibrator.best_strategy()
+    if strategy.technique is MitigationTechnique.PIPELINE:
+        raise NotImplementedError(
+            "execute_with_mitigation does not yet support automatically "
+            "running pipeline strategies on arbitrary circuits."
+        )
     em_func = strategy.mitigation_function
     return em_func(circuit, executor=executor, observable=observable)
