@@ -29,6 +29,7 @@ from mitiq.pec.representations import (
     represent_operation_with_local_depolarizing_noise,
 )
 from mitiq.raw import execute
+from mitiq.ddd import rules as ddd_rules
 from mitiq.zne import execute_with_zne
 from mitiq.zne.inference import LinearFactory, RichardsonFactory
 from mitiq.zne.scaling import fold_gates_at_random, fold_global
@@ -195,6 +196,34 @@ def default_pec_strategy_dicts() -> list[dict[str, Any]]:
             "force_run_all": False,
         },
     ]
+
+
+DEFAULT_DDD_RULE_SPECS: list[dict[str, Any]] = [
+    {
+        "rule": ddd_rules.xx,
+        "rule_name": "xx",
+        "num_trials": 2,
+        "rule_args": {},
+    },
+    {
+        "rule": ddd_rules.xx,
+        "rule_name": "xx",
+        "num_trials": 4,
+        "rule_args": {},
+    },
+    {
+        "rule": ddd_rules.xyxy,
+        "rule_name": "xyxy",
+        "num_trials": 2,
+        "rule_args": {},
+    },
+    {
+        "rule": ddd_rules.xyxy,
+        "rule_name": "xyxy",
+        "num_trials": 4,
+        "rule_args": {},
+    },
+]
 
 
 @dataclass
@@ -385,6 +414,14 @@ class Strategy:
                 stage["name"].upper() for stage in stages
             )
             for stage in stages:
+                if stage["name"] == "ddd":
+                    summary.setdefault(
+                        "ddd_rule", stage["params"].get("rule_name")
+                    )
+                    summary.setdefault(
+                        "ddd_num_trials", stage["params"].get("num_trials")
+                    )
+                    continue
                 if stage["name"] == "pt":
                     summary.setdefault(
                         "pt_num_circuits", stage["params"].get("num_circuits")
@@ -443,6 +480,11 @@ class Strategy:
         elif self.technique is MitigationTechnique.PIPELINE:
             circuits = 1
             for stage in self.technique_params.get("stages", []):
+                if stage["name"] == "ddd":
+                    circuits *= max(
+                        1, int(stage["params"].get("num_trials", 1))
+                    )
+                    continue
                 if stage["name"] == "pt":
                     circuits *= max(
                         1, int(stage["params"].get("num_circuits", 1))
@@ -469,6 +511,10 @@ PIPELINE_STAGE_SPECS: dict[str, dict[str, Any]] = {
         "output": "expectation",
     },
     "pt": {
+        "input": {"measurement", "expectation"},
+        "output": "same",
+    },
+    "ddd": {
         "input": {"measurement", "expectation"},
         "output": "same",
     },
@@ -540,6 +586,19 @@ def _stage_variants(stage_name: str) -> list[dict[str, Any]]:
                 },
             }
             for option in num_circuit_options
+        ]
+    if stage_name == "ddd":
+        return [
+            {
+                "name": "ddd",
+                "params": {
+                    "rule": spec["rule"],
+                    "rule_name": spec["rule_name"],
+                    "rule_args": spec.get("rule_args", {}),
+                    "num_trials": spec.get("num_trials", 1),
+                },
+            }
+            for spec in DEFAULT_DDD_RULE_SPECS
         ]
     raise ValueError(f"Unsupported pipeline stage '{stage_name}'.")
 

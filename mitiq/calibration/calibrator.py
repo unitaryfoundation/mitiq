@@ -29,6 +29,7 @@ from mitiq.calibration.settings import (
     Strategy,
     build_settings_from_pipelines,
 )
+from mitiq.ddd.ddd import construct_circuits as ddd_construct_circuits
 from mitiq.interface import convert_from_mitiq
 from mitiq.pt import generate_pauli_twirl_variants
 from mitiq.rem import mitigate_executor as rem_mitigate_executor
@@ -569,18 +570,68 @@ class Calibrator:
                     ),
                 )
                 current_type = "measurement"
+            elif name == "ddd":
+                rule = params.get("rule")
+                if rule is None:
+                    raise ValueError(
+                        "DDD stage requires a 'rule' callable parameter."
+                    )
+                rule_args = params.get("rule_args", {})
+                num_trials = max(1, int(params.get("num_trials", 1)))
+                previous_executor = current_executor
+                input_type = current_type
+
+                def ddd_executor(
+                    circ: cirq.Circuit,
+                    _prev_executor: Callable[[cirq.Circuit], Any] = previous_executor,
+                    _rule: Callable[[int], cirq.Circuit] | Callable[[int], Any] = rule,
+                    _rule_args: dict[str, Any] = rule_args,
+                    _num_trials: int = num_trials,
+                    _input_type: str = input_type,
+                ) -> Any:
+                    circuits = ddd_construct_circuits(
+                        circ,
+                        rule=_rule,
+                        rule_args=_rule_args,
+                        num_trials=_num_trials,
+                    )
+                    results = [_prev_executor(var) for var in circuits]
+                    if _input_type == "measurement":
+                        measurements: list[MeasurementResult] = []
+                        for res in results:
+                            if not isinstance(res, MeasurementResult):
+                                raise TypeError(
+                                    "DDD stage expected measurement results "
+                                    f"but received {type(res)}."
+                                )
+                            measurements.append(res)
+                        return self._combine_measurement_results(measurements)
+
+                    expectations = [
+                        self._extract_expectation_from_result(res, bitstring)
+                        for res in results
+                    ]
+                    return float(np.mean(expectations))
+
+                current_executor = ddd_executor
+                current_type = input_type
             elif name == "pt":
                 num_variants = max(1, int(params.get("num_circuits", 5)))
                 previous_executor = current_executor
                 input_type = current_type
 
-                def pt_executor(circ: cirq.Circuit) -> Any:
+                def pt_executor(
+                    circ: cirq.Circuit,
+                    _prev_executor: Callable[[cirq.Circuit], Any] = previous_executor,
+                    _num_variants: int = num_variants,
+                    _input_type: str = input_type,
+                ) -> Any:
                     variants = generate_pauli_twirl_variants(
                         circ,
-                        num_circuits=num_variants,
+                        num_circuits=_num_variants,
                     )
-                    results = [previous_executor(var) for var in variants]
-                    if input_type == "measurement":
+                    results = [_prev_executor(var) for var in variants]
+                    if _input_type == "measurement":
                         measurements = []
                         for res in results:
                             if not isinstance(res, MeasurementResult):

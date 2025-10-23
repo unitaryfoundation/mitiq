@@ -220,6 +220,23 @@ def test_pipeline_calibration_with_pauli_twirling():
     assert best.technique is MitigationTechnique.PIPELINE
 
 
+def test_pipeline_settings_builder_with_ddd_stage():
+    settings = build_settings_from_pipelines(["ddd | rem | zne"])
+    strategies = settings.make_strategies()
+    assert strategies
+    first_strategy = strategies[0]
+    stages = first_strategy.technique_params["stages"]
+    assert [stage["name"] for stage in stages] == ["ddd", "rem", "zne"]
+
+
+def test_pipeline_calibration_with_dynamical_decoupling():
+    settings = build_settings_from_pipelines(["ddd | rem | zne"])
+    cal = Calibrator(damping_execute, frontend="cirq", settings=settings)
+    cal.run()
+    best = cal.best_strategy()
+    assert best.technique is MitigationTechnique.PIPELINE
+
+
 @pytest.mark.parametrize("circuit_type", SUPPORTED_PROGRAM_TYPES.keys())
 def test_ZNE_workflow_multi_platform(circuit_type):
     """Test the ZNE workflow runs with all possible frontends."""
