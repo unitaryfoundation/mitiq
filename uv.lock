@@ -1541,7 +1541,7 @@ docs = [
     { name = "myst-nb", specifier = "==1.3.0" },
     { name = "myst-parser", specifier = "==4.0.0" },
     { name = "nbsphinx", specifier = "==0.9.7" },
-    { name = "openfermion", marker = "sys_platform != 'win32'", specifier = "==1.7.0" },
+    { name = "openfermion", marker = "sys_platform != 'win32'", specifier = "==1.7.1" },
     { name = "openfermionpyscf", marker = "sys_platform != 'win32'", specifier = "==0.5" },
     { name = "pandas", specifier = "==2.1.3" },
     { name = "pydata-sphinx-theme", specifier = "==0.15.4" },
@@ -1799,7 +1799,7 @@ wheels = [
 
 [[package]]
 name = "openfermion"
-version = "1.7.0"
+version = "1.7.1"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "cirq-core" },
@@ -1812,9 +1812,9 @@ dependencies = [
     { name = "scipy" },
     { name = "sympy" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/4f/3b/8e1811ce313a8e7b75be37d83afb4fac0d47b91f134ea01b7d0bbf4d9a71/openfermion-1.7.0.tar.gz", hash = "sha256:1728768c318b50e58a888a4657c2e87a39111022eff32f7729f3eda729da81a8", size = 44494457, upload-time = "2025-02-11T23:40:24.62Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/10/86/5ab524a132b93e70c55215dfb91d2ce8012801a82f55ad6643616717575b/openfermion-1.7.1.tar.gz", hash = "sha256:717f4b969a1fd1df24f11bd462b485d317f257bdd91cef32ced23d276cc83f70", size = 44495108, upload-time = "2025-06-06T04:10:45.536Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/29/ae/ea1513af715a7533ade2a78ca5924bb10de7fb961d5dfccd0f113e6a2bd8/openfermion-1.7.0-py3-none-any.whl", hash = "sha256:8df138cc46b2d248882a12392d40d813e4da98700453c83b9da500dcba847322", size = 44717237, upload-time = "2025-02-11T23:40:16.621Z" },
+    { url = "https://files.pythonhosted.org/packages/b4/39/28f89ae6516fe327e22ea2f8162c0f83f6d580a8ca00a47447b4473571e3/openfermion-1.7.1-py3-none-any.whl", hash = "sha256:2f3745786d9aa1913bb3281b5151eae3a5082d90aeacd6b964e813b9fa8a3e46", size = 44717798, upload-time = "2025-06-06T04:10:29.073Z" },
 ]
 
 [[package]]
