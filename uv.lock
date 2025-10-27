@@ -268,18 +268,19 @@ wheels = [
 
 [[package]]
 name = "bqskit"
-version = "1.1.1"
+version = "1.2.1"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "bqskitrs" },
-    { name = "lark-parser" },
+    { name = "dill" },
+    { name = "lark" },
     { name = "numpy" },
     { name = "scipy" },
     { name = "typing-extensions" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/f0/55/aac2d5f7f0f8fef3022398fb32cfb915475a39e8e7bd5af9da07a3e07cd6/bqskit-1.1.1.tar.gz", hash = "sha256:bd308ef276ef41b2d2a66c45feb9ef01cb97080eeb76655b483beba962428100", size = 245149, upload-time = "2023-12-11T17:59:19.355Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/76/74/cef9c5460bdba9486593308cb27e6dd7d49a6d77750c24f5a5054ca70bd6/bqskit-1.2.1.tar.gz", hash = "sha256:8456433cd58df4bc003d33299300872cc22f6cf02432553cc4888643d9c420f9", size = 279608, upload-time = "2025-08-30T22:35:59.842Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/98/e8/c1b864cb1feb3922d461a6c77221d302b4d0bac4b1d75666ee55a1016f71/bqskit-1.1.1-py3-none-any.whl", hash = "sha256:a5f31bb744082c86a584f8b769ff5cade17da536710edbcd89d2c64df796cc82", size = 392163, upload-time = "2023-12-11T17:59:16.931Z" },
+    { url = "https://files.pythonhosted.org/packages/fb/26/c35c93075cfeec3dc00a5b007690d01e2e4efa200bd2c0ec3346dca3b047/bqskit-1.2.1-py3-none-any.whl", hash = "sha256:cff63fac74d477311d5546edd7f16bbdc76e9e705f2affc8aeb0241544f61e36", size = 439942, upload-time = "2025-08-30T22:35:58.321Z" },
 ]
 
 [[package]]
@@ -1267,15 +1268,6 @@ wheels = [
 ]
 
 [[package]]
-name = "lark-parser"
-version = "0.12.0"
-source = { registry = "https://pypi.org/simple" }
-sdist = { url = "https://files.pythonhosted.org/packages/5a/ee/fd1192d7724419ddfe15b6f17d1c8742800d4de917c0adac3b6aaf22e921/lark-parser-0.12.0.tar.gz", hash = "sha256:15967db1f1214013dca65b1180745047b9be457d73da224fcda3d9dd4e96a138", size = 235029, upload-time = "2021-08-30T09:14:44.484Z" }
-wheels = [
-    { url = "https://files.pythonhosted.org/packages/76/00/90f05db333fe1aa6b6ffea83a35425b7d53ea95c8bba0b1597f226cf1d5f/lark_parser-0.12.0-py2.py3-none-any.whl", hash = "sha256:0eaf30cb5ba787fe404d73a7d6e61df97b21d5a63ac26c5008c78a494373c675", size = 103498, upload-time = "2021-08-30T13:01:01.603Z" },
-]
-
-[[package]]
 name = "latexcodec"
 version = "3.0.1"
 source = { registry = "https://pypi.org/simple" }
@@ -1536,7 +1528,7 @@ dev = [
     { name = "types-tabulate" },
 ]
 docs = [
-    { name = "bqskit", specifier = "==1.1.1" },
+    { name = "bqskit", specifier = "==1.2.1" },
     { name = "jupytext", specifier = "==1.16.1" },
     { name = "myst-nb", specifier = "==1.3.0" },
     { name = "myst-parser", specifier = "==4.0.0" },

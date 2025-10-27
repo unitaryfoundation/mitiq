@@ -81,7 +81,7 @@ docs = [
     "pyscf==2.9.0; sys_platform != 'win32'",
     "openfermion==1.7.1; sys_platform != 'win32'",
     "openfermionpyscf==0.5; sys_platform != 'win32'",
-    "bqskit==1.1.1",
+    "bqskit==1.2.1",
     "seaborn==0.13.0",
     "stim==1.14.0",
     "stimcirq==1.14.0",
