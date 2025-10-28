@@ -1,5 +1,5 @@
 version = 1
-revision = 2
+revision = 3
 requires-python = ">=3.11, <3.13"
 resolution-markers = [
     "python_full_version >= '3.12'",
@@ -1602,7 +1602,7 @@ docs = [
     { name = "pydata-sphinx-theme", specifier = "==0.15.4" },
     { name = "pyqrack", specifier = "==1.32.27" },
     { name = "pyscf", marker = "sys_platform != 'win32'", specifier = "==2.11.0" },
-    { name = "pytket-cirq", specifier = "==0.39.0" },
+    { name = "pytket-cirq", specifier = "==0.42.0" },
     { name = "seaborn", specifier = "==0.13.0" },
     { name = "sphinx", specifier = "==8.0.2" },
     { name = "sphinx-autodoc-typehints", specifier = "==2.0.0" },
@@ -2580,16 +2580,15 @@ wheels = [
 
 [[package]]
 name = "pytket-cirq"
-version = "0.39.0"
+version = "0.42.0"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "cirq-core" },
     { name = "cirq-google" },
-    { name = "protobuf" },
     { name = "pytket" },
 ]
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/5a/00/a47e1be5b9f79826a398c47e2be92a0b8423e704a6119b90f15d7a09319b/pytket_cirq-0.39.0-py3-none-any.whl", hash = "sha256:7ae6f227ce591e992d0adcedab77066764c6191d11b7e8d3bc59adc6491507b9", size = 17666, upload-time = "2024-11-22T14:06:16.784Z" },
+    { url = "https://files.pythonhosted.org/packages/25/23/6a482de06574a8ff2df1d4c8c6b88d2d95a435ed833f79c263831b2a3db6/pytket_cirq-0.42.0-py3-none-any.whl", hash = "sha256:293581df6b2f42126aab8ddb5429048ef06e3af2a5258b328d85d55135044a3a", size = 17715, upload-time = "2025-07-24T08:45:46.808Z" },
 ]
 
 [[package]]
