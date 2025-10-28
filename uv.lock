@@ -1570,7 +1570,7 @@ requires-dist = [
     { name = "pennylane", marker = "extra == 'pennylane'", specifier = "~=0.36.0" },
     { name = "pennylane-qiskit", marker = "extra == 'pennylane'", specifier = "~=0.36.0" },
     { name = "ply", marker = "extra == 'qiskit'", specifier = "==3.11" },
-    { name = "pyquil", marker = "extra == 'pyquil'", specifier = "~=4.14.0" },
+    { name = "pyquil", marker = "extra == 'pyquil'", specifier = ">=4.14,<4.18" },
     { name = "qbraid", marker = "extra == 'pyquil'", specifier = "~=0.10.0" },
     { name = "qibo", marker = "extra == 'qibo'", specifier = "~=0.2.16" },
     { name = "qiskit", marker = "extra == 'qiskit'", specifier = "~=1.4.2" },
@@ -2416,11 +2416,10 @@ wheels = [
 
 [[package]]
 name = "pyquil"
-version = "4.14.3"
+version = "4.17.0"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "deprecated" },
-    { name = "matplotlib-inline" },
     { name = "networkx" },
     { name = "numpy" },
     { name = "packaging" },
@@ -2430,9 +2429,9 @@ dependencies = [
     { name = "scipy" },
     { name = "types-deprecated" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/d5/78/e729dc9ab6d934379195cd34e29e85652e1cc1d2440e816ade0e3c60ea2b/pyquil-4.14.3.tar.gz", hash = "sha256:f95d0f984a69cc9f20f4088ce921395a3f6d0af749e2f62af4512810a3070a12", size = 168922, upload-time = "2024-09-24T19:37:56.608Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/d2/bc/9ebba80515193692b4f83a19bf377abc4887f3eeeb3d8bf46de032e42064/pyquil-4.17.0.tar.gz", hash = "sha256:9b1838eb9bc3ffbff260b12ff48cf1766dcefe5c8c80594cb7ae37616da50d2d", size = 167260, upload-time = "2025-10-08T21:32:18.874Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/29/bc/fbd122e90d03284f1bf4cc1f91c717c3ef2b5b906a76207d850f2810b8d7/pyquil-4.14.3-py3-none-any.whl", hash = "sha256:111e62194fd84b8f075bc45e3ba02b7d89aa171b3769e3a55c09598e2aec6931", size = 202778, upload-time = "2024-09-24T19:37:54.805Z" },
+    { url = "https://files.pythonhosted.org/packages/93/24/16d63bb278453ec316ef8dafffd14caa0382d4dfaf75b6d3d3106232c9ba/pyquil-4.17.0-py3-none-any.whl", hash = "sha256:40124ccb63126251c1eb0c014f7c5d8a2fcd7f4534e4b6d0f00d0bb8b7390148", size = 203330, upload-time = "2025-10-08T21:32:17.389Z" },
 ]
 
 [[package]]
