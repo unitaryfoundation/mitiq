@@ -6,7 +6,7 @@ jobs:
   greeting:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/first-interaction@v3
+    - uses: actions/first-interaction@v3.0.0 # 3.1 introduced breaking change
       with:
         repo-token: ${{ secrets.GITHUB_TOKEN }}
         pr-message:  'Hello @${{ github.actor }}, thank you for submitting a PR to Mitiq! We will respond as soon as possible, and if you have any questions in the meantime, you can ask us on the [Unitary Foundation Discord](http://discord.unitary.foundation).'
