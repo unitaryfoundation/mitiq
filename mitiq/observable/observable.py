@@ -95,6 +95,9 @@ class Observable:
             return Observable(*[other * pauli for pauli in self._paulis])
         return NotImplemented
 
+    def new_func() -> None:
+        pass
+
     @property
     def groups(self) -> list[PauliStringCollection]:
         return self._groups
