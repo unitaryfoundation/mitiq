@@ -138,15 +138,13 @@ tags_badge_colors = {
 html_sidebars = {"apidoc": [], "changelog": [], "bibliography": []}
 
 intersphinx_mapping = {
-    "python": ("https://docs.python.org/3.10", None),
-    "numpy": ("https://numpy.org/doc/stable/", None),
-    "scipy": ("https://docs.scipy.org/doc/scipy/", None),
-    # Cirq is no longer using sphinx docs so interlinking is not possible.
-    # "cirq": ("https://quantumai.google/cirq", None),
-    "pyquil": ("https://pyquil-docs.rigetti.com/en/stable/", None),
-    "qiskit": ("https://docs.quantum.ibm.com/api/qiskit/", None),
-    # TODO: qutip docs moved and the objects.inv file not yet found
-    # "qutip": ("https://qutip.org/docs/latest/", None),
+    "python": ("https://docs.python.org/3.11", None),
+    "numpy": ("https://numpy.org/doc/stable", None),
+    "scipy": ("https://docs.scipy.org/doc/scipy", None),
+    "pyquil": ("https://pyquil-docs.rigetti.com/en/stable", None),
+    "qiskit": ("https://docs.quantum.ibm.com/api/qiskit", None),
+    "qibo": ("https://qibo.science/qibo/stable", None),
+    "pennylane": ("https://docs.pennylane.ai/en/stable", None),
 }
 
 # Add any paths that contain templates here, relative to this directory.
