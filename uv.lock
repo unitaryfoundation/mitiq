@@ -1,5 +1,5 @@
 version = 1
-revision = 2
+revision = 3
 requires-python = ">=3.11, <3.13"
 resolution-markers = [
     "python_full_version >= '3.12'",
@@ -1575,7 +1575,7 @@ requires-dist = [
     { name = "qibo", marker = "extra == 'qibo'", specifier = "~=0.2.16" },
     { name = "qiskit", marker = "extra == 'qiskit'", specifier = "~=1.4.2" },
     { name = "qiskit-aer", marker = "extra == 'qiskit'", specifier = "~=0.17.0" },
-    { name = "qiskit-ibm-runtime", marker = "extra == 'qiskit'", specifier = "~=0.37.0" },
+    { name = "qiskit-ibm-runtime", marker = "extra == 'qiskit'", specifier = ">=0.37,<0.44" },
     { name = "scipy", specifier = ">=1.10.1,<=1.16.2" },
     { name = "tabulate" },
 ]
@@ -2840,7 +2840,7 @@ wheels = [
 
 [[package]]
 name = "qiskit-ibm-runtime"
-version = "0.37.0"
+version = "0.43.1"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "ibm-platform-services" },
@@ -2852,11 +2852,10 @@ dependencies = [
     { name = "requests" },
     { name = "requests-ntlm" },
     { name = "urllib3" },
-    { name = "websocket-client" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/f8/33/b9085d55d7e1fb51444092cb6c6e3592c4ff5a0dd9ba68bff4bb37748928/qiskit_ibm_runtime-0.37.0.tar.gz", hash = "sha256:656e8c97730125cd82c910722eefd3dc5bd4d22a7a8f868735629001995646e1", size = 3055745, upload-time = "2025-03-13T23:23:10.647Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/42/ab/0fb220423ded04af3ac6a9d463d25c779d037b89930117873103bee59915/qiskit_ibm_runtime-0.43.1.tar.gz", hash = "sha256:73852ffd3e72562a13f19507f1c548473a4a0a1d7a18a1f365d79d754838d4fe", size = 1492889, upload-time = "2025-10-23T17:05:50.654Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/7f/eb/a2c5eb434851e63e1fd0085fe5cd027506392cf92442af990c960013c897/qiskit_ibm_runtime-0.37.0-py3-none-any.whl", hash = "sha256:d671cf398617e13844e8310187eb261636b1f82954edf0a060bfe37673065dac", size = 3052000, upload-time = "2025-03-13T23:23:08.413Z" },
+    { url = "https://files.pythonhosted.org/packages/20/37/765ca468d0a242eb3806c08421e009712d6487857d1b1821633ac92aaef1/qiskit_ibm_runtime-0.43.1-py3-none-any.whl", hash = "sha256:7448bb808589686079c50b097c804bbac738ad6a7ba30f8939164dcc99b4f625", size = 1424850, upload-time = "2025-10-23T17:05:48.556Z" },
 ]
 
 [[package]]
