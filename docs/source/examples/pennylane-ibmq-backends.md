@@ -90,7 +90,7 @@ else:
     )
 ```
 
-With `dev` set to the desired device, we can now use PennyLane's [`mitigate_with_zne`](https://pennylane.readthedocs.io/en/stable/code/api/pennylane.transforms.mitigate_with_zne.html) function, in conjunction with a noise scaling method, and inference technique from Mitiq.
+With `dev` set to the desired device, we can now use PennyLane's [`mitigate_with_zne`](https://docs.pennylane.ai/en/stable/code/api/pennylane.mitigate_with_zne.html) function, in conjunction with a noise scaling method, and inference technique from Mitiq.
 
 ```{code-cell} ipython3
 from mitiq.zne.scaling import fold_global
