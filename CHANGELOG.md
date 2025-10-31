@@ -1,5 +1,46 @@
 # Changelog
 
+## Version 0.48.0
+
+([Full Changelog](https://github.com/unitaryfoundation/mitiq/compare/v0.47.0...v0.48.0))
+
+### Highlights
+
+Bug fixes and dependency upgrade palooza!
+In upgrading to cirq >=1.5, we unblocked supporting reset gates in Qiskit circuits!
+
+Thank you to @bdg221, @maloleroy, @ACE07-Sev and first time contributors @omahs and @sukrucildirr for helping make this release happen!
+
+#### ✨ Enhancements
+
+- Support qiskit reset ops in PEC (#2821) [@natestemen]
+
+#### 🐛 Bug fixes
+
+- Move pennylane import and code inside check for module (#2843) [@bdg221]
+- Fix typos (#2830) [@omahs]
+- chore: fix typos across codebase (#2826) [@sukrucildirr]
+- Fix deprecated access to members of CircuitInstruction (#2831) [@maloleroy]
+
+#### 📦 Dependency Updates
+
+- bump docs dependencies (#2862) [@natestemen]
+- bump dependencies (#2861) [@natestemen]
+- pin first-interaction to avoid issue-message breaking change (#2858) [@natestemen]
+- Bump pytket-cirq from 0.39.0 to 0.42.0 (#2855) [@dependabot]
+- Bump pytest-cov from 6.0.0 to 7.0.0 (#2856) [@dependabot]
+- Bump bqskit from 1.1.1 to 1.2.1 (#2845) [@dependabot]
+- Bump pyscf from 2.9.0 to 2.11.0 (#2844) [@dependabot]
+- Bump openfermion from 1.7.0 to 1.7.1 (#2847) [@dependabot]
+- Cirq 1.6 update (#2837) [@bdg221]
+- Bump astral-sh/setup-uv from 6 to 7 (#2836) [@dependabot]
+
+#### 🧑🏽‍💻 Developer Improvements
+
+- Qbraid integration for pyquil - remove cirq-rigetti (#2832) [@bdg221]
+- Address CI errors with Windows + tcl/tkinter and Ubuntu + Code Coverage (#2834) [@bdg221]
+- Bumped `myst_nb` and `nbsphinx` to try and resolve #2723 . (#2835) [@ACE07-Sev]
+
 ## Version 0.47.0
 
 ([Full Changelog](https://github.com/unitaryfoundation/mitiq/compare/v0.46.0...v0.47.0))
