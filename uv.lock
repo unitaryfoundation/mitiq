@@ -1,5 +1,5 @@
 version = 1
-revision = 2
+revision = 3
 requires-python = ">=3.11, <3.13"
 resolution-markers = [
     "python_full_version >= '3.12'",
@@ -1680,7 +1680,7 @@ docs = [
     { name = "sphinx-tags", specifier = "==0.4" },
     { name = "sphinxcontrib-bibtex", specifier = "==2.6.5" },
     { name = "stim", specifier = "==1.14.0" },
-    { name = "stimcirq", specifier = "==1.14.0" },
+    { name = "stimcirq", specifier = "==1.15.0" },
     { name = "ucc", marker = "python_full_version == '3.12.*'", specifier = "==0.4.10" },
 ]
 
@@ -3559,13 +3559,16 @@ wheels = [
 
 [[package]]
 name = "stimcirq"
-version = "1.14.0"
+version = "1.15.0"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "cirq-core" },
     { name = "stim" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/5c/03/7427d34986b643bdccd13faaa0bd20499d30fe484dd01a8cb640d2a09428/stimcirq-1.14.0.tar.gz", hash = "sha256:97f62be14f04b0c1c30a8916bc5bfca8bb63873a3ef4699082b87c842b2f010f", size = 29566, upload-time = "2024-09-24T08:40:23.281Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/5c/e1/8de199bfd23d5c8629538f4cce96b3f4ffb4794b1e8a5085afcd838bdf2c/stimcirq-1.15.0.tar.gz", hash = "sha256:bf51db80934dec07be4799f5e15b6eed5b111078a7989fd8dfc504ed3a30cadd", size = 33350, upload-time = "2025-05-07T06:19:20.715Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/b4/ec/adc6753fbd9c16cb4d0b7d7508a78e77d390cd213c46fc0bb7740a366869/stimcirq-1.15.0-py3-none-any.whl", hash = "sha256:2c9d0a946528c8d4605a38f2bd1f1a298da4e77a18239410d8abe912bd30f5d2", size = 47511, upload-time = "2025-05-07T06:19:18.983Z" },
+]
 
 [[package]]
 name = "symengine"
