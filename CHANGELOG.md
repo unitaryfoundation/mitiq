@@ -24,6 +24,7 @@ Thank you to @bdg221, @maloleroy, @ACE07-Sev and first time contributors @omahs 
 
 #### 📦 Dependency Updates
 
+- Bump stim from 1.14.0 to 1.15.0 (#2851) [@dependabot]
 - bump docs dependencies (#2862) [@natestemen]
 - bump dependencies (#2861) [@natestemen]
 - pin first-interaction to avoid issue-message breaking change (#2858) [@natestemen]
