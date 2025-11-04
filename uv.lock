@@ -1,5 +1,5 @@
 version = 1
-revision = 2
+revision = 3
 requires-python = ">=3.11, <3.13"
 resolution-markers = [
     "python_full_version >= '3.12'",
@@ -179,11 +179,11 @@ wheels = [
 
 [[package]]
 name = "autoray"
-version = "0.7.2"
+version = "0.8.2"
 source = { registry = "https://pypi.org/simple" }
-sdist = { url = "https://files.pythonhosted.org/packages/24/d7/133dd5a2837e0416375b7f059f0cf3b26d22a330405ca0bd8bda43c00278/autoray-0.7.2.tar.gz", hash = "sha256:7f8f375af12deea65736b65305b86eff2e11ebaf8c58d3e599752681772ff0d7", size = 1210729, upload-time = "2025-07-09T00:26:37.235Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/bc/0f/2c627f36bf044c69b1e2945be3fd9f051103e7cb7020ca76142133b5352c/autoray-0.8.2.tar.gz", hash = "sha256:031637850b782cb0b8c0bcfd6a03f99e81e5a5deadbdc835e0471440f1ff0c0f", size = 1180274, upload-time = "2025-11-03T22:34:42.79Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/dc/ca/00c61fcd5bb7ce1dfe3e9313febf2ba11fa17cf619676960f548a7c32586/autoray-0.7.2-py3-none-any.whl", hash = "sha256:f692f0f21a6f187ce877f3cc810f035d601ccd713beac02974811650bb60f580", size = 930824, upload-time = "2025-07-09T00:26:35.182Z" },
+    { url = "https://files.pythonhosted.org/packages/aa/d9/d0aeba5f72236ab1397cf1203f0d2ea6a6f852f0f2a81cd5fbc2bc329087/autoray-0.8.2-py3-none-any.whl", hash = "sha256:e869f40c080e43d95d9ae1e22cf4e85bbfd8b71dc1c42df30a5cd9253ba4fa42", size = 935556, upload-time = "2025-11-03T22:34:41.094Z" },
 ]
 
 [[package]]
@@ -1630,7 +1630,7 @@ docs = [
 [package.metadata]
 requires-dist = [
     { name = "amazon-braket-sdk", marker = "extra == 'braket'", specifier = ">=1.97,<1.104" },
-    { name = "autoray", marker = "extra == 'pennylane'", specifier = "~=0.7.0" },
+    { name = "autoray", marker = "extra == 'pennylane'", specifier = ">=0.7,<0.9" },
     { name = "cirq-core", specifier = ">=1.6.0,<1.7.0" },
     { name = "cirq-ionq", marker = "extra == 'braket'", specifier = ">=1.6.0,<1.7.0" },
     { name = "matplotlib", specifier = ">=3.8" },
