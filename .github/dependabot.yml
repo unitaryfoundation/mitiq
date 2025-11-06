@@ -1,16 +1,16 @@
-# To get started with Dependabot version updates, you'll need to specify which
-# package ecosystems to update and where the package manifests are located.
-# Please see the documentation for all configuration options:
-# https://help.github.com/github/administering-a-repository/configuration-options-for-dependency-updates
+# https://docs.github.com/en/code-security/dependabot
 
 version: 2
 updates:
-  - package-ecosystem: "uv" # See documentation for possible values
-    directory: "/" # Location of package manifests
+  - package-ecosystem: "uv"
+    directory: "/"
     schedule:
       interval: "daily"
     allow:
       - dependency-type: "all"
+    exclude-paths:
+      - "VERSION.txt"
+      - "INTEGRATIONS.txt"
     ignore:
       # Ignore patch releases in "supported frontend/backend" packages.
       - dependency-name: "cirq"
@@ -44,12 +44,10 @@ updates:
         update-types: ["version-update:semver-minor", "version-update:semver-patch"]
       - dependency-name: "pyqrack"
         update-types: ["version-update:semver-minor", "version-update:semver-patch"]
-    # Allow up to 10 open pull requests for pip dependencies
     open-pull-requests-limit: 10
     labels:
       - "infrastructure"
   - package-ecosystem: "github-actions"
     directory: "/"
     schedule:
-      # Check for updates to GitHub Actions every weekday
-      interval: "daily"
+      interval: "weekly"
