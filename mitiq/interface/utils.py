@@ -99,13 +99,13 @@ def _count_gate_arities_braket(circuit: Any) -> dict[str, int]:
 def _count_gate_arities_pennylane(circuit: Any) -> dict[str, int]:
     """Counts gates in a PennyLane tape grouped by arity."""
     try:
-        from pennylane.measurements import MeasurementProcess
+        from pennylane.measurements import MeasurementProcess, MidMeasureMP
     except ImportError as exc:  # pragma: no cover
         raise UnsupportedCircuitError("PennyLane is not installed.") from exc
 
     counts = {"1q": 0, "2q": 0, "nq": 0}
     for op in circuit.operations:
-        if isinstance(op, MeasurementProcess):
+        if isinstance(op, (MeasurementProcess, MidMeasureMP)):
             continue
         n = len(op.wires)
         if n == 1:
