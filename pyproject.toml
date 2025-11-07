@@ -37,9 +37,8 @@ braket = [
     "cirq-ionq>=1.6.0,<1.7.0",
 ]
 pennylane = [
-    "pennylane-qiskit~=0.36.0",
-    "pennylane>=0.36,<0.44",
-    "autoray~=0.7.0",
+    "pennylane-qiskit~=0.43.0",
+    "pennylane~=0.43.1",
 ]
 pyquil = [
     "pyquil~=4.17.0",
@@ -49,9 +48,9 @@ qibo = [
     "qibo~=0.2.16",
 ]
 qiskit = [
-    "qiskit~=1.4.2",
+    "qiskit~=2.0.0",
     "qiskit-aer~=0.17.0",
-    "qiskit-ibm-runtime~=0.37.0",
+    "qiskit-ibm-runtime~=0.41.1",
     "ply==3.11",
 ]
 
