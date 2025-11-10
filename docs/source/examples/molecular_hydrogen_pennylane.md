@@ -97,6 +97,7 @@ def molecular_hamiltonian(bond_length: float) -> mitiq.Observable:
     coeffs, ops = Hamil_tapered.terms()
     wire_map = {
         0: 0,
+        1: 1,
         2: 1,
     }  # for relabeling the qubits in the Pauli representation
     pauli_str = [
