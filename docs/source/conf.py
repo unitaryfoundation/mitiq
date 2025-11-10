@@ -142,7 +142,7 @@ intersphinx_mapping = {
     "numpy": ("https://numpy.org/doc/stable", None),
     "scipy": ("https://docs.scipy.org/doc/scipy", None),
     "pyquil": ("https://pyquil-docs.rigetti.com/en/stable", None),
-    "qiskit": ("https://docs.quantum.ibm.com/api/qiskit", None),
+    "qiskit": ("https://quantum.cloud.ibm.com/docs/api/qiskit", None),
     "qibo": ("https://qibo.science/qibo/stable", None),
     "pennylane": ("https://docs.pennylane.ai/en/stable", None),
 }
