@@ -57,7 +57,7 @@ qiskit = [
 
 [dependency-groups]
 dev = [
-    "pytest==8.0.0",
+    "pytest==9.0.1",
     "pytest-xdist[psutil]==3.0.2",
     "pytest-cov==7.0.0",
     "ruff==0.3.1",
