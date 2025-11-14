@@ -1,5 +1,13 @@
 # Changelog
 
+## Version 0.48.1
+
+([Full Changelog](https://github.com/unitaryfoundation/mitiq/compare/v0.48.0...v0.48.1))
+
+### Highlights
+
+This release adds support for the latest major versions of Qiskit (2.0) and PennyLane (0.43)!
+
 ## Version 0.48.0
 
 ([Full Changelog](https://github.com/unitaryfoundation/mitiq/compare/v0.47.0...v0.48.0))
