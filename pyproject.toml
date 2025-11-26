@@ -48,7 +48,7 @@ qibo = [
     "qibo~=0.2.16",
 ]
 qiskit = [
-    "qiskit~=2.0.0",
+    "qiskit>=2.0,<2.3",
     "qiskit-aer~=0.17.0",
     "qiskit-ibm-runtime~=0.41.1",
     "ply==3.11",
