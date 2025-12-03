@@ -256,7 +256,7 @@ def test_execute_with_pec_mitigates_noise(circuit, executor, circuit_type):
     true_noiseless_value = 1.0
     unmitigated = serial_executor(circuit)
 
-    if circuit_type in ["qiskit", "pennylane", "qibo"]:
+    if circuit_type in ["qiskit", "pennylane", "qibo", "cudaq"]:
         # Note this is an important subtlety necessary because of conversions.
         reps = get_pauli_and_cnot_representations(
             base_noise=BASE_NOISE,

@@ -53,6 +53,9 @@ qiskit = [
     "qiskit-ibm-runtime~=0.41.1",
     "ply==3.11",
 ]
+cudaq = [
+    "cudaq~=0.12.0"
+]
 
 [dependency-groups]
 dev = [

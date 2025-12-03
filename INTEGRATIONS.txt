@@ -4,3 +4,4 @@ pennylane
 pyquil
 qibo
 qiskit
+cudaq

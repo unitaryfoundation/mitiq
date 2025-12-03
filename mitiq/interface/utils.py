@@ -138,6 +138,17 @@ def _count_gate_arities_qibo(circuit: Any) -> dict[str, int]:
     return counts
 
 
+# TODO: Temporary solution until we can go through the
+# operations without using `cudaq.translate(qc, format="openqasm2")`
+# and doing so via that framework
+def _count_gate_arities_cudaq(circuit: Any) -> dict[str, int]:
+    """Counts gates in a Cudaq circuit grouped by arity."""
+    from mitiq.interface.conversions import convert_to_mitiq
+
+    circuit = convert_to_mitiq(circuit)[0]
+    return _count_gate_arities_cirq(circuit)
+
+
 def _get_circuit_type(circuit: QPROGRAM) -> str:
     """Returns the framework type of ``circuit``."""
     try:
@@ -156,6 +167,8 @@ def _get_circuit_type(circuit: QPROGRAM) -> str:
         return "pennylane"
     if "qibo" in package:
         return "qibo"
+    if "cudaq" in package:
+        return "cudaq"
     if isinstance(circuit, cirq.Circuit):
         return "cirq"
     raise UnsupportedCircuitError(
@@ -170,6 +183,7 @@ _COUNT_FUNCTIONS: dict[str, Callable[[Any], dict[str, int]]] = {
     "braket": _count_gate_arities_braket,
     "pennylane": _count_gate_arities_pennylane,
     "qibo": _count_gate_arities_qibo,
+    "cudaq": _count_gate_arities_cudaq,
 }
 
 

@@ -1,5 +1,5 @@
 version = 1
-revision = 2
+revision = 3
 requires-python = ">=3.11, <3.13"
 resolution-markers = [
     "python_full_version >= '3.12'",
@@ -663,6 +663,12 @@ wheels = [
     { url = "https://files.pythonhosted.org/packages/ba/af/72cd6ef29f9c5f731251acadaeb821559fe25f10852f44a63374c9ca08c1/cryptography-46.0.3-pp311-pypy311_pp73-manylinux_2_34_x86_64.whl", hash = "sha256:94cd0549accc38d1494e1f8de71eca837d0509d0d44bf11d158524b0e12cebf9", size = 4409447, upload-time = "2025-10-15T23:18:24.209Z" },
     { url = "https://files.pythonhosted.org/packages/0d/c3/e90f4a4feae6410f914f8ebac129b9ae7a8c92eb60a638012dde42030a9d/cryptography-46.0.3-pp311-pypy311_pp73-win_amd64.whl", hash = "sha256:6b5063083824e5509fdba180721d55909ffacccc8adbec85268b48439423d78c", size = 3438528, upload-time = "2025-10-15T23:18:26.227Z" },
 ]
+
+[[package]]
+name = "cudaq"
+version = "0.12.0.post1"
+source = { registry = "https://pypi.org/simple" }
+sdist = { url = "https://files.pythonhosted.org/packages/a8/8a/a2eca5ac244e40b6860569d2dd9ed17e4519a587dd86780122cfb13bf183/cudaq-0.12.0.post1.tar.gz", hash = "sha256:f3bd7c0489eae5674c0b1b5544a8944ecb6afd95776fbec8777cfb79b3367bb9", size = 9245, upload-time = "2025-09-03T14:14:44.758Z" }
 
 [[package]]
 name = "cycler"
@@ -1613,6 +1619,9 @@ braket = [
     { name = "amazon-braket-sdk" },
     { name = "cirq-ionq" },
 ]
+cudaq = [
+    { name = "cudaq" },
+]
 pennylane = [
     { name = "pennylane" },
     { name = "pennylane-qiskit" },
@@ -1671,6 +1680,7 @@ requires-dist = [
     { name = "amazon-braket-sdk", marker = "extra == 'braket'", specifier = ">=1.97,<1.104" },
     { name = "cirq-core", specifier = ">=1.6.0,<1.7.0" },
     { name = "cirq-ionq", marker = "extra == 'braket'", specifier = ">=1.6.0,<1.7.0" },
+    { name = "cudaq", marker = "extra == 'cudaq'", specifier = "~=0.12.0" },
     { name = "matplotlib", specifier = ">=3.8" },
     { name = "numpy", specifier = ">=1.25.2,<2.0.0" },
     { name = "pennylane", marker = "extra == 'pennylane'", specifier = "~=0.43.1" },
@@ -1685,7 +1695,7 @@ requires-dist = [
     { name = "scipy", specifier = ">=1.10.1,<=1.16.2" },
     { name = "tabulate" },
 ]
-provides-extras = ["braket", "pennylane", "pyquil", "qibo", "qiskit"]
+provides-extras = ["braket", "pennylane", "pyquil", "qibo", "qiskit", "cudaq"]
 
 [package.metadata.requires-dev]
 dev = [

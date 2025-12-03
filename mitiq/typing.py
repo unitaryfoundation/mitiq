@@ -65,10 +65,20 @@ try:
 except ImportError:  # pragma: no cover
     _QiboCircuit = _Circuit
 
+try:
+    from cudaq import PyKernel as _CudaqCircuit
+except ImportError:  # pragma: no cover
+    _CudaqCircuit = _Circuit
 
 # Supported + installed quantum programs.
 QPROGRAM = Union[
-    _Circuit, _Program, _QuantumCircuit, _BKCircuit, _QuantumTape, _QiboCircuit
+    _Circuit,
+    _Program,
+    _QuantumCircuit,
+    _BKCircuit,
+    _QuantumTape,
+    _QiboCircuit,
+    _CudaqCircuit,
 ]
 
 
@@ -80,6 +90,7 @@ class SUPPORTED_PROGRAM_TYPES(EnhancedEnum):
     PYQUIL = _Program
     QIBO = _QiboCircuit
     QISKIT = _QuantumCircuit
+    CUDAQ = _CudaqCircuit
 
 
 # Define MeasurementResult, a result obtained by measuring qubits on a quantum

@@ -114,6 +114,12 @@ def convert_to_mitiq(circuit: QPROGRAM) -> tuple[cirq.Circuit, str]:
         input_circuit_type = "qibo"
         conversion_function = from_qibo
 
+    elif "cudaq" in package:
+        from mitiq.interface.mitiq_cudaq.conversions import from_cudaq
+
+        input_circuit_type = "cudaq"
+        conversion_function = from_cudaq
+
     elif package in TO_MITIQ_DICT:
         input_circuit_type = package
         conversion_function = TO_MITIQ_DICT[package]
@@ -187,6 +193,11 @@ def convert_from_mitiq(
 
         def conversion_function(circ: cirq.Circuit) -> cirq.Circuit:
             return circ
+
+    elif conversion_type == "cudaq":
+        from mitiq.interface.mitiq_cudaq.conversions import to_cudaq
+
+        conversion_function = to_cudaq
 
     else:
         raise UnsupportedCircuitError(
