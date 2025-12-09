@@ -1,5 +1,5 @@
 version = 1
-revision = 2
+revision = 3
 requires-python = ">=3.11, <3.13"
 resolution-markers = [
     "python_full_version >= '3.12'",
@@ -74,7 +74,7 @@ wheels = [
 
 [[package]]
 name = "amazon-braket-sdk"
-version = "1.103.0"
+version = "1.106.4"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "amazon-braket-default-simulator" },
@@ -92,9 +92,9 @@ dependencies = [
     { name = "oqpy" },
     { name = "sympy" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/c4/cd/2968e44518feb1eb9701a60008aec121a38832a7790c4d714ad26b612052/amazon_braket_sdk-1.103.0.tar.gz", hash = "sha256:b704dd5cf4412ab3468c911474ad6fa5b0c34999460719a1e34191a668f41eff", size = 471674, upload-time = "2025-10-16T23:17:07.285Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/fa/49/20c06e2ecfccc87503b16c7e34a272e8b71e9c034178ba2c466312f52cab/amazon_braket_sdk-1.106.4.tar.gz", hash = "sha256:63054aedd9d53091b31ff10e2dcbcb856bdf330202289aee22a6bdd897ddb7f7", size = 475445, upload-time = "2025-12-08T16:16:46.305Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/eb/df/b43592c968b8a78b03d93e5406e345fd5da68520dc835efc5c5b09c09215/amazon_braket_sdk-1.103.0-py3-none-any.whl", hash = "sha256:cbd44b06379f8cb0ac59fb51b69883676dd43bb6d1c7f453c66928710374e713", size = 369651, upload-time = "2025-10-16T23:17:04.834Z" },
+    { url = "https://files.pythonhosted.org/packages/e6/5e/9dc1768db7264641ad1e84935a4ded10d6f61ee9c316f43c4571b3cc86d1/amazon_braket_sdk-1.106.4-py3-none-any.whl", hash = "sha256:e2e9576de516388daccec5251004d4c0c48385859ef23b97a349d439672dd7dc", size = 370928, upload-time = "2025-12-08T16:16:44.32Z" },
 ]
 
 [[package]]
@@ -1668,7 +1668,7 @@ docs = [
 
 [package.metadata]
 requires-dist = [
-    { name = "amazon-braket-sdk", marker = "extra == 'braket'", specifier = ">=1.97,<1.104" },
+    { name = "amazon-braket-sdk", marker = "extra == 'braket'", specifier = ">=1.97,<1.107" },
     { name = "cirq-core", specifier = ">=1.6.0,<1.7.0" },
     { name = "cirq-ionq", marker = "extra == 'braket'", specifier = ">=1.6.0,<1.7.0" },
     { name = "matplotlib", specifier = ">=3.8" },
