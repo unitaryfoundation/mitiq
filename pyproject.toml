@@ -110,8 +110,7 @@ select = [
     "I",
 ]
 
-[tool.pytest.ini_options]
-addopts = "--color=yes"
+[tool.pytest]
 filterwarnings = [
     # TODO: these are probably too restrictive
     'ignore::UserWarning',
