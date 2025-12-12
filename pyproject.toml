@@ -111,6 +111,7 @@ select = [
 ]
 
 [tool.pytest]
+addopts = ["--color=yes"]
 filterwarnings = [
     # TODO: these are probably too restrictive
     'ignore::UserWarning',
