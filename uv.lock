@@ -1,5 +1,5 @@
 version = 1
-revision = 2
+revision = 3
 requires-python = ">=3.11, <3.13"
 resolution-markers = [
     "python_full_version >= '3.12'",
@@ -1719,7 +1719,7 @@ docs = [
     { name = "sphinxcontrib-bibtex", specifier = "==2.6.5" },
     { name = "stim", specifier = "==1.15.0" },
     { name = "stimcirq", specifier = "==1.15.0" },
-    { name = "ucc", marker = "python_full_version == '3.12.*'", specifier = "==0.4.10" },
+    { name = "ucc", marker = "python_full_version == '3.12.*'", specifier = "==0.4.12" },
 ]
 
 [[package]]
@@ -3801,7 +3801,7 @@ wheels = [
 
 [[package]]
 name = "ucc"
-version = "0.4.10"
+version = "0.4.12"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "cirq-core", marker = "python_full_version >= '3.12'" },
@@ -3812,9 +3812,9 @@ dependencies = [
     { name = "qiskit-qasm3-import", marker = "python_full_version >= '3.12'" },
     { name = "quimb", marker = "python_full_version >= '3.12'" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/48/b5/4a2304f66f3e8aadea8c9abe75d56bc6b5dbefdfe5bcc80faeb9b03cef92/ucc-0.4.10.tar.gz", hash = "sha256:32168d62b869173811638f2e58aa77c21d0a58f656e6eda510f7df2b01f18f80", size = 428509, upload-time = "2025-09-29T17:47:35.401Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/80/63/53fcb0327df99a701d871e029db8bb18d18baa7258ca9d0fb82cc1d6168a/ucc-0.4.12.tar.gz", hash = "sha256:62048c180089dd6d49ced311092b4b98445177c15995baf43c64fdb0daeb4e3b", size = 413364, upload-time = "2025-12-18T22:08:33.168Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/ce/2a/0baed7dfa810a3175628fa8b3c2a1aa80530a1453a4ab3ba4ec9e8e234eb/ucc-0.4.10-py3-none-any.whl", hash = "sha256:909623cae961c127379d8fb67d995b6ab1b8e2a4af7dec9065206da388d4ad24", size = 36037, upload-time = "2025-09-29T17:47:33.987Z" },
+    { url = "https://files.pythonhosted.org/packages/c3/18/a57f6e1d29584932304e28665ac488a73998db30376a7dff02e1348cc42d/ucc-0.4.12-py3-none-any.whl", hash = "sha256:df90146b69c6fa0e10e85401a7eaec0bcc550e065a12e89f5638f1ffb5982dbc", size = 36095, upload-time = "2025-12-18T22:08:31.824Z" },
 ]
 
 [[package]]
