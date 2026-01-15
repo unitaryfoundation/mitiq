@@ -1,5 +1,5 @@
 version = 1
-revision = 2
+revision = 3
 requires-python = ">=3.11, <3.13"
 resolution-markers = [
     "python_full_version >= '3.12'",
@@ -2770,7 +2770,7 @@ wheels = [
 
 [[package]]
 name = "qbraid"
-version = "0.10.0"
+version = "0.10.1"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "numpy" },
@@ -2782,9 +2782,9 @@ dependencies = [
     { name = "rustworkx" },
     { name = "typing-extensions" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/6f/2b/1c70b99c074cad5d8ae5f3bca0ce572c3788f2d08a5bc498a083fed9e78a/qbraid-0.10.0.tar.gz", hash = "sha256:92360bd214c88954dfbc9db58656f944cbbd5651c4783684a926172e3cabe311", size = 550945, upload-time = "2025-10-14T20:37:24.647Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/0a/2b/4ef19f3fffb7eb84fcf1ee3afd70f78687e13b80bf5f4adb967dbd8615c0/qbraid-0.10.1.tar.gz", hash = "sha256:03cf7b39545e27790f5391368f5554a1d03619d00c768f3c1b6a16da46df548d", size = 552431, upload-time = "2026-01-14T04:23:45.595Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/bb/fe/6cc21ff5cb20067522f799f1fb3d617ff36ef0c907c295c1f4b63e25fb6f/qbraid-0.10.0-py3-none-any.whl", hash = "sha256:96fb842e20f9f7e7f933346cca09f1af2789b7f3f590f420bbb6f4fe9d7ffefd", size = 296480, upload-time = "2025-10-14T20:37:22.948Z" },
+    { url = "https://files.pythonhosted.org/packages/b4/5f/75657344b3531ae1a4e031203d822f7c56d18c1125b61ee0e8484c712dd3/qbraid-0.10.1-py3-none-any.whl", hash = "sha256:29ef1291aa2b536d93413c6cf27bf7dd4ff8756704349d6274d50f37dcd95c1b", size = 296937, upload-time = "2026-01-14T04:23:43.957Z" },
 ]
 
 [[package]]
