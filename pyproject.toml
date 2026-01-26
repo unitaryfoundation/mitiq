@@ -86,7 +86,7 @@ docs = [
     "stimcirq==1.15.0",
     "pyqrack==1.69.1",
     "ucc==0.4.12; python_version == '3.12'",
-    "pytket-cirq==0.42.0",
+    "pytket-cirq==0.43.0",
 ]
 
 [project.urls]
