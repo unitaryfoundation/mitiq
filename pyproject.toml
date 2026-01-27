@@ -33,7 +33,7 @@ dependencies = [
 
 [project.optional-dependencies]
 braket = [
-    "amazon-braket-sdk>=1.97,<1.109",
+    "amazon-braket-sdk>=1.97,<1.111",
     "cirq-ionq>=1.6.0,<1.7.0",
 ]
 pennylane = [
