@@ -54,11 +54,10 @@ def _get_chunks(
 
         Args:
             input_circuit: Circuit of interest.
-            num_chunks: Number of desired approximately equal chunks,
-                * when num_chunks == num_layers, the original circuit is
-                    returned.
-                * when num_chunks == 1, the entire circuit is chunked into 1
-                    layer.
+            num_chunks: The number of equally-sized circuit chunks. Noise
+                scaling is applied to each chunk independently. Ranges from 1
+                (all gates in one chunk, similar to ZNE) to the number of
+                circuit layers (default, each layer is a separate chunk).
         Returns:
             split_circuit: Circuit of interest split into approximately equal
                 chunks.
@@ -108,7 +107,10 @@ def get_scale_factor_vectors(
             input_circuit: Quantum circuit to be scaled.
             degree: Degree of the multivariate polynomial.
             fold_multiplier: Scaling gap required by unitary folding.
-            num_chunks: Number of desired approximately equal chunks.
+            num_chunks: The number of equally-sized circuit chunks. Noise
+                scaling is applied to each chunk independently. Ranges from 1
+                (all gates in one chunk, similar to ZNE) to the number of
+                circuit layers (default, each layer is a separate chunk).
 
         Returns:
             scale_factor_vectors: A vector of scale factors where each
@@ -167,9 +169,10 @@ def _multivariate_layer_scaling(
         input_circuit: Circuit to be scaled.
         degree: Degree of the multivariate polynomial.
         fold_multiplier: Scaling gap required by unitary folding.
-        num_chunks: Number of desired approximately equal chunks. When the
-            number of chunks is the same as the layers in the input circuit,
-            the input circuit is unchanged.
+        num_chunks: The number of equally-sized circuit chunks. Noise
+            scaling is applied to each chunk independently. Ranges from 1
+            (all gates in one chunk, similar to ZNE) to the number of circuit
+            layers (default, each layer is a separate chunk).
         folding_method: Unitary folding method. Default is
             :func:`fold_gates_at_random`.
 

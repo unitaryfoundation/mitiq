@@ -40,10 +40,10 @@ def construct_circuits(
             is used to generate the scale factor vectors.
         folding_method: Unitary folding method. Default is
             :func:`mitiq.zne.scaling.folding.fold_gates_at_random`.
-        num_chunks: Number of desired approximately equal chunks. When the
-            number of chunks is the same as the layers in the input circuit,
-            the input circuit is unchanged.
-
+        num_chunks: The number of equally-sized circuit chunks. Noise
+            scaling is applied to each chunk independently. Ranges from 1
+            (all gates in one chunk, similar to ZNE) to the number of circuit
+            layers (default, each layer is a separate chunk).
 
     Returns:
         The scaled circuits using the
@@ -73,9 +73,10 @@ def combine_results(
         degree: Degree of the multivariate polynomial.
         fold_multiplier: Scaling gap value required for unitary folding which
             is used to generate the scale factor vectors.
-        num_chunks: Number of desired approximately equal chunks. When the
-            number of chunks is the same as the layers in the input circuit,
-            the input circuit is unchanged.
+        num_chunks: The number of equally-sized circuit chunks. Noise
+            scaling is applied to each chunk independently. Ranges from 1
+            (all gates in one chunk, similar to ZNE) to the number of circuit
+            layers (default, each layer is a separate chunk).
 
     Returns:
         The expectation value estimated with LRE.
@@ -123,10 +124,10 @@ def execute_with_lre(
             ``executor`` is used to compute the expectation of the observable.
         folding_method: Unitary folding method. Default is
             :func:`mitiq.zne.scaling.folding.fold_gates_at_random`.
-        num_chunks: Number of desired approximately equal chunks. When the
-            number of chunks is the same as the layers in the input circuit,
-            the input circuit is unchanged.
-
+        num_chunks: The number of equally-sized circuit chunks. Noise
+            scaling is applied to each chunk independently. Ranges from 1
+            (all gates in one chunk, similar to ZNE) to the number of circuit
+            layers (default, each layer is a separate chunk).
 
     Returns:
         Error-mitigated expectation value
@@ -181,10 +182,10 @@ def mitigate_executor(
             ``executor`` is used to compute the expectation of the observable.
         folding_method: Unitary folding method. Default is
             :func:`mitiq.zne.scaling.folding.fold_gates_at_random`.
-        num_chunks: Number of desired approximately equal chunks. When the
-            number of chunks is the same as the layers in the input circuit,
-            the input circuit is unchanged.
-
+        num_chunks: The number of equally-sized circuit chunks. Noise
+            scaling is applied to each chunk independently. Ranges from 1
+            (all gates in one chunk, similar to ZNE) to the number of circuit
+            layers (default, each layer is a separate chunk).
 
     Returns:
         Error-mitigated version of the circuit executor.
@@ -249,11 +250,10 @@ def lre_decorator(
             ``executor`` is used to compute the expectation of the observable.
         folding_method: Unitary folding method. Default is
             :func:`mitiq.zne.scaling.folding.fold_gates_at_random`.
-        num_chunks: Number of desired approximately equal chunks. When the
-            number of chunks is the same as the layers in the input circuit,
-            the input circuit is unchanged.
-
-
+        num_chunks: The number of equally-sized circuit chunks. Noise
+            scaling is applied to each chunk independently. Ranges from 1
+            (all gates in one chunk, similar to ZNE) to the number of circuit
+            layers (default, each layer is a separate chunk).
 
     Returns:
         Error-mitigated decorator.
