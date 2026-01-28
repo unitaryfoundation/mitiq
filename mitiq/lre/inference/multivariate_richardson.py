@@ -73,7 +73,7 @@ def sample_matrix(
         fold_multiplier: Scaling gap required by unitary folding.
         num_chunks: The number of equally-sized circuit chunks. Noise
             scaling is applied to each chunk independently. Ranges from 1
-            (all gates in one chunk, similar to global folding in ZNE) to the
+            (all gates in one chunk, similar to ZNE) to the
             number of circuit layers (default, each layer is a separate chunk).
 
     Returns:
