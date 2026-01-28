@@ -16,7 +16,7 @@ import numpy as np
 import numpy.typing as npt
 from cirq import Circuit
 from matplotlib.figure import Figure
-from numpy.lib.polynomial import RankWarning
+from numpy.exceptions import RankWarning
 from scipy.optimize import OptimizeWarning, curve_fit
 
 from mitiq import QPROGRAM, QuantumResult
