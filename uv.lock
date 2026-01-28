@@ -1679,7 +1679,7 @@ requires-dist = [
     { name = "pyquil", marker = "extra == 'pyquil'", specifier = "~=4.17.0" },
     { name = "qbraid", marker = "extra == 'pyquil'", specifier = "~=0.10.0" },
     { name = "qibo", marker = "extra == 'qibo'", specifier = "~=0.2.16" },
-    { name = "qiskit", marker = "extra == 'qiskit'", specifier = ">=2.0,<2.3" },
+    { name = "qiskit", marker = "extra == 'qiskit'", specifier = ">=2.0.0,<3.0.0" },
     { name = "qiskit-aer", marker = "extra == 'qiskit'", specifier = "~=0.17.0" },
     { name = "qiskit-ibm-runtime", marker = "extra == 'qiskit'", specifier = "~=0.41.1" },
     { name = "scipy", specifier = ">=1.10.1,<=1.17.0" },
