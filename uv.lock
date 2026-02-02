@@ -74,7 +74,7 @@ wheels = [
 
 [[package]]
 name = "amazon-braket-sdk"
-version = "1.110.1"
+version = "1.111.0"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "amazon-braket-default-simulator" },
@@ -92,9 +92,9 @@ dependencies = [
     { name = "oqpy" },
     { name = "sympy" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/c8/93/d3c9872bc8191b837cbd545f1651d8306e1ae098441bfc56e8327e7e5b9e/amazon_braket_sdk-1.110.1.tar.gz", hash = "sha256:eb2e06b85fb4471c80a46bec7d3ae216490ec92205722d2f58e5cf959870d54c", size = 484307, upload-time = "2026-01-26T16:16:12.868Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/e0/dd/12af3de48d70f445d2bd25e4b0bcab27e000e3c3ebb11be30ef6fa03413a/amazon_braket_sdk-1.111.0.tar.gz", hash = "sha256:6abaf32260b8ad14c97d4ba280354757aba3e9108c82b6e7a61a29696fc6c586", size = 484176, upload-time = "2026-01-30T21:01:28.087Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/bb/67/a42f205852517e5de695a5b5ba7bbd5420ebd97e9b7555b48acab61f244b/amazon_braket_sdk-1.110.1-py3-none-any.whl", hash = "sha256:6a1d09bed058212549da3e8b0ddfd01b051b7fa640cb4cb69c54996a8870fffe", size = 374678, upload-time = "2026-01-26T16:16:11.095Z" },
+    { url = "https://files.pythonhosted.org/packages/45/85/c6bac4a6984efd932da5282aecc9be13d207c9e8b150b4389ee7a860df65/amazon_braket_sdk-1.111.0-py3-none-any.whl", hash = "sha256:182834404ee41b6dad815d5a387dbae82ee153ede16a3ce9b76804f71033c00b", size = 374648, upload-time = "2026-01-30T21:01:26.148Z" },
 ]
 
 [[package]]
@@ -1668,7 +1668,7 @@ docs = [
 
 [package.metadata]
 requires-dist = [
-    { name = "amazon-braket-sdk", marker = "extra == 'braket'", specifier = ">=1.97,<1.111" },
+    { name = "amazon-braket-sdk", marker = "extra == 'braket'", specifier = ">=1.97,<1.112" },
     { name = "cirq-core", specifier = ">=1.6.0,<1.7.0" },
     { name = "cirq-ionq", marker = "extra == 'braket'", specifier = ">=1.6.0,<1.7.0" },
     { name = "matplotlib", specifier = ">=3.8" },
