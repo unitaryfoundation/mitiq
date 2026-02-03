@@ -5,6 +5,7 @@
 
 """Utility functions."""
 
+from collections.abc import Sequence
 from copy import deepcopy
 from itertools import product
 from typing import Any
@@ -324,7 +325,7 @@ PAULIS = [
 ]
 
 
-def matrix_kronecker_product(matrices: list[NDArray[Any]]) -> NDArray[Any]:
+def matrix_kronecker_product(matrices: Sequence[NDArray[Any]]) -> NDArray[Any]:
     """
     Returns the Kronecker product of a list of matrices.
     Args:

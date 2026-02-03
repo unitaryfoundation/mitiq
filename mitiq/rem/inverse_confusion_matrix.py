@@ -144,8 +144,8 @@ def closest_positive_distribution(
     init_guess = quasi_probabilities.clip(min=0)
     init_guess /= np.sum(init_guess)
 
-    def distance(probabilities: npt.NDArray[np.float64]) -> np.float64:
-        return np.linalg.norm(probabilities - quasi_probabilities)
+    def distance(probabilities: npt.NDArray[np.float64]) -> float:
+        return float(np.linalg.norm(probabilities - quasi_probabilities))
 
     num_vars = len(init_guess)
     bounds = scipy.optimize.Bounds(np.zeros(num_vars), np.ones(num_vars))

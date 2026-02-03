@@ -142,7 +142,7 @@ def mitiq_polyfit(
     scale_factors: Sequence[float],
     exp_values: Sequence[float],
     deg: int,
-    weights: Sequence[float] | None = None,
+    weights: npt.ArrayLike | None = None,
 ) -> tuple[list[float], npt.NDArray[np.float64] | None]:
     """Fits the ansatz to the (scale factor, expectation value) data using
     ``numpy.polyfit``, returning the optimal parameters and covariance matrix
@@ -164,13 +164,15 @@ def mitiq_polyfit(
         ExtrapolationWarning: If the extrapolation fit is ill-conditioned.
     """
 
+    w = None if weights is None else np.asarray(weights, dtype=float)
+
     with warnings.catch_warnings(record=True) as warn_list:
         try:
             opt_params, params_cov = np.polyfit(
-                scale_factors, exp_values, deg, w=weights, cov=True
+                scale_factors, exp_values, deg, w=w, cov=True
             )
         except (ValueError, np.linalg.LinAlgError):
-            opt_params = np.polyfit(scale_factors, exp_values, deg, w=weights)
+            opt_params = np.polyfit(scale_factors, exp_values, deg, w=w)
             params_cov = None
 
     for warn in warn_list:

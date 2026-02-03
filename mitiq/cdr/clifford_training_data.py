@@ -185,8 +185,8 @@ def _select(
         non_clifford_angles = np.array(
             [op.gate.exponent * np.pi for op in non_clifford_ops]  # type: ignore
         )
-        probabilities = angles_to_proximities(non_clifford_angles, sigma)
-        distribution = probabilities / sum(probabilities)
+        proximities = angles_to_proximities(non_clifford_angles, sigma)
+        distribution = np.array(proximities) / sum(proximities)
     else:
         raise ValueError(
             f"Arg `method_select` must be 'uniform' or 'gaussian' but was "
