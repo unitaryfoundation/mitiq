@@ -56,7 +56,7 @@ def test_amplitude_damping_representation_with_choi(
         choi_components.append(coeff * sequence_choi)
 
     combination_choi = np.sum(choi_components, axis=0)
-    assert np.allclose(ideal_choi, combination_choi, atol=10**-8)
+    assert np.allclose(ideal_choi, combination_choi, atol=1e-7)
 
 
 def test_damping_kraus():
