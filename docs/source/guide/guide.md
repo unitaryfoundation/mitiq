@@ -11,6 +11,7 @@ cdr.md
 ddd.md
 lre.md
 rem.md
+trex.md
 qse.md
 pt.md
 error-mitigation.md
