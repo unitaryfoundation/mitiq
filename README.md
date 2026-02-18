@@ -113,7 +113,7 @@ If there is a technique you are looking for not listed here, please file a [feat
 
 ### Interface
 
-We refer to any python quantum programming SDK you can write quantum circuits in as a _frontend_, and any quantum computer / simulator you can simulate circuits in as a _backend_.
+We refer to any python quantum programming SDK you can write quantum circuits in as a _frontend_, and any quantum computer / simulator you can simulate circuits on as a _backend_.
 
 #### Supported frontends
 
