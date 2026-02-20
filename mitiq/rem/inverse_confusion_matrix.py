@@ -5,6 +5,7 @@
 
 from collections.abc import Sequence
 from functools import reduce
+from typing import cast
 
 import numpy as np
 import numpy.typing as npt
@@ -124,7 +125,7 @@ def generate_tensored_inverse_confusion_matrix(
             f"{tensored_inv_cm.shape} should be {expected_shape}."
         )
 
-    return tensored_inv_cm
+    return cast(npt.NDArray[np.float64], tensored_inv_cm)
 
 
 def closest_positive_distribution(
