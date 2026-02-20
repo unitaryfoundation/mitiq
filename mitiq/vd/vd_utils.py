@@ -7,7 +7,7 @@ from typing import cast
 
 import cirq
 import numpy as np
-from numpy.typing import NDArray
+import numpy.typing as npt
 
 from mitiq.observable import Observable
 
@@ -119,8 +119,10 @@ def _generate_diagonalizing_gate(num_copies: int = 2) -> cirq.Gate:
 
 
 def _apply_cyclic_system_permutation(
-    matrix: NDArray[np.complex64], N_qubits: int, num_registers: int = 2
-) -> NDArray[np.complex64]:
+    matrix: npt.NDArray[np.complex64],
+    N_qubits: int,
+    num_registers: int = 2,
+) -> npt.NDArray[np.complex64]:
     """
     Function that shifts the rows of a matrix or vector in such a way,
     that each of the num_registers registers of N_qubit qubits are shifted
@@ -160,10 +162,10 @@ def _apply_cyclic_system_permutation(
 
 
 def _apply_symmetric_observable(
-    matrix: NDArray[np.complex64],
+    matrix: npt.NDArray[np.complex64],
     N_qubits: int,
-    observable: Observable | NDArray[np.complex64] | None = None,
-) -> NDArray[np.complex64]:
+    observable: Observable | npt.NDArray[np.complex64] | None = None,
+) -> npt.NDArray[np.complex64]:
     """
     Function that applies a symmetric observable to a matrix or vector.
 
@@ -184,7 +186,7 @@ def _apply_symmetric_observable(
         and np.allclose(observable, z_matrix)
     ):
         # use the default Z observable
-        sym_observable_diagonals: list[NDArray[np.complex64]] = []
+        sym_observable_diagonals: list[npt.NDArray[np.complex64]] = []
         for i in range(N_qubits):
             observable_i_diagonal = np.array(
                 [
@@ -233,7 +235,7 @@ def _apply_symmetric_observable(
             if isinstance(observable, np.ndarray)
             else observable.matrix()
         )
-        sym_observable_matrices: list[NDArray[np.complex64]] = []
+        sym_observable_matrices: list[npt.NDArray[np.complex64]] = []
         for i in range(N_qubits):
             observable_i_matrix = np.kron(
                 np.kron(np.eye(2**i), obs_array),

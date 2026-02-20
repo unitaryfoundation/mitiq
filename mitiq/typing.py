@@ -21,8 +21,8 @@ from enum import Enum, EnumMeta
 from typing import Any, TypeAlias, Union, cast
 
 import numpy as np
+import numpy.typing as npt
 from cirq import Circuit as _Circuit
-from numpy.typing import NDArray
 
 
 class EnhancedEnumMeta(EnumMeta):
@@ -158,7 +158,7 @@ class MeasurementResult:
         if isinstance(self.result, np.ndarray):
             self.result = self.result.tolist()
 
-        self._bitstrings: NDArray[np.int64] = np.array(
+        self._bitstrings: npt.NDArray[np.int64] = np.array(
             self.result, dtype=np.int64
         )
 
@@ -171,7 +171,7 @@ class MeasurementResult:
                     f"are {len(self.qubit_indices)} `qubit_indices`."
                 )
 
-        self._measurements: dict[int, NDArray[np.int64]] = dict(
+        self._measurements: dict[int, npt.NDArray[np.int64]] = dict(
             zip(self.qubit_indices, self._bitstrings.T)
         )
 
@@ -188,7 +188,7 @@ class MeasurementResult:
         )
 
     @property
-    def asarray(self) -> NDArray[np.int64]:
+    def asarray(self) -> npt.NDArray[np.int64]:
         return self._bitstrings
 
     @classmethod
@@ -241,7 +241,7 @@ class MeasurementResult:
         """
         return cls.from_counts(data["counts"], data["qubit_indices"])
 
-    def filter_qubits(self, qubit_indices: list[int]) -> NDArray[np.int64]:
+    def filter_qubits(self, qubit_indices: list[int]) -> npt.NDArray[np.int64]:
         """Returns the bitstrings associated to a subset of qubits."""
         return np.array([self._measurements[i] for i in qubit_indices]).T
 

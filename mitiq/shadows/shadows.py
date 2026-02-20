@@ -9,7 +9,7 @@ from typing import Any
 
 import cirq
 import numpy as np
-from numpy.typing import NDArray
+import numpy.typing as npt
 
 import mitiq
 from mitiq import MeasurementResult
@@ -159,7 +159,7 @@ def classical_post_processing(
     observables: list[mitiq.PauliString] | None = None,
     k_shadows: int | None = None,
     state_reconstruction: bool = False,
-) -> Mapping[str, float | NDArray[Any]]:
+) -> Mapping[str, float | npt.NDArray[Any]]:
     r"""
     Executes a circuit with classical shadows. This function can be used for
     state reconstruction or expectation value estimation of observables.
@@ -187,7 +187,7 @@ def classical_post_processing(
     Shadow stage 2: Estimate the expectation value of the observables OR
     reconstruct the state
     """
-    output: dict[str, float | NDArray[Any]] = {}
+    output: dict[str, float | npt.NDArray[Any]] = {}
     if state_reconstruction:
         reconstructed_state = shadow_state_reconstruction(
             shadow_outcomes, fidelities=calibration_results
