@@ -1353,13 +1353,23 @@ class PolyExpFactory(BatchedFactory):
             """Ansatz of generic order with unknown asymptote."""
             # Coefficients of the polynomial to be exponentiated
             z_coeffs = coeffs[2:][::-1]
-            return coeffs[0] + coeffs[1] * np.exp(x * np.polyval(z_coeffs, x))
+            return float(
+                coeffs[0] + coeffs[1] * np.exp(x * np.polyval(z_coeffs, x))
+            )
 
         def _ansatz_known(x: float, *coeffs: float) -> float:
             """Ansatz of generic order with known asymptote."""
             # Coefficients of the polynomial to be exponentiated
             z_coeffs = coeffs[1:][::-1]
-            return asymptote + coeffs[0] * np.exp(x * np.polyval(z_coeffs, x))
+
+            # Assertion for passing mypy type checking
+            # In reality, this assertion is not necessary since the case with
+            # asymptote being None is handled in a different branch of the code
+            assert asymptote is not None
+
+            return float(
+                asymptote + coeffs[0] * np.exp(x * np.polyval(z_coeffs, x))
+            )
 
         # CASE 1: asymptote is None.
         if asymptote is None:

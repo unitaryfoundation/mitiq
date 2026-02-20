@@ -15,7 +15,7 @@ from cirq.circuits import Circuit
 from mitiq.interface import accept_any_qprogram_as_input
 
 # Z gates with these angles/exponents are Clifford gates.
-_CLIFFORD_EXPONENTS = [0, 1/2, 1, 3/2]
+_CLIFFORD_EXPONENTS = [0, 1 / 2, 1, 3 / 2]
 _CLIFFORD_ANGLES = [exponent * np.pi for exponent in _CLIFFORD_EXPONENTS]
 
 
@@ -114,7 +114,7 @@ def angle_to_proximities(angle: float, sigma: float) -> list[float]:
     rz_matrix = cirq.unitary(cirq.rz(angle % (2 * np.pi)))
 
     dists = []
-    for exponent in (4, 1, 2, 3): # NOTE: ordering matches _CLIFFORD_EXPONENTS
+    for exponent in (4, 1, 2, 3):  # NOTE: ordering matches _CLIFFORD_EXPONENTS
         diff = np.linalg.norm(rz_matrix - s_matrix**exponent)
         dists.append(np.exp(-((diff / sigma) ** 2)))
 

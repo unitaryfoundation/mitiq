@@ -339,7 +339,9 @@ def matrix_kronecker_product(matrices: Sequence[NDArray[Any]]) -> NDArray[Any]:
     return result
 
 
-def operator_ptm_vector_rep(opt: NDArray[Any]) -> NDArray[Any]:
+def operator_ptm_vector_rep(
+    opt: NDArray[np.complex64],
+) -> NDArray[np.complex64]:
     r"""
     Returns the PTM vector representation of an operator.
     :math:`\mathcal{L}(\mathcal{H}_{2^n})\ni \mathtt{opt}\rightarrow
