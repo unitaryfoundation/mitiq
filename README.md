@@ -11,21 +11,16 @@
 [![Unitary Foundation](https://img.shields.io/badge/Supported%20By-Unitary%20Foundation-FFFF00.svg)](https://unitary.foundation)
 [![Discord Chat](https://img.shields.io/badge/dynamic/json?color=blue&label=Discord&query=approximate_presence_count&suffix=%20online.&url=https%3A%2F%2Fdiscord.com%2Fapi%2Finvites%2FJqVGmpkP96%3Fwith_counts%3Dtrue)](http://discord.unitary.foundation)
 
-Mitiq is a Python toolkit for implementing error mitigation techniques on
-quantum computers.
+Mitiq [mitt • tick] is a Python toolkit for implementing error mitigation techniques on quantum computers.
 
-Current quantum computers are noisy due to interactions with the environment,
-imperfect gate applications, state preparation and measurement errors, etc.
-Error mitigation seeks to reduce these effects at the software level by
-compiling quantum programs in clever ways.
+Current quantum computers are noisy due to interactions with the environment, imperfect gate applications, state preparation and measurement errors, etc.
+Error mitigation seeks to reduce these effects at the software level by compiling quantum programs in clever ways.
 
 Want to know more? 
 - Check out our
 [documentation](https://mitiq.readthedocs.io/en/stable/guide/guide.html).
-- To see what's in store for Mitiq, look at our roadmap in the [wiki](https://github.com/unitaryfoundation/mitiq/wiki).
 - For code, repo, or theory questions, especially those requiring more detailed responses, submit a [Discussion](https://github.com/unitaryfoundation/mitiq/discussions).
-- For casual or time sensitive questions, chat with us on [Discord](http://discord.unitary.foundation).
-- Join our weekly community call on [Discord](http://discord.unitary.foundation) ([public agenda](https://docs.google.com/document/d/1lZfct4AOCS7fdyWkudcGyER0n0nsCxSFKSicUEeJgtA/)).
+- For casual or time sensitive questions, chat with mitiq developers on the `#mitiq` channel on [Discord](http://discord.unitary.foundation).
 - Contributions to Mitiq are eligible for compensation! More details [here](https://unitary.foundation/posts/2025_merit_systems_uf/), and all payouts can be found on [our wiki](https://github.com/unitaryfoundation/mitiq/wiki/Getting-paid-to-contribute-to-mitiq)!
 
 ## Quickstart
@@ -104,23 +99,21 @@ mitiq.qem_methods()
 | Probabilistic Error Amplification 🚧  | Coming soon |  `mitiq.pea` | [Nature](https://www.nature.com/articles/s41586-023-06096-3) |
 | Virtual Distillation 🚧  | Coming soon |  `mitiq.vd` | [APS](https://journals.aps.org/prx/abstract/10.1103/PhysRevX.11.041036) |
 
+> 🚧: Technique is currently a work in progress or is untested and may have some rough edges. If you try any of these techniques and have suggestions, please open an issue!
 
-In addition, we also have a noise tailoring technique currently available with limited functionality:
+In addition, we also have Pauli Twirling which is a noise tailoring technique:
 
 
 | Noise-tailoring Technique                                 | Documentation                                                | Mitiq module                                                              | Paper Reference(s)                                                                                                                                 |
 | ----------------------------------------- | ------------------------------------------------------------ | ------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Pauli Twirling   🚧            | [PT](https://mitiq.readthedocs.io/en/latest/guide/pt.html)  | [`mitiq.pt`](https://github.com/unitaryfoundation/mitiq/tree/main/mitiq/pt) |  [1512.01098](https://arxiv.org/abs/1512.01098) |
-
-> 🚧: Technique is currently a work in progress or is untested and may have some rough edges. If you try any of these techniques and have suggestions, please open an issue!
+| Pauli Twirling              | [PT](https://mitiq.readthedocs.io/en/latest/guide/pt.html)  | [`mitiq.pt`](https://github.com/unitaryfoundation/mitiq/tree/main/mitiq/pt) |  [1512.01098](https://arxiv.org/abs/1512.01098) |
 
 
-
-See our [roadmap](https://github.com/unitaryfoundation/mitiq/wiki) for additional candidate techniques to implement. If there is a technique you are looking for, please file a [feature request](https://github.com/unitaryfoundation/mitiq/issues/new?assignees=&labels=feature-request&template=feature_request.md&title=).
+If there is a technique you are looking for not listed here, please file a [feature request](https://github.com/unitaryfoundation/mitiq/issues/new?assignees=&labels=feature-request&template=feature_request.md&title=).
 
 ### Interface
 
-We refer to any programming language you can write quantum circuits in as a _frontend_, and any quantum computer / simulator you can simulate circuits in as a _backend_.
+We refer to any python quantum programming SDK you can write quantum circuits in as a _frontend_, and any quantum computer / simulator you can simulate circuits on as a _backend_.
 
 #### Supported frontends
 
@@ -129,19 +122,18 @@ We refer to any programming language you can write quantum circuits in as a _fro
 |:--------------------------------------------------------------------------------------------------------------------------------------------------------------------------:|:---------------------------------------------------------------------------------------------------------------------:|:------------------------------------------------------------------------------------------------------------------------------------------------------:|:--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------:|:-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------:|:------------------------------------------------------------------------------------------------------------------------------------------------------------------------:|:-------------------------------------------------------------------------------------------------------------------------------------------------------------------------:|
 | <a href="https://quantumai.google/cirq"><img src="https://raw.githubusercontent.com/quantumlib/Cirq/main/docs/images/Cirq_logo_color.png" alt="Cirq logo" width="65"/></a> | <a href="https://qiskit.org/"><img src="https://raw.githubusercontent.com/unitaryfoundation/mitiq/main/docs/source/img/frontend-logos/qiskit-logo.png" alt="Qiskit logo" width="85"/></a> | <a href="https://github.com/rigetti/pyquil"><img src="https://www.rigetti.com/uploads/Logos/logo-rigetti-gray.jpg" alt="Rigetti logo" width="75"/></a> | <a href="https://github.com/aws/amazon-braket-sdk-python"><img src="https://a0.awsstatic.com/libra-css/images/logos/aws_logo_smile_1200x630.png" alt="AWS logo" width="75"/></a> | <a href="https://pennylane.ai/"><img src="https://raw.githubusercontent.com/PennyLaneAI/pennylane/c2f96705efd4570e8755e829b11cc869b4c2287d/doc/_static/logo.png" alt="PennyLane logo"  width="30"/></a> | <a href="https://qibo.science/"><img src="https://raw.githubusercontent.com/qiboteam/qibo/master/doc/source/_static/qibo_logo_dark.svg" alt="Qibo logo" width="60"/></a> | |
 
-You can install Mitiq support for these frontends by specifying them during installation, 
-as optional extras, along with the main package.
+You can install Mitiq support for these frontends by specifying them during installation,  as optional extras, along with the main package.
 To install Mitiq with one or more frontends, you can specify each frontend in square brackets as part of the installation command. 
 
-For example,
-to install Mitiq with support for Qiskit and Qibo:
+For example, to install Mitiq with support for Qiskit and Qibo:
+
 ```bash
 pip install mitiq[qiskit,qibo]
 ```
 
 [Here](https://github.com/unitaryfoundation/mitiq/blob/main/INTEGRATIONS.txt) is an up-to-date list of supported frontends. 
 
-Note: Currently, Cirq is a core requirement of Mitiq and is installed when you `pip install mitiq` (even without the optional `[cirq]`)
+Note: Currently, Cirq is a core requirement of Mitiq and is installed when you `pip install mitiq`.
 
 #### Supported backends
 
@@ -159,8 +151,10 @@ A list of papers citing Mitiq can be found on [Google Scholar](https://scholar.g
 
 ## Contributing
 
-We welcome contributions to Mitiq including bug fixes, feature requests, etc. To get started, check out our [contribution
-guidelines](https://mitiq.readthedocs.io/en/stable/toc_contributing.html) and/or [documentation guidelines](https://mitiq.readthedocs.io/en/stable/contributing_docs.html).
+We welcome contributions to Mitiq including bug fixes, feature requests, etc.
+To get started, check out our [contribution guidelines](https://mitiq.readthedocs.io/en/stable/toc_contributing.html) and/or [documentation guidelines](https://mitiq.readthedocs.io/en/stable/contributing_docs.html).
+
+Contributions of all kinds are welcome!
 
 ## Contributors ✨
 
@@ -169,5 +163,3 @@ Non-code contributors are also much appreciated, and are listed here.
 Thank you to
 
 - [@francespoblete](https://github.com/francespoblete) for much of Mitiq's design work/vision
-
-Contributions of any kind are welcome!

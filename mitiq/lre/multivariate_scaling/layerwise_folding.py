@@ -52,25 +52,24 @@ def _get_chunks(
     Adapted from:
     https://stackoverflow.com/questions/2130016/splitting-a-list-into-n-parts-of-approximately-equal-length
 
-        Args:
-            input_circuit: Circuit of interest.
-            num_chunks: Number of desired approximately equal chunks,
-                * when num_chunks == num_layers, the original circuit is
-                    returned.
-                * when num_chunks == 1, the entire circuit is chunked into 1
-                    layer.
-        Returns:
-            split_circuit: Circuit of interest split into approximately equal
-                chunks.
+    Args:
+        input_circuit: Circuit of interest.
+        num_chunks: The number of equally-sized circuit chunks. Noise
+            scaling is applied to each chunk independently. Ranges from 1
+            (all gates in one chunk, similar to ZNE) to the number of
+            circuit layers (default, each layer is a separate chunk).
 
-        Raises:
-            ValueError:
-                When the number of chunks for the input circuit is larger than
-                    the number of layers in the input circuit.
+    Returns:
+        split_circuit: Circuit of interest split into approximately equal
+            chunks.
 
-            ValueError:
-                When the number of chunks is less than 1.
+    Raises:
+        ValueError:
+            When the number of chunks for the input circuit is larger than
+            the number of layers in the input circuit.
 
+        ValueError:
+            When the number of chunks is less than 1.
     """
     num_layers = _get_num_layers_without_measurements(input_circuit)
     if num_chunks is None:
@@ -104,16 +103,19 @@ def get_scale_factor_vectors(
     """Returns the patterned scale factor vectors required for multivariate
     extrapolation.
 
-        Args:
-            input_circuit: Quantum circuit to be scaled.
-            degree: Degree of the multivariate polynomial.
-            fold_multiplier: Scaling gap required by unitary folding.
-            num_chunks: Number of desired approximately equal chunks.
+    Args:
+        input_circuit: Quantum circuit to be scaled.
+        degree: Degree of the multivariate polynomial.
+        fold_multiplier: Scaling gap required by unitary folding.
+        num_chunks: The number of equally-sized circuit chunks. Noise
+            scaling is applied to each chunk independently. Ranges from 1
+            (all gates in one chunk, similar to ZNE) to the number of
+            circuit layers (default, each layer is a separate chunk).
 
-        Returns:
-            scale_factor_vectors: A vector of scale factors where each
-                component in the vector corresponds to the layer in the input
-                circuit.
+    Returns:
+        scale_factor_vectors: A vector of scale factors where each
+            component in the vector corresponds to the layer in the input
+            circuit.
     """
 
     circuit_chunks = _get_chunks(input_circuit, num_chunks)
@@ -167,9 +169,10 @@ def _multivariate_layer_scaling(
         input_circuit: Circuit to be scaled.
         degree: Degree of the multivariate polynomial.
         fold_multiplier: Scaling gap required by unitary folding.
-        num_chunks: Number of desired approximately equal chunks. When the
-            number of chunks is the same as the layers in the input circuit,
-            the input circuit is unchanged.
+        num_chunks: The number of equally-sized circuit chunks. Noise
+            scaling is applied to each chunk independently. Ranges from 1
+            (all gates in one chunk, similar to ZNE) to the number of circuit
+            layers (default, each layer is a separate chunk).
         folding_method: Unitary folding method. Default is
             :func:`fold_gates_at_random`.
 
