@@ -13,9 +13,14 @@ on:
     branches:
       - main
 
+permissions: {}
+
 jobs:
   docs:
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      actions: write
     steps:
       - name: Check out mitiq
         uses: actions/checkout@v6
