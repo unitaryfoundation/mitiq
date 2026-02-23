@@ -139,10 +139,7 @@ def angles_to_proximities(
         exp(-(diff/sigma)^2) where diff is the distance from each angle to
         Clifford gates.
     """
-    proximities = []
-    for angle in angles:
-        proximities.append(np.max(angle_to_proximities(angle, sigma)))
-    return proximities
+    return [np.max(angle_to_proximities(angle, sigma)) for angle in angles]
 
 
 @np.vectorize
