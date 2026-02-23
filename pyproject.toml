@@ -25,7 +25,7 @@ classifiers = [
 ]
 dependencies = [
     "numpy>=1.25.2,<2.0.0",
-    "scipy>=1.10.1,<=1.17.0",
+    "scipy>=1.10.1,<=1.17.1",
     "cirq-core>=1.6.0,<1.7.0",
     "tabulate",
     "matplotlib>=3.8",
