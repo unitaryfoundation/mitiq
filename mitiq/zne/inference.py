@@ -1353,8 +1353,9 @@ class PolyExpFactory(BatchedFactory):
             """Ansatz of generic order with unknown asymptote."""
             # Coefficients of the polynomial to be exponentiated
             z_coeffs = coeffs[2:][::-1]
-            return float(
-                coeffs[0] + coeffs[1] * np.exp(x * np.polyval(z_coeffs, x))
+            return cast(
+                float,
+                coeffs[0] + coeffs[1] * np.exp(x * np.polyval(z_coeffs, x)),
             )
 
         def _ansatz_known(x: float, *coeffs: float) -> float:
@@ -1367,8 +1368,9 @@ class PolyExpFactory(BatchedFactory):
             # asymptote being None is handled in a different branch of the code
             assert asymptote is not None
 
-            return float(
-                asymptote + coeffs[0] * np.exp(x * np.polyval(z_coeffs, x))
+            return cast(
+                float,
+                asymptote + coeffs[0] * np.exp(x * np.polyval(z_coeffs, x)),
             )
 
         # CASE 1: asymptote is None.
