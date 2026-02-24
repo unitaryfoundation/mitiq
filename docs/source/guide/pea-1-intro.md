@@ -73,7 +73,7 @@ The [executor](executors.md) can be used to evaluate noisy (unmitigated) expecta
 # Compute the expectation value of the |0><0| observable.
 noisy_value = execute(circuit)
 ideal_value = execute(circuit, noise_level=0.0)
-print(f"Error without mitigation: {abs(ideal_value - noisy_value) :.5f}")
+print(f"Error without mitigation: {abs(ideal_value - noisy_value) :.3f}")
 ```
 
 ## Apply PEA
@@ -98,7 +98,7 @@ mitigated_result = pea.execute_with_pea(
 ```
 
 ```{code-cell} ipython3
-print(f"Error with PEA: {abs(ideal_value - mitigated_result):.{3}}")
+print(f"Error with PEA: {abs(ideal_value - mitigated_result):.3f}")
 ```
 
 Here we observe that the application of PEA reduces the estimation error when compared to the unmitigated result.
@@ -140,7 +140,7 @@ pea_value = pea.combine_results(
 ```
 
 ```{code-cell} ipython3
-print(f"Error with PEA (two-stage): {abs(ideal_value - pea_value):.{3}}")
+print(f"Error with PEA (two-stage): {abs(ideal_value - pea_value):.3f}")
 ```
 
 ```{note}
