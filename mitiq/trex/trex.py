@@ -15,7 +15,6 @@ See :cite:`vandenBerg_2022_NatPhys` for more details.
 """
 
 from collections.abc import Callable, Sequence
-from functools import wraps
 from typing import Any, cast
 
 import cirq
@@ -161,7 +160,7 @@ def construct_circuits(
     measurement_circuits = []
     group_qubits = []
     for group in observable.groups:
-        meas_cirq = group.measure_in(cirq_circuit)
+        meas_cirq = cast(cirq.Circuit, group.measure_in(cirq_circuit))
         measured_qubits = sorted(group._qubits_to_measure())
         measurement_circuits.append(meas_cirq)
         group_qubits.append(measured_qubits)
@@ -219,7 +218,7 @@ def combine_results(
     all_qubits = sorted(observable._qubits())
     qubit_to_idx = {q: i for i, q in enumerate(all_qubits)}
 
-    total = 0.0
+    total: complex = 0.0
     for group_idx, group in enumerate(observable.groups):
         measured_qubits = sorted(group._qubits_to_measure())
 
@@ -298,10 +297,13 @@ def mitigate_executor(
     Returns:
         The error-mitigated version of the input executor.
     """
-    executor_obj = Executor(executor)
+    if isinstance(executor, Executor):
+        executor_obj = executor
+    else:
+        executor_obj = Executor(executor)
+
     if not executor_obj.can_batch:
 
-        @wraps(executor)
         def new_executor(
             circuit: QPROGRAM,
         ) -> float | tuple[float, dict[str, Any]]:
@@ -316,8 +318,7 @@ def mitigate_executor(
 
     else:
 
-        @wraps(executor)
-        def new_executor(
+        def new_executor(  # type: ignore[misc]
             circuits: list[QPROGRAM],
         ) -> list[float | tuple[float, dict[str, Any]]]:
             return [
@@ -362,15 +363,12 @@ def trex_decorator(
     def decorator(
         executor: Callable[[QPROGRAM], MeasurementResult],
     ) -> Callable[[QPROGRAM], float | tuple[float, dict[str, Any]]]:
-        return cast(
-            Callable[[QPROGRAM], float | tuple[float, dict[str, Any]]],
-            mitigate_executor(
-                executor,
-                observable,
-                num_randomizations=num_randomizations,
-                random_state=random_state,
-                full_output=full_output,
-            ),
+        return mitigate_executor(
+            executor,
+            observable,
+            num_randomizations=num_randomizations,
+            random_state=random_state,
+            full_output=full_output,
         )
 
     return decorator
