@@ -160,8 +160,8 @@ def construct_circuits(
     # Get measurement circuits for each commuting group.
     measurement_circuits = []
     group_qubits = []
-    for group in observable._groups:
-        meas_cirq = group._measure_in(cirq_circuit, group)
+    for group in observable.groups:
+        meas_cirq = group.measure_in(cirq_circuit)
         measured_qubits = sorted(group._qubits_to_measure())
         measurement_circuits.append(meas_cirq)
         group_qubits.append(measured_qubits)
@@ -220,7 +220,7 @@ def combine_results(
     qubit_to_idx = {q: i for i, q in enumerate(all_qubits)}
 
     total = 0.0
-    for group_idx, group in enumerate(observable._groups):
+    for group_idx, group in enumerate(observable.groups):
         measured_qubits = sorted(group._qubits_to_measure())
 
         for pauli in group.elements:
@@ -281,7 +281,7 @@ def mitigate_executor(
     num_randomizations: int = 32,
     random_state: int | np.random.RandomState | None = None,
     full_output: bool = False,
-) -> Executor | Callable[[QPROGRAM], float | tuple[float, dict[str, Any]]]:
+) -> Callable[[QPROGRAM], float | tuple[float, dict[str, Any]]]:
     """Returns a modified version of the input ``executor`` which is
     error-mitigated with TREX.
 
