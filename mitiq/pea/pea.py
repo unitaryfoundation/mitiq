@@ -110,8 +110,8 @@ def combine_results(
     the resulting expectation values to the zero noise limit to obtain the
     error-mitigated expectation value.
 
-    Attention:
-        The ``results`` must be in the same order as the circuits were
+    Warning:
+        The ``scaled_results`` must be in the same order as the circuits were
         generated.
 
     Args:
@@ -156,7 +156,7 @@ def execute_with_pea(
 ) -> float | tuple[float, dict[str, Any]]:
     r"""Estimates the error-mitigated expectation value associated to the
     input circuit, via the application of probabilistic error amplification
-    (PEA) :cite:`Kim_2023_Nature`.
+    (PEA). :cite:`Kim_2023_Nature`.
 
     This function implements PEA by:
 

@@ -17,10 +17,10 @@ kernelspec:
 
 Probabilistic error amplification (PEA) can be useful when:
 
-- Is often more accurate than ZNE given PEA takes advantages of a given noise model, rather than being agnostic.
-- Lower sampling overhead than required by PEC.
-- Allows you to run deeper circuit than with ZNE where unitary folding would create circuits longer than qubit coherence times.
-- Can reuse some information learned from ZNE experiments to aid PEA performance.
+- Provides higher accuracy than ZNE because it leverages a specified noise model rather than being noise-agnostic.
+- Requires lower sampling overhead than PEC.
+- Enables execution of deeper circuits than with ZNE, in cases where unitary folding would create circuits longer than qubit coherence times.
+- Reuses information learned from ZNE experiments to improve PEA performance.
 
 ## Disadvantages
 

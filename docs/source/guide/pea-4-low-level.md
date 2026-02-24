@@ -107,7 +107,7 @@ print(f"PEA error:   {abs(pea_value - ideal_value):.3f}")
 ```
 
 ```{attention}
-Due to randomness in the PEA sampling protocol the PEA error is not always gauranteed to be smaller than the noisy error.
+Due to randomness in the PEA sampling protocol, the PEA error is not always guaranteed to be smaller than the noisy error.
 ```
 
 The two steps shown above are what {func}`.execute_with_pea` performs internally.
