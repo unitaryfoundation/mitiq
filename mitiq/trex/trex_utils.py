@@ -71,7 +71,7 @@ def create_calibration_circuit(
 ) -> cirq.Circuit:
     """Create a calibration circuit for TREX.
 
-    The calibration circuit prepares the |0...0> state, applies X gates
+    The calibration circuit prepares the ``|0...0>`` state, applies X gates
     according to ``bitstring``, and measures all qubits. After classical
     post-processing (XOR with ``bitstring``), the ideal result is all zeros.
     Deviations indicate readout errors.

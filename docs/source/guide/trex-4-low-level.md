@@ -4,7 +4,7 @@ jupytext:
     extension: .md
     format_name: myst
     format_version: 0.13
-    jupytext_version: 1.14.1
+    jupytext_version: 1.18.1
 kernelspec:
   display_name: Python 3 (ipykernel)
   language: python
@@ -33,7 +33,7 @@ As shown in [How do I use TREX?](trex-1-intro.md), the function
 {func}`.execute_with_trex()` applies TREX behind the scenes and directly
 returns the error-mitigated expectation value. In the next sections, we
 show how one can apply TREX at a lower level using
-{func}`.construct_circuits()` and {func}`.combine_results()`.
+{func}`mitiq.trex.trex.construct_circuits` and {func}`mitiq.trex.trex.combine_results`.
 
 ## Constructing twirled circuits
 
