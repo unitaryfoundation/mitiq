@@ -322,3 +322,85 @@ def test_trex_decorator_preserves_doc():
         return noiseless_executor(circuit)
 
     assert my_executor.__doc__ == "My custom executor docstring."
+
+
+def test_construct_circuits_with_random_state_object():
+    """construct_circuits should accept a RandomState object directly."""
+    rng = np.random.RandomState(42)
+    twirled, calib, strings = construct_circuits(
+        circ, observable, num_randomizations=4, random_state=rng
+    )
+    assert len(twirled) == observable.ngroups * 4
+    assert len(calib) == 4
+
+
+def test_mitigate_executor_with_executor_object():
+    """mitigate_executor should accept an Executor object."""
+    from mitiq.executor.executor import Executor
+
+    executor_obj = Executor(noiseless_executor)
+    mitigated = mitigate_executor(
+        executor_obj,
+        observable,
+        num_randomizations=4,
+        random_state=42,
+    )
+    result = mitigated(circ)
+    assert np.isclose(result, -2.0, atol=0.2)
+
+
+def test_mitigate_executor_batch():
+    """mitigate_executor should work with a batching executor."""
+
+    def batch_executor(circuits) -> list[MeasurementResult]:
+        return [noiseless_executor(c) for c in circuits]
+
+    mitigated = mitigate_executor(
+        batch_executor,
+        observable,
+        num_randomizations=4,
+        random_state=42,
+    )
+    results = mitigated([circ, circ])
+    assert len(results) == 2
+    for r in results:
+        assert np.isclose(r, -2.0, atol=0.2)
+
+
+def test_combine_results_empty_randomizations():
+    """combine_results with no randomizations returns 0."""
+    value = combine_results([], [], [], observable)
+    assert value == 0.0
+
+
+def test_combine_results_small_calibration_factor():
+    """combine_results falls back when calibration factor is near zero."""
+    num_rand = 4
+    twirled, calib, strings = construct_circuits(
+        circ, observable, num_randomizations=num_rand, random_state=42
+    )
+
+    all_circuits = twirled + calib
+    results = [noiseless_executor(c) for c in all_circuits]
+
+    n_twirled = len(twirled)
+    twirled_results = results[:n_twirled]
+
+    # Craft calibration results where parity on support qubits averages to ~0.
+    # Half the shots are 0, half are 1 on the support qubit.
+    n_qubits = 2
+    half = 4096
+    mixed_bits = np.vstack(
+        [
+            np.zeros((half, n_qubits), dtype=int),
+            np.ones((half, n_qubits), dtype=int),
+        ]
+    )
+    fake_calib = [
+        MeasurementResult(result=mixed_bits.tolist(), qubit_indices=(0, 1))
+        for _ in range(num_rand)
+    ]
+
+    # Should not raise; falls back to uncorrected value.
+    value = combine_results(twirled_results, fake_calib, strings, observable)
+    assert isinstance(value, float)

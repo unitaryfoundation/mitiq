@@ -210,6 +210,19 @@ def test_xor_length_mismatch():
         xor_bitstrings(mr, bitstring)
 
 
+def test_insert_x_no_measurement():
+    """X gates appended at end when circuit has no measurement."""
+    qubits = cirq.LineQubit.range(2)
+    circuit = cirq.Circuit(cirq.H(qubits[0]))
+    bitstring = np.array([1, 0], dtype=np.int64)
+    result = insert_x_before_measurements(circuit, bitstring, qubits)
+
+    # X gate should be appended at the end
+    x_ops = [op for op in result.all_operations() if op.gate == cirq.X]
+    assert len(x_ops) == 1
+    assert x_ops[0].qubits == (qubits[0],)
+
+
 def test_xor_double_application_is_identity():
     """Applying XOR twice with the same bitstring is identity."""
     mr = MeasurementResult(["01", "10", "11"], qubit_indices=(0, 1))
