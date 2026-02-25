@@ -15,6 +15,7 @@ See :cite:`vandenBerg_2022_NatPhys` for more details.
 """
 
 from collections.abc import Callable, Sequence
+from functools import update_wrapper
 from typing import Any, cast
 
 import cirq
@@ -114,7 +115,9 @@ def construct_circuits(
     observable: Observable,
     num_randomizations: int = 32,
     random_state: int | np.random.RandomState | None = None,
-) -> tuple[list[cirq.Circuit], list[cirq.Circuit], list[npt.NDArray[np.int64]]]:
+) -> tuple[
+    list[cirq.Circuit], list[cirq.Circuit], list[npt.NDArray[np.int64]]
+]:
     """Generate twirled measurement circuits and calibration circuits for TREX.
 
     For each randomization pattern and each commuting group in the
@@ -214,7 +217,6 @@ def combine_results(
         The TREX-corrected expectation value.
     """
     num_randomizations = len(randomization_strings)
-    num_groups = observable.ngroups
     all_qubits = sorted(observable._qubits())
     qubit_to_idx = {q: i for i, q in enumerate(all_qubits)}
 
@@ -240,9 +242,7 @@ def combine_results(
 
                 # Compute parity on support qubits.
                 bits = flipped_twirled.filter_qubits(support)
-                noisy_exp = float(
-                    np.mean([(-1) ** np.sum(b) for b in bits])
-                )
+                noisy_exp = float(np.mean([(-1) ** np.sum(b) for b in bits]))
 
                 # Get the calibration result for this randomization.
                 calib_res = calibration_results[rand_idx]
@@ -333,6 +333,8 @@ def mitigate_executor(
                 for circuit in circuits
             ]
 
+    if not isinstance(executor, Executor):
+        update_wrapper(new_executor, executor)
     return new_executor
 
 
