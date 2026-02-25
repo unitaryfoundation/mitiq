@@ -41,9 +41,7 @@ def insert_x_before_measurements(
         )
 
     x_ops = [
-        cirq.X(qubit)
-        for qubit, bit in zip(qubits, bitstring)
-        if bit == 1
+        cirq.X(qubit) for qubit, bit in zip(qubits, bitstring) if bit == 1
     ]
 
     if not x_ops:
@@ -92,11 +90,7 @@ def create_calibration_circuit(
             f"number of qubits ({len(qubits)})."
         )
 
-    ops = [
-        cirq.X(qubit)
-        for qubit, bit in zip(qubits, bitstring)
-        if bit == 1
-    ]
+    ops = [cirq.X(qubit) for qubit, bit in zip(qubits, bitstring) if bit == 1]
 
     circuit = cirq.Circuit()
     if ops:

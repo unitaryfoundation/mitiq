@@ -16,7 +16,6 @@ from mitiq.trex.trex_utils import (
     xor_bitstrings,
 )
 
-
 # --- Tests for insert_x_before_measurements ---
 
 

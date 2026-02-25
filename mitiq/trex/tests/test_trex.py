@@ -14,7 +14,7 @@ from cirq.experiments.single_qubit_readout_calibration_test import (
     NoisySingleQubitReadoutSampler,
 )
 
-from mitiq import Executor, MeasurementResult, Observable, PauliString
+from mitiq import MeasurementResult, Observable, PauliString
 from mitiq.raw import execute as raw_execute
 from mitiq.trex import (
     combine_results,
@@ -98,9 +98,7 @@ def test_trex_reduces_error():
 def test_trex_various_noise_levels(p0, p1):
     """TREX should reduce error for various readout noise levels."""
     true_value = -2.0
-    noisy_executor = partial(
-        noisy_readout_executor, p0=p0, p1=p1, shots=8192
-    )
+    noisy_executor = partial(noisy_readout_executor, p0=p0, p1=p1, shots=8192)
 
     unmitigated = raw_execute(circ, noisy_executor, observable)
     mitigated = execute_with_trex(
