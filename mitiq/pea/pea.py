@@ -115,15 +115,17 @@ def combine_results(
         generated.
 
     Args:
+        scale_factors: A list of (positive) numbers by which the baseline
+            noise level is to be amplified.
         scaled_results: Results as obtained from running circuits at each scale
             factor.
         scaled_norms: The one-norm of the circuit representations at each scale
             factor.
         scaled_signs: The signs corresponding to the positivity of the sampled
             circuits at each scale factor.
-        extrapolation_method: The function for scaling the noise of a
-            quantum circuit. A list of built-in functions can be found
-            in ``mitiq.zne.scaling``.
+        extrapolation_method: The method of extrapolation to use when fitting
+            the measured results. A list of built-in functions can be found
+            in ``mitiq.zne.inference``.
 
     Returns:
         The PEA estimate of the expectation value.
@@ -180,9 +182,9 @@ def execute_with_pea(
             noise-scaled representations, e.g. "local_depolarizing" or
             "global_depolarizing".
         epsilon: Baseline noise level.
-        extrapolation_method: The function for scaling the noise of a
-            quantum circuit. A list of built-in functions can be found
-            in ``mitiq.zne.scaling``.
+        extrapolation_method: The method of extrapolation to use when fitting
+            the measured results. A list of built-in functions can be found
+            in ``mitiq.zne.inference``.
         observable: Observable to compute the expectation value of. If None,
             the `executor` must return an expectation value. Otherwise,
             the `QuantumResult` returned by `executor` is used to compute the

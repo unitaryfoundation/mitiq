@@ -52,8 +52,8 @@ def combine_results(
     Args:
         scale_factors: An array of noise scale factors.
         results: An array storing the results of running the scaled circuits.
-        extrapolation_method: The function for scaling the noise of a
-            quantum circuit. A list of built-in functions can be found
+        extrapolation_method: The method of extrapolation to use when fitting
+            the measured results. A list of built-in functions can be found
             in ``mitiq.zne.inference``.
 
     Returns:
