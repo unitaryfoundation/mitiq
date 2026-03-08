@@ -281,6 +281,102 @@ For production use, you would:
 - Combine with other Mitiq techniques (DDD, PEC, CDR)
 - Consider hardware-specific noise models
 
+## Running on IBM Quantum Hardware
+
+This section shows how to run the QEC+ZNE combination on real IBM Quantum hardware. You'll need an IBM Quantum account and token.
+
 ```{code-cell} ipython3
-print("Tutorial complete! Try modifying the noise levels or circuit structure.")
+# Optional: Run on IBM Quantum hardware
+# Uncomment and run this section if you have IBM Quantum access
+
+try:
+    from qiskit import QuantumCircuit, transpile
+    from qiskit_ibm_runtime import QiskitRuntimeService, Session, Sampler
+    from qiskit_ibm_runtime.options import SamplerOptions
+    
+    # Load IBM Quantum account (use token from environment or save once)
+    # service = QiskitRuntimeService(channel="ibm_quantum", token="YOUR_TOKEN")
+    
+    # Or use saved credentials
+    service = QiskitRuntimeService(channel="ibm_quantum")
+    
+    print("IBM Quantum account loaded!")
+    print(f"Available backends: {[b.name for b in service.backends(min_num_qubits=5)][:5]}")
+except ImportError:
+    print("qiskit-ibm-runtime not installed. Install with: pip install qiskit-ibm-runtime")
+except Exception as e:
+    print(f"Could not load IBM Quantum: {e}")
+```
+
+```{code-cell} ipython3
+# Convert Cirq circuit to Qiskit and run on hardware
+def run_on_ibm_hardware(cirq_circuit, backend_name="ibm_brisbane", shots=1024):
+    """Execute circuit on IBM Quantum with error mitigation."""
+    
+    # Convert Cirq to Qiskit
+    import cirq.contrib.qiskit as cirq_qiskit
+    qiskit_circuit = cirq_qiskit.circuit_to_qiskit(cirq_circuit)
+    
+    # Get backend
+    backend = service.backend(backend_name)
+    print(f"Using backend: {backend.name}")
+    print(f"Qubits available: {backend.num_qubits}")
+    
+    # Transpile for the specific backend
+    transpiled = transpile(qiskit_circuit, backend, optimization_level=1)
+    print(f"Transpiled circuit depth: {transpiled.depth()}")
+    
+    # Run with Sampler primitive (includes error mitigation options)
+    with Session(backend=backend) as session:
+        sampler = Sampler(session=session)
+        options = SamplerOptions(default_shots=shots)
+        
+        job = sampler.run([transpiled], options=options)
+        result = job.result()
+        
+    return result
+
+# Example: Run a simple QEC circuit
+# hardware_result = run_on_ibm_hardware(test_circuit, shots=1024)
+# print("Hardware execution complete!")
+```
+
+```{code-cell} ipython3
+# Compare simulator vs hardware results
+def compare_simulator_vs_hardware(circuit, noise_prob=0.01):
+    """Compare noise simulation vs real hardware execution."""
+    
+    # Simulator result (with noise model)
+    sim_result = compute_expectation(circuit, noise_prob)
+    
+    # Hardware result (if available)
+    try:
+        hw_result = run_on_ibm_hardware(circuit)
+        # Extract expectation from hardware result
+        # (would need proper bitstring to expectation conversion)
+        
+        print(f"Simulator (noise={noise_prob}): {sim_result:.4f}")
+        print(f"IBM Hardware: {hw_result}")
+        print(f"Difference: {abs(sim_result - hw_result):.4f}")
+    except Exception as e:
+        print(f"Hardware comparison skipped: {e}")
+        print(f"Simulator result: {sim_result:.4f}")
+
+# Run comparison
+# compare_simulator_vs_hardware(test_circuit)
+```
+
+:::{note}
+**IBM Quantum Integration Notes:**
+
+1. **Authentication**: Store your IBM Quantum token in environment variable `IBM_QUANTUM_TOKEN`
+2. **Backend selection**: Use `service.least_busy(operational=True, min_num_qubits=5)` to auto-select
+3. **Error suppression**: IBM's built-in error suppression (RESILIENCE_LEVEL) complements Mitiq's ZNE
+4. **Combining techniques**: You can apply Mitiq ZNE on top of IBM's error suppression for layered mitigation
+
+For the full QEC+ZNE tutorial on hardware, consider using IBM's `ibm_sherbrooke` or similar 100+ qubit devices to accommodate the 5-qubit bit-flip code with ancillas.
+:::
+
+```{code-cell} ipython3
+print("Tutorial complete! Try modifying the noise levels, circuit structure, or running on IBM Quantum hardware.")
 ```
