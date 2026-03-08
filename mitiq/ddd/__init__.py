@@ -12,6 +12,7 @@ from mitiq.ddd import insertion
 from mitiq.ddd.insertion import (
     get_slack_matrix_from_circuit_mask,
     insert_ddd_sequences,
+    DDDInfo,
 )
 
 from mitiq.ddd.ddd import execute_with_ddd, mitigate_executor, ddd_decorator, construct_circuits, combine_results
