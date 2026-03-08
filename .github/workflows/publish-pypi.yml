@@ -9,6 +9,7 @@ on:
   workflow_dispatch:
     inputs: {}
 
+permissions: {}
 jobs:
   deploy:
     if: github.repository_owner == 'unitaryfoundation'
@@ -16,6 +17,7 @@ jobs:
     environment:
       name: pypi
     permissions:
+      contents: read
       id-token: write
 
     steps:
