@@ -14,6 +14,9 @@ jobs:
     steps:
       - name: Check out Mitiq
         uses: actions/checkout@v6
+      - name: Extract release notes of latest version
+        run: |
+          awk '/^## Version /{if(found) exit; found=1} found{print}' CHANGELOG.md > release_notes.md
       - name: Create Release
         id: create_release
         uses: actions/create-release@v1
@@ -22,6 +25,6 @@ jobs:
         with:
           tag_name: ${{ github.ref }}
           release_name: ${{ github.ref }}
-          body_path: ./CHANGELOG.md
+          body_path: ./release_notes.md
           draft: true
           prerelease: false
