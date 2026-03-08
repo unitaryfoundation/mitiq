@@ -1,5 +1,62 @@
 # Changelog
 
+## Version 0.49.0 (March 8, 2026)
+
+([Full Changelog](https://github.com/unitaryfoundation/mitiq/compare/v0.48.1...v0.49.0))
+
+### Highlights
+
+This release adds an OpenQASM 3 frontend, allowing users to pass OpenQASM 3 strings directly to Mitiq's error mitigation routines.
+Support for `PRx` and `MS` gates was also added to the Qibo interface.
+Mitiq now also supports NumPy 2.0!
+
+Thanks to @ACE07-Sev, and @vprusso for your continued contributions and @schrodinteq, and @orisus42 for their **first** contributions!
+
+#### ✨ Enhancements
+
+- NumPy 2.0 support (#2918) [@natestemen + @ACE07-Sev]
+- OpenQASM3 Frontend (#2842) [@ACE07-Sev]
+- Added support for PRx and MS gates in Qibo interface (#2879) [@ACE07-Sev]
+- Add quantum computing classifier to project metadata (#2880) [@orisus42]
+
+#### 📓 Documentation
+
+- Update docs to correctly reflect `num_chunks` argument in LRE (#2915) [@vprusso]
+- Fix typo in README.md (#2898) [@schrodinteq]
+- README cleanup (#2928) [@natestemen]
+
+#### 🧑🏽‍💻 Developer Improvements
+
+- Set permissions for all github actions (#2932) [@natestemen]
+- Bound qiskit above by 3.0 (#2886) [@dependabot]
+
+#### 📦 Dependency Updates
+
+- Bump amazon-braket-sdk from 1.112.1 to 1.113.0 (#2935) [@dependabot]
+- Bump scipy from 1.17.0 to 1.17.1 (#2931) [@dependabot]
+- Bump amazon-braket-sdk from 1.111.0 to 1.112.1 (#2930) [@dependabot]
+- Bump nbconvert from 7.16.6 to 7.17.0 (#2924) [@dependabot]
+- Bump pillow from 12.0.0 to 12.1.1 (#2926) [@dependabot]
+- Bump cryptography from 46.0.3 to 46.0.5 (#2925) [@dependabot]
+- Bump qbraid from 0.10.1 to 0.11.0 (#2921) [@dependabot]
+- Bump protobuf from 5.29.5 to 5.29.6 (#2919) [@dependabot]
+- Bump amazon-braket-sdk from 1.110.1 to 1.111.0 (#2916) [@dependabot]
+- Bump pyasn1 from 0.6.1 to 0.6.2 (#2907) [@dependabot]
+- Bump scipy from 1.16.2 to 1.17.0 (#2903) [@dependabot]
+- Bump pyscf from 2.11.0 to 2.12.0 (#2912) [@dependabot]
+- Bump amazon-braket-sdk from 1.108.1 to 1.110.1 (#2913) [@dependabot]
+- Bump pytket-cirq from 0.42.0 to 0.43.0 (#2900) [@dependabot]
+- Bump myst-parser from 4.0.1 to 5.0.0 (#2911) [@dependabot]
+- Bump qibo from 0.2.16 to 0.2.22 (#2870) [@dependabot]
+- Bump fonttools from 4.60.1 to 4.60.2 (#2909) [@dependabot]
+- Bump urllib3 from 2.5.0 to 2.6.3 (#2910) [@dependabot]
+- Bump qbraid from 0.10.0 to 0.10.1 (#2906) [@dependabot]
+- Bump amazon-braket-sdk from 1.103.0 to 1.108.1 (#2904) [@dependabot]
+- Bump ucc from 0.4.10 to 0.4.12 (#2899) [@dependabot]
+- Bump actions/cache from 4 to 5 (#2895) [@dependabot]
+- Bump pytest from 8.0.0 to 9.0.2 (#2890) [@dependabot]
+- Bump actions/checkout from 5 to 6 (#2881) [@dependabot]
+
 ## Version 0.48.1
 
 ([Full Changelog](https://github.com/unitaryfoundation/mitiq/compare/v0.48.0...v0.48.1))
