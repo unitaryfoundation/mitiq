@@ -45,6 +45,12 @@ circuit = benchmarks.generate_rb_circuits(
 print(circuit)
 ```
 
+```{note}
+PEA also requires that the circuit can be decomposed into one- and two-qubit operations.
+If your circuit contains larger operations, pre-compile it to a one- and two-qubit gate set
+before applying PEA.
+```
+
 As an example, below we define a simple executor function which inputs a circuit, executes it on a noisy simulator, and returns the probability of the ground state.
 See the [Executors](executors.md) section for more information on how to define more advanced executors.
 
