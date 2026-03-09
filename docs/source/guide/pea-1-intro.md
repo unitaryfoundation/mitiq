@@ -25,12 +25,6 @@ import mitiq
 mitiq.SUPPORTED_PROGRAM_TYPES.keys()
 ```
 
-In the next cell you can select the frontend used in this tutorial. For example:
-
-```{code-cell} ipython3
-frontend = "cirq"
-```
-
 ## Problem setup
 
 We first define the circuit of interest. For simplicity, in this example we use a randomized-benchmarking circuit whose ideal execution is equivalent to the identity operation.
@@ -39,7 +33,7 @@ We first define the circuit of interest. For simplicity, in this example we use 
 from mitiq import benchmarks
 
 circuit = benchmarks.generate_rb_circuits(
-  n_qubits=1, num_cliffords=2, return_type=frontend,
+  n_qubits=1, num_cliffords=2, return_type="cirq",
 )[0]
 
 print(circuit)
@@ -129,7 +123,7 @@ scaled_circuits, scaled_signs, scaled_norms = pea.construct_circuits(
     scale_factors=scale_factors,
     noise_model="local_depolarizing",
     epsilon=0.01,
-    precision=0.2,
+    precision=0.1,
     random_state=1,
 )
 
@@ -147,9 +141,4 @@ pea_value = pea.combine_results(
 
 ```{code-cell} ipython3
 print(f"Error with PEA (two-stage): {abs(ideal_value - pea_value):.3f}")
-```
-
-```{note}
-The errors may differ between the single and two-stage approach.
-This is from randomness in the executor rather than from a difference in performance of the two techniques.
 ```
