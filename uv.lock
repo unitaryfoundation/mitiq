@@ -1676,7 +1676,7 @@ requires-dist = [
     { name = "ply", marker = "extra == 'qiskit'", specifier = "==3.11" },
     { name = "pyquil", marker = "extra == 'pyquil'", specifier = "~=4.17.0" },
     { name = "qbraid", marker = "extra == 'pyquil'", specifier = ">=0.10,<0.12" },
-    { name = "qibo", marker = "extra == 'qibo'", specifier = "~=0.2.16" },
+    { name = "qibo", marker = "extra == 'qibo'", specifier = ">=0.2.16,<0.4.0" },
     { name = "qiskit", marker = "extra == 'qiskit'", specifier = ">=2.0.0,<3.0.0" },
     { name = "qiskit-aer", marker = "extra == 'qiskit'", specifier = "~=0.17.0" },
     { name = "qiskit-ibm-runtime", marker = "extra == 'qiskit'", specifier = "~=0.41.1" },
@@ -2850,7 +2850,7 @@ wheels = [
 
 [[package]]
 name = "qibo"
-version = "0.2.23"
+version = "0.3.1"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "cma" },
@@ -2863,9 +2863,9 @@ dependencies = [
     { name = "sympy" },
     { name = "tabulate" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/1b/4b/7ff12f3ff1b508af4a7087468f8da4e9b5b24dc2b1fe9642a63cc0bd3ceb/qibo-0.2.23.tar.gz", hash = "sha256:7727e583d56589cfd48ef2cfbbd029e5356cf32c4645e6b7e0f1d70f07ccc758", size = 282033, upload-time = "2025-12-04T20:34:19.817Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/ac/d9/a1b73c851da777b853c7bc75cba7be269bef03a03abb9ce630d4a4854225/qibo-0.3.1.tar.gz", hash = "sha256:4464a9ea9573dfa601aec1fa04338a07dab34984695458ca98c20424dca84e22", size = 298384, upload-time = "2026-03-06T15:41:53.096Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/6e/9e/8c06db43a1f31ae50c9b99d6e772a920d901aedfe9ea58a0d33b94048c20/qibo-0.2.23-py3-none-any.whl", hash = "sha256:1bd93a91ad4f3c23e8cb1db9231665e24921a044bd2f752574af0e36b6c7d860", size = 325536, upload-time = "2025-12-04T20:34:18.73Z" },
+    { url = "https://files.pythonhosted.org/packages/8a/0c/db11039d83afd53a2b2b3974b00148a8853ee4728703a893b5e66936d8e1/qibo-0.3.1-py3-none-any.whl", hash = "sha256:91b9839ee3d8e29602976696d7f0a487062a02eb34d89697320720c0752566c4", size = 342658, upload-time = "2026-03-06T15:41:51.715Z" },
 ]
 
 [[package]]
