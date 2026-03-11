@@ -115,9 +115,7 @@ def construct_circuits(
     observable: Observable,
     num_randomizations: int = 32,
     random_state: int | np.random.RandomState | None = None,
-) -> tuple[
-    list[QPROGRAM], list[QPROGRAM], list[npt.NDArray[np.int64]]
-]:
+) -> tuple[list[QPROGRAM], list[QPROGRAM], list[npt.NDArray[np.int64]]]:
     """Generate twirled measurement circuits and calibration circuits for TREX.
 
     For each randomization pattern and each commuting group in the
@@ -190,9 +188,7 @@ def construct_circuits(
         calibration_circuits.append(calib)
 
     # Convert circuits back to the user's input type.
-    twirled_out = [
-        convert_from_mitiq(c, input_type) for c in twirled_circuits
-    ]
+    twirled_out = [convert_from_mitiq(c, input_type) for c in twirled_circuits]
     calibration_out = [
         convert_from_mitiq(c, input_type) for c in calibration_circuits
     ]
