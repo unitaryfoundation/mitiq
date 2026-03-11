@@ -20,5 +20,5 @@ Below is a breakdown of these responsibilities into a rough timeline of the mile
 
 ## End of milestone
 - Release the new version ([docs](https://mitiq.readthedocs.io/en/stable/release.html))
-- Prepare text for a social posts and send to ben@unitary.fund, frances@unitary.fund.
+- Prepare text for a social posts and post in #marketing-and-socials (internal channel) for review.
 - Make post on `#mitiq` Discord channel and `#uf-announcements` channel

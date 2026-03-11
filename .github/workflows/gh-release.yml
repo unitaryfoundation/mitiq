@@ -3,15 +3,20 @@ on:
     tags:
       - "v[0-9].[0-9]+.[0-9]+" # Push events to matching sematic versioning, i.e. v1.0, v20.15.10
 
+permissions: {}
+
 jobs:
-  #generate_artifacts:
-  # TODO: make docs tarball
   create_release:
-    if: github.repository_owner == 'unitaryfund'
+    if: github.repository_owner == 'unitaryfoundation'
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
     steps:
       - name: Check out Mitiq
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
+      - name: Extract release notes of latest version
+        run: |
+          awk '/^## Version /{if(found) exit; found=1} found{print}' CHANGELOG.md > release_notes.md
       - name: Create Release
         id: create_release
         uses: actions/create-release@v1
@@ -20,6 +25,6 @@ jobs:
         with:
           tag_name: ${{ github.ref }}
           release_name: ${{ github.ref }}
-          body_path: ./CHANGELOG.md
+          body_path: ./release_notes.md
           draft: true
           prerelease: false

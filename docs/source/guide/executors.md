@@ -30,7 +30,9 @@ To instantiate an `Executor`, provide a function which either:
 1. Inputs a `mitiq.QPROGRAM` and outputs a `mitiq.QuantumResult`.
 2. Inputs a sequence of `mitiq.QPROGRAM`s and outputs a sequence of `mitiq.QuantumResult`s.
 
-**The function must be [annotated](https://peps.python.org/pep-3107/) to tell Mitiq which type of `QuantumResult` it returns. Functions with no annotations are assumed to return `float`s.**
+```{warning}
+To avoid confusion and invalid results, the executor function must be [annotated](https://peps.python.org/pep-3107/) to tell Mitiq which type of `QuantumResult` it returns. Functions without annotations are assumed to return `float`s.
+```
 
 A `QPROGRAM` is "something which a quantum computer inputs" and a `QuantumResult` is "something which a quantum computer outputs." The latter is canonically a bitstring for real quantum hardware, but can be other objects for testing, e.g. a density matrix.
 
@@ -74,7 +76,7 @@ print("\nExecuted circuits:\n", *executor.executed_circuits, sep="\n")
 print("\nQuantum results:\n", *executor.quantum_results, sep="\n")
 ```
 
-To run a circuit of sequence of circuits, use the `Executor.evaluate` method.
+To run a circuit or sequence of circuits, use the `Executor.evaluate` method.
 
 ```{code-cell} ipython3
 import cirq
@@ -121,17 +123,14 @@ Notice in the above output that the executor has been called once for each circu
 
 Several quantum computing services allow running a sequence, or "batch," of circuits at once. This is important for error mitigation when running many circuits to speed up the computation.
 
-+++
-
-To define a batched executor, annotate it with `Sequence[T]`, `List[T]`, `Tuple[T]`, or `Iterable[T]` where `T` is a `QuantumResult`. Here is an example:
+To define a batched executor, annotate it with `Sequence[T]`, `list[T]`, `tuple[T]`, or `Iterable[T]` where `T` is a `QuantumResult`.
+Here is an example:
 
 ```{code-cell} ipython3
-from typing import List
-
 import numpy as np
 
 
-def batch_compute_density_matrix(circuits: List[cirq.Circuit]) -> List[np.ndarray]:
+def batch_compute_density_matrix(circuits: list[cirq.Circuit]) -> list[np.ndarray]:
     return [mitiq_cirq.compute_density_matrix(circuit) for circuit in circuits]
 
 

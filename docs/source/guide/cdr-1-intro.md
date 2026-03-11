@@ -18,7 +18,7 @@ Here we show how to use CDR by means of a simple example.
 ```{code-cell} ipython3
 import numpy as np
 import warnings
-warnings.simplefilter("ignore", np.ComplexWarning)
+warnings.simplefilter("ignore", np.exceptions.ComplexWarning)
 
 import cirq
 from mitiq import cdr, Observable, PauliString

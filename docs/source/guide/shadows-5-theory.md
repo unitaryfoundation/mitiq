@@ -151,7 +151,7 @@ calculate $K$ estimators each of which is the average of $N$ single-round estima
 & \hat{f} = \mathrm{median}\{\bar{f}^{(1)},\cdots\bar{f}^{(K)}\}_{1\leq k\leq K}
 \end{eqnarray}
 The number of $\{f_m\}$ is related to the number of irreducible representations in the PTM[^1] representation of the twirling group. When the twirling group is the local Clifford group, the number of irreducible representations is $2^n$.
-### 2.2 Noiseless Pauli Fidelity --- Ideal Inverse channal vs Estimate Noisy Inverse channel
+### 2.2 Noiseless Pauli Fidelity --- Ideal Inverse channel vs Estimate Noisy Inverse channel
 One could check that in the absence of noise in the quantum gates ($\Lambda\equiv\mathbb{I}$), the value of the Pauli fidelity $\hat{f}_{b}^{\mathrm{ideal}}\equiv \mathrm{Tr}(\mathcal{M}_z \Pi_b)/\mathrm{Tr}\Pi_b = 3^{-|{b}|}$, where $|b|$ is the count of $|1\rangle$ found in z-eigenstates $|b\rangle:=|b_i\rangle^{\otimes n}$.
 
 When the noisy channel $\widehat{\mathcal{M}}$ is considered, the inverse of the noise channel $\widehat{\mathcal{M}}^{-1}$ can be obtained by:

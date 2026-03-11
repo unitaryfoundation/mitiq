@@ -1,4 +1,4 @@
-# Copyright (C) Unitary Fund
+# Copyright (C) Unitary Foundation
 #
 # This source code is licensed under the GPL license (v3) found in the
 # LICENSE file in the root directory of this source tree.
@@ -104,6 +104,40 @@ def test_from_braket_parameterized_single_qubit_gates(qubit_index):
     )
 
 
+@pytest.mark.parametrize("qubit_index", (0, 3))
+def test_from_braket_single_qubit_two_parameter_gates(qubit_index):
+    braket_circuit = BKCircuit()
+    pgates = [
+        braket_gates.PRx,
+    ]
+
+    angles = np.random.RandomState(11).random((len(pgates), 2))
+    instructions = [
+        Instruction(rot(a[0], a[1]), target=qubit_index)
+        for rot, a in zip(pgates, angles)
+    ]
+    for instr in instructions:
+        braket_circuit.add_instruction(instr)
+    cirq_circuit = from_braket(braket_circuit)
+
+    for i, op in enumerate(cirq_circuit.all_operations()):
+        assert np.allclose(
+            instructions[i].operator.to_matrix(), protocols.unitary(op)
+        )
+
+    qubit = LineQubit(qubit_index)
+    expected_cirq_circuit = Circuit(
+        ops.PhasedXPowGate(
+            phase_exponent=angles[0][1] / np.pi,
+            exponent=angles[0][0] / np.pi,
+            global_shift=-0.5,
+        ).on(qubit)
+    )
+    assert _equal(
+        cirq_circuit, expected_cirq_circuit, require_qubit_equality=True
+    )
+
+
 def test_from_braket_non_parameterized_two_qubit_gates():
     braket_circuit = BKCircuit()
     instructions = [
@@ -158,13 +192,13 @@ def test_from_braket_parameterized_two_qubit_gates():
         assert np.allclose(instr.operator.to_matrix(), cirq_circuit.unitary())
 
 
-def test_from_braket_parameterized_two_qubit_two_parameters_gates():
+def test_from_braket_parameterized_two_qubit_three_parameters_gates():
     pgates = [
         braket_gates.MS,
     ]
-    angles = np.random.RandomState(2).random((len(pgates), 2))
+    angles = np.random.RandomState(2).random((len(pgates), 3))
     instructions = [
-        Instruction(rot(a[0], a[1]), target=[0, 1])
+        Instruction(rot(a[0], a[1], a[2]), target=[0, 1])
         for rot, a in zip(pgates, angles)
     ]
 

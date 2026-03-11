@@ -147,12 +147,10 @@ Actually, since we have a list of circuits to execute, we define a *batched* ver
 circuits as input and returns a list of expectation values. More details on batched executors can be found in the ["Executors"](pec-1-intro.md) section.
 
 ```{code-cell} ipython3
-from typing import List
-
 from cirq import DensityMatrixSimulator, depolarize
 from mitiq.interface import convert_to_mitiq
 
-def batched_execute(circuits: List[mitiq.QPROGRAM], noise_level: float=0.01)->List[float]:
+def batched_execute(circuits: list[mitiq.QPROGRAM], noise_level: float=0.01) -> list[float]:
     """Returns [Tr[ρ_1 |0⟩⟨0|], Tr[ρ_2 |0⟩⟨0|]... ] where ρ_j is the state prepared by the
     j_th circuit in the input argument "circuits".
     """
@@ -174,7 +172,7 @@ executor = mitiq.Executor(batched_execute, max_batch_size=100)
 We execute all the auxiliary circuits generated in the previous section to obtain a list of noisy expectation values.
 
 ```{code-cell} ipython3
-noisy_expecation_values = executor.evaluate(
+noisy_expectation_values = executor.evaluate(
     sampled_circuits, 
     force_run_all=False,  # Set True if shot noise is present in quantum results.
 )
@@ -190,15 +188,15 @@ only once by setting `force_run_all=False`.
 independence of the quantum results.*
 
 ```{code-cell} ipython3
-print(f"{len(noisy_expecation_values)} noisy expectation values efficiently evaluated by executing only {len(executor.quantum_results)} unique circuits.")
+print(f"{len(noisy_expectation_values)} noisy expectation values efficiently evaluated by executing only {len(executor.quantum_results)} unique circuits.")
 ```
 
 Equivalently, but less efficiently, we could have done as follows:
 
 ```{code-cell} ipython3
-noisy_expecation_values_direct = batched_execute(sampled_circuits)
+noisy_expectation_values_direct = batched_execute(sampled_circuits)
 
-assert noisy_expecation_values_direct == noisy_expecation_values
+assert noisy_expectation_values_direct == noisy_expectation_values
 ```
 
 ### Estimate the ideal expectation value from the noisy results
@@ -212,7 +210,7 @@ the noisy auxiliary expectation values, after scaling them by the corresponding 
 ```{code-cell} ipython3
 # Scale noisy results by one-norm coefficient and by sampled signs
 unbiased_samples = [
-  one_norm * value * sign for value, sign in zip(noisy_expecation_values, sampled_signs)
+  one_norm * value * sign for value, sign in zip(noisy_expectation_values, sampled_signs)
 ]
 
 # Estimate ideal expectation value

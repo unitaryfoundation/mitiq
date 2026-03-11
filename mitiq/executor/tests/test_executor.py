@@ -1,4 +1,4 @@
-# Copyright (C) Unitary Fund
+# Copyright (C) Unitary Foundation
 #
 # This source code is licensed under the GPL license (v3) found in the
 # LICENSE file in the root directory of this source tree.
@@ -6,12 +6,12 @@
 """Unit tests for Collector."""
 
 from random import choices
-from typing import List
 
 import cirq
 import numpy as np
 import pyquil
 import pytest
+from qiskit import QuantumCircuit
 
 from mitiq import MeasurementResult
 from mitiq.executor.executor import Executor
@@ -23,7 +23,7 @@ from mitiq.observable import Observable, PauliString
 
 
 # Serial / batched executors which return floats.
-def executor_batched(circuits, **kwargs) -> List[float]:
+def executor_batched(circuits, **kwargs) -> list[float]:
     return [
         float(v)
         for v in np.full(
@@ -33,11 +33,11 @@ def executor_batched(circuits, **kwargs) -> List[float]:
     ]
 
 
-def executor_batched_unique(circuits) -> List[float]:
+def executor_batched_unique(circuits) -> list[float]:
     return [executor_serial_unique(circuit) for circuit in circuits]
 
 
-def executor_serial_unique(circuit):
+def executor_serial_unique(circuit) -> float:
     return float(len(circuit))
 
 
@@ -49,7 +49,7 @@ def executor_serial(*args, **kwargs):
     return kwargs.setdefault("return_value", 0.0)
 
 
-def executor_pyquil_batched(programs) -> List[float]:
+def executor_pyquil_batched(programs) -> list[float]:
     for p in programs:
         if not isinstance(p, pyquil.Program):
             raise TypeError
@@ -58,21 +58,33 @@ def executor_pyquil_batched(programs) -> List[float]:
 
 
 # Serial / batched executors which return measurements.
-def executor_measurements(circuit) -> MeasurementResult:
+def executor_measurements(circuit):
     return sample_bitstrings(circuit, noise_level=(0,))
 
 
-def executor_measurements_batched(circuits) -> List[MeasurementResult]:
-    return [executor_measurements(circuit) for circuit in circuits]
+def executor_measurements_typed(circuit) -> MeasurementResult:
+    return sample_bitstrings(circuit, noise_level=(0,))
+
+
+def executor_measurements_batched(circuits) -> list[MeasurementResult]:
+    return [executor_measurements_typed(circuit) for circuit in circuits]
 
 
 # Serial / batched executors which return density matrices.
-def executor_density_matrix(circuit) -> np.ndarray:
+def executor_density_matrix(circuit):
     return compute_density_matrix(circuit, noise_level=(0,))
 
 
-def executor_density_matrix_batched(circuits) -> List[np.ndarray]:
-    return [executor_density_matrix(circuit) for circuit in circuits]
+def executor_density_matrix_typed(circuit) -> np.ndarray:
+    return compute_density_matrix(circuit, noise_level=(0,))
+
+
+def executor_density_matrix_batched(circuits) -> list[np.ndarray]:
+    return [executor_density_matrix_typed(circuit) for circuit in circuits]
+
+
+def executor_typed_npfloat32(circuit) -> np.float32:
+    return np.float32(3.14)
 
 
 def test_executor_simple():
@@ -82,12 +94,13 @@ def test_executor_simple():
     assert collector.calls_to_executor == 0
 
 
-def test_executor_is_batched_executor():
-    assert Executor.is_batched_executor(executor_batched)
-    assert not Executor.is_batched_executor(executor_serial_typed)
-    assert not Executor.is_batched_executor(executor_serial)
-    assert not Executor.is_batched_executor(executor_measurements)
-    assert Executor.is_batched_executor(executor_measurements_batched)
+def test_executors_can_batch():
+    assert Executor(executor_batched).can_batch
+    assert not Executor(executor_serial_typed).can_batch
+    assert not Executor(executor_serial).can_batch
+    assert not Executor(executor_measurements_typed).can_batch
+    assert not Executor(executor_density_matrix_typed).can_batch
+    assert Executor(executor_measurements_batched).can_batch
 
 
 def test_executor_non_hermitian_observable():
@@ -96,7 +109,7 @@ def test_executor_non_hermitian_observable():
     q = cirq.LineQubit(0)
     circuits = [cirq.Circuit(cirq.I.on(q)), cirq.Circuit(cirq.X.on(q))]
 
-    executor = Executor(executor_measurements)
+    executor = Executor(executor_measurements_typed)
 
     with pytest.warns(UserWarning, match="hermitian"):
         executor.evaluate(circuits, obs)
@@ -199,12 +212,14 @@ def test_run_executor_preserves_order(s, b):
 )
 def test_executor_evaluate_float(execute):
     q = cirq.LineQubit(0)
-    circuits = [cirq.Circuit(cirq.X(q)), cirq.Circuit(cirq.H(q), cirq.Z(q))]
+    circuits = [
+        cirq.Circuit(cirq.X(q), cirq.M(q)),
+        cirq.Circuit(cirq.H(q), cirq.Z(q), cirq.M(q)),
+    ]
 
     executor = Executor(execute)
 
-    results = executor.evaluate(circuits)
-    assert np.allclose(results, [1, 2])
+    executor.evaluate(circuits)
 
     if execute is executor_serial_unique:
         assert executor.calls_to_executor == 2
@@ -212,40 +227,11 @@ def test_executor_evaluate_float(execute):
         assert executor.calls_to_executor == 1
 
     assert executor.executed_circuits == circuits
-    assert executor.quantum_results == [1, 2]
+    assert executor.quantum_results == [2, 3]
 
 
 @pytest.mark.parametrize(
-    "execute",
-    [
-        executor_batched,
-        executor_batched_unique,
-        executor_serial_unique,
-        executor_serial_typed,
-        executor_serial,
-        executor_pyquil_batched,
-    ],
-)
-@pytest.mark.parametrize(
-    "obs",
-    [
-        PauliString("X"),
-        PauliString("XZ"),
-        PauliString("Z"),
-    ],
-)
-def test_executor_observable_compatibility_check(execute, obs):
-    q = cirq.LineQubit(0)
-    circuits = [cirq.Circuit(cirq.X(q)), cirq.Circuit(cirq.H(q), cirq.Z(q))]
-
-    executor = Executor(execute)
-
-    with pytest.raises(ValueError, match="are not compatible"):
-        executor.evaluate(circuits, obs)
-
-
-@pytest.mark.parametrize(
-    "execute", [executor_measurements, executor_measurements_batched]
+    "execute", [executor_measurements_typed, executor_measurements_batched]
 )
 def test_executor_evaluate_measurements(execute):
     obs = Observable(PauliString("Z"))
@@ -258,24 +244,24 @@ def test_executor_evaluate_measurements(execute):
     results = executor.evaluate(circuits, obs)
     assert np.allclose(results, [1, -1])
 
-    if execute is executor_measurements:
+    if execute is executor_measurements_typed:
         assert executor.calls_to_executor == 2
     else:
         assert executor.calls_to_executor == 1
 
     assert executor.executed_circuits[0] == circuits[0] + cirq.measure(q)
     assert executor.executed_circuits[1] == circuits[1] + cirq.measure(q)
-    assert executor.quantum_results[0] == executor_measurements(
+    assert executor.quantum_results[0] == executor_measurements_typed(
         circuits[0] + cirq.measure(q)
     )
-    assert executor.quantum_results[1] == executor_measurements(
+    assert executor.quantum_results[1] == executor_measurements_typed(
         circuits[1] + cirq.measure(q)
     )
     assert len(executor.quantum_results) == len(circuits)
 
 
 @pytest.mark.parametrize(
-    "execute", [executor_density_matrix, executor_density_matrix_batched]
+    "execute", [executor_density_matrix_typed, executor_density_matrix_batched]
 )
 def test_executor_evaluate_density_matrix(execute):
     obs = Observable(PauliString("Z"))
@@ -288,16 +274,94 @@ def test_executor_evaluate_density_matrix(execute):
     results = executor.evaluate(circuits, obs)
     assert np.allclose(results, [1, -1])
 
-    if execute is executor_density_matrix:
+    if execute is executor_density_matrix_typed:
         assert executor.calls_to_executor == 2
     else:
         assert executor.calls_to_executor == 1
 
     assert executor.executed_circuits == circuits
     assert np.allclose(
-        executor.quantum_results[0], executor_density_matrix(circuits[0])
+        executor.quantum_results[0], executor_density_matrix_typed(circuits[0])
     )
     assert np.allclose(
-        executor.quantum_results[1], executor_density_matrix(circuits[1])
+        executor.quantum_results[1], executor_density_matrix_typed(circuits[1])
     )
     assert len(executor.quantum_results) == len(circuits)
+
+
+def test_executor_float_with_observable_typed():
+    obs = Observable(PauliString("Z"))
+    q = cirq.LineQubit(0)
+    circuit = cirq.Circuit(cirq.X.on(q))
+    executor = Executor(executor_serial_typed)
+    with pytest.raises(
+        ValueError,
+        match="When using an executor which returns a float-like ",
+    ):
+        executor.evaluate(circuit, obs)
+
+
+def test_executor_measurements_without_observable_typed():
+    q = cirq.LineQubit(0)
+    circuit = cirq.Circuit(cirq.X.on(q))
+    executor = Executor(executor_measurements_typed)
+    with pytest.raises(
+        ValueError,
+        match="When using a measurement, or bitstring, like result",
+    ):
+        executor.evaluate(circuit)
+
+
+def test_executor_density_matrix_without_observable_typed():
+    q = cirq.LineQubit(0)
+    circuit = cirq.Circuit(cirq.X.on(q))
+    executor = Executor(executor_density_matrix_typed)
+    with pytest.raises(
+        ValueError,
+        match="When using a density matrix result",
+    ):
+        executor.evaluate(circuit)
+
+
+def test_executor_float_not_typed():
+    executor = Executor(executor_serial)
+    executor_typed = Executor(executor_serial_typed)
+    qcirc = QuantumCircuit(1)
+    qcirc.h(0)
+    assert executor.evaluate(qcirc) == executor_typed.evaluate(qcirc)
+
+
+def test_executor_density_matrix_not_typed():
+    obs = Observable(PauliString("Z"))
+    executor = Executor(executor_density_matrix)
+    q = cirq.LineQubit(0)
+    circuit = cirq.Circuit(cirq.X.on(q))
+    with pytest.raises(
+        ValueError,
+        match="When using an observable",
+    ):
+        executor.evaluate(circuit, obs)
+
+
+def test_executor_measurements_not_typed():
+    obs = Observable(PauliString("Z"))
+    executor = Executor(executor_measurements)
+    q = cirq.LineQubit(0)
+    circuit = cirq.Circuit(cirq.X.on(q))
+    with pytest.raises(
+        ValueError,
+        match="When using an observable",
+    ):
+        executor.evaluate(circuit, obs)
+
+
+def test_executor_unknown_type():
+    obs = Observable(PauliString("Z"))
+    executor = Executor(executor_typed_npfloat32)
+    q = cirq.LineQubit(0)
+    circuit = cirq.Circuit(cirq.X.on(q))
+    with pytest.raises(
+        ValueError,
+        match="Could not parse executed results",
+    ):
+        executor.evaluate(circuit, obs)

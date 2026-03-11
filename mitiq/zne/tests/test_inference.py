@@ -1,4 +1,4 @@
-# Copyright (C) Unitary Fund
+# Copyright (C) Unitary Foundation
 #
 # This source code is licensed under the GPL license (v3) found in the
 # LICENSE file in the root directory of this source tree.
@@ -7,7 +7,7 @@
 classically generated data.
 """
 
-from typing import Callable, List
+from collections.abc import Callable
 
 import cirq
 import numpy as np
@@ -17,6 +17,7 @@ from pytest import mark, raises, warns
 
 from mitiq.zne.inference import (
     AdaExpFactory,
+    AdaptiveFactory,
     ConvergenceWarning,
     ExpFactory,
     ExtrapolationError,
@@ -148,7 +149,11 @@ def test_get_scale_factors_static_factories(factory):
         fac = factory(scale_factors=scale_factors)
 
     # Expectation values haven't been computed at any scale factors yet
-    assert not fac.get_scale_factors()
+    if isinstance(fac, AdaptiveFactory):
+        assert not fac.get_scale_factors()
+    else:
+        assert isinstance(fac.get_scale_factors(), list)
+        assert np.allclose(fac.get_scale_factors(), scale_factors)
 
     # Compute expectation values at all the scale factors
     fac.run_classical(apply_seed_to_func(f_lin, seed=1))
@@ -278,7 +283,7 @@ def test_run_sequential_and_batched(factory, batched):
     # Compute expectation values at all the scale factors
     if batched:
 
-        def executor(circuits) -> List[float]:
+        def executor(circuits) -> list[float]:
             return [1.0] * len(circuits)
 
     else:
@@ -392,7 +397,7 @@ def test_poly_extr():
 
 
 @mark.parametrize("order", [2, 3, 4, 5])
-def test_opt_params_poly_factory(order):
+def test_opt_params_poly_factory(order: int):
     """Tests that optimal parameters are stored after calling the reduce
     method.
     """
@@ -415,7 +420,10 @@ def test_exp_factory_with_asympt(
     fac.run_classical(seeded_f)
     assert not fac._opt_params
     zne_value = fac.reduce()
+    zne_error = fac.get_zero_noise_limit_error()
     assert np.isclose(zne_value, seeded_f(0, err=0), atol=CLOSE_TOL)
+    assert np.isfinite(zne_error)
+    assert zne_error > 0
     # There are three parameters in the exponential ansatz
     assert len(fac._opt_params) == 3
     exp_vals = fac.get_expectation_values()
@@ -525,7 +533,7 @@ def test_poly_exp_factory_no_asympt(test_f: Callable[[float], float]):
     "exp_vals", [[0.700000001, 0.7, 0.7, 0.7], [0.7, 0.7, 0.7, 0.700001]]
 )
 def test_poly_exp_factory_converges_toward_asympt(
-    exp_vals: List[float],
+    exp_vals: list[float],
     infinite_noise_limit: float,
 ):
     """Test of (almost) exponential extrapolator in special cases"""
@@ -804,7 +812,7 @@ def test_full_output_keyword_cov_std():
 
 
 def test_params_cov_and_zne_std():
-    """Tests the variance of the parametes and of the zne are produced."""
+    """Tests the variance of the parameters and of the zne are produced."""
     x_values = [0, 0, 1]
     y_values = [-1, 1, 0]
     zne_limit = PolyFactory.extrapolate(x_values, y_values, order=1)
@@ -986,7 +994,7 @@ def test_short_circuit_warning(factory):
     """Tests a warning is raised if the input circuit has very few gates."""
     scale_factors = np.linspace(1.0, 10.0, num=20)
 
-    def executor(circuits) -> List[float]:
+    def executor(circuits) -> list[float]:
         return [1.0] * len(circuits)
 
     if factory is PolyFactory or factory is PolyExpFactory:

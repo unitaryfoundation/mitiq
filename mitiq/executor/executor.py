@@ -1,4 +1,4 @@
-# Copyright (C) Unitary Fund
+# Copyright (C) Unitary Foundation
 #
 # This source code is licensed under the GPL license (v3) found in the
 # LICENSE file in the root directory of this source tree.
@@ -7,19 +7,11 @@
 by error mitigation techniques to compute expectation values."""
 
 import inspect
+import typing
 import warnings
 from collections import Counter
-from typing import (
-    Any,
-    Callable,
-    Iterable,
-    List,
-    Optional,
-    Sequence,
-    Tuple,
-    Union,
-    cast,
-)
+from collections.abc import Callable, Iterable, Sequence
+from typing import Any, List, Tuple, cast, get_args
 
 import numpy as np
 import numpy.typing as npt
@@ -32,25 +24,34 @@ from mitiq.observable.pauli import PauliString
 DensityMatrixLike = [
     np.ndarray,
     Iterable[np.ndarray],  # type: ignore
+    list[np.ndarray],  # type: ignore
     List[np.ndarray],  # type: ignore
     Sequence[np.ndarray],  # type: ignore
-    Tuple[np.ndarray],
+    tuple[np.ndarray],  # type: ignore
+    Tuple[np.ndarray],  # type: ignore
     npt.NDArray[np.complex64],
+    list[npt.NDArray[np.complex64]],
+    list[np.ndarray],  # type: ignore
+    tuple[npt.NDArray[np.complex64]],
 ]
 FloatLike = [
     None,  # Untyped executors are assumed to return floats.
     float,
     Iterable[float],
-    List[float],
+    list[float],
     Sequence[float],
-    Tuple[float],
+    tuple[float],
+    list[float],
+    tuple[float],
 ]
 MeasurementResultLike = [
     MeasurementResult,
     Iterable[MeasurementResult],
-    List[MeasurementResult],
+    list[MeasurementResult],
     Sequence[MeasurementResult],
-    Tuple[MeasurementResult],
+    tuple[MeasurementResult],
+    list[MeasurementResult],
+    tuple[MeasurementResult],
 ]
 
 
@@ -68,7 +69,7 @@ class Executor:
 
     def __init__(
         self,
-        executor: Callable[[Union[QPROGRAM, Sequence[QPROGRAM]]], Any],
+        executor: Callable[[QPROGRAM | Sequence[QPROGRAM]], Any],
         max_batch_size: int = 75,
     ) -> None:
         self._executor = executor
@@ -77,25 +78,57 @@ class Executor:
         self._executor_return_type = executor_annotation.get("return")
         self._max_batch_size = max_batch_size
 
-        self._executed_circuits: List[QPROGRAM] = []
-        self._quantum_results: List[QuantumResult] = []
+        self._executed_circuits: list[QPROGRAM] = []
+        self._quantum_results: list[QuantumResult] = []
 
         self._calls_to_executor: int = 0
 
     @property
     def can_batch(self) -> bool:
-        return self._executor_return_type in (
+        """Returns True if the executor is recognized as a "batched executor",
+        else False.
+
+        The executor is detected as "batched" if and only if it is annotated
+        with a return type that is a subclass of ``Iterable``. Common examples
+        include:
+
+        * ``Iterable[QuantumResult]``
+        * ``List[QuantumResult]``/``list[QuantumResult]``
+        * ``Sequence[QuantumResult]``
+        * ``Tuple[QuantumResult]``/``tuple[QuantumResult]``
+
+        Otherwise, it is considered "serial".
+
+        Batched executors can *run several quantum programs in a single call*.
+
+        Returns:
+            True if the executor is detected as batched, else False.
+        """
+        return_type = self._executor_return_type
+
+        if return_type is None:
+            return False
+
+        return return_type in (
             BatchedType[T]  # type: ignore[index]
-            for BatchedType in [Iterable, List, Sequence, Tuple]
-            for T in QuantumResult.__args__  # type: ignore[attr-defined]
+            for BatchedType in [
+                Iterable,
+                List,
+                typing.Sequence,
+                Tuple,
+                list,
+                tuple,
+                Sequence,
+            ]
+            for T in get_args(QuantumResult)
         )
 
     @property
-    def executed_circuits(self) -> List[QPROGRAM]:
+    def executed_circuits(self) -> list[QPROGRAM]:
         return self._executed_circuits
 
     @property
-    def quantum_results(self) -> List[QuantumResult]:
+    def quantum_results(self) -> list[QuantumResult]:
         return self._quantum_results
 
     @property
@@ -104,11 +137,11 @@ class Executor:
 
     def evaluate(
         self,
-        circuits: Union[QPROGRAM, List[QPROGRAM]],
-        observable: Optional[Observable] = None,
+        circuits: QPROGRAM | list[QPROGRAM],
+        observable: Observable | None = None,
         force_run_all: bool = True,
         **kwargs: Any,
-    ) -> List[float]:
+    ) -> list[float]:
         """Returns the expectation value Tr[ρ O] for each circuit in
         ``circuits`` where O is the observable provided or implicitly defined
         by the ``executor``. (The observable is implicitly defined when the
@@ -118,7 +151,7 @@ class Executor:
         quantum results are stored in ``self.quantum_results``.
 
         Args:
-            circuits: A single circuit of list of circuits.
+            circuits: A single circuit or list of circuits.
             observable: Observable O in the expression Tr[ρ O]. If None,
                 the ``executor`` must return a float (which corresponds to
                 Tr[ρ O] for a specific, fixed observable O).
@@ -129,7 +162,7 @@ class Executor:
         Returns:
             List of real valued expectation values.
         """
-        if not isinstance(circuits, List):
+        if not isinstance(circuits, list):
             circuits = [circuits]
 
         warn_non_hermitian = False
@@ -147,6 +180,36 @@ class Executor:
                 "Expected observable to be hermitian. Continue with caution."
             )
 
+        # Check executor and observable compatibility with type hinting
+        # If FloatLike is specified as a return and observable is used
+        if self._executor_return_type in FloatLike and observable is not None:
+            # Type hinted as FloatLike and observable passed
+            if self._executor_return_type is not None:
+                raise ValueError(
+                    "When using an executor which returns a float-like "
+                    "result, measurements should be added before the circuit "
+                    "is executed instead of with an observable."
+                )
+            else:
+                # Using an observable but no type hinting
+                raise ValueError(
+                    "When using an observable, the return type of the "
+                    "executor must be specified using typehinting."
+                )
+        elif observable is None:
+            # Type hinted as DensityMatrixLike but no observable is set
+            if self._executor_return_type in DensityMatrixLike:
+                raise ValueError(
+                    "When using a density matrix result, an observable "
+                    "is required."
+                )
+            # Type hinted as MeasurementResultLike but no observable is set
+            elif self._executor_return_type in MeasurementResultLike:
+                raise ValueError(
+                    "When using a measurement, or bitstring, like result, an "
+                    "observable is required."
+                )
+
         # Get all required circuits to run.
         if (
             observable is not None
@@ -158,16 +221,6 @@ class Executor:
                 for circuit_with_measurements in observable.measure_in(circuit)
             ]
             result_step = observable.ngroups
-        elif (
-            observable is not None
-            and self._executor_return_type not in MeasurementResultLike
-            and self._executor_return_type not in DensityMatrixLike
-        ):
-            raise ValueError(
-                """Executor and observable are not compatible. Executors
-                returning expectation values as float must be used with
-                observable=None"""
-            )
         else:
             all_circuits = circuits
             result_step = 1
@@ -183,7 +236,7 @@ class Executor:
 
         elif self._executor_return_type in DensityMatrixLike:
             observable = cast(Observable, observable)
-            all_results = cast(List[npt.NDArray[np.complex64]], all_results)
+            all_results = cast(list[npt.NDArray[np.complex64]], all_results)
             results = [
                 observable._expectation_from_density_matrix(density_matrix)
                 for density_matrix in all_results
@@ -191,7 +244,7 @@ class Executor:
 
         elif self._executor_return_type in MeasurementResultLike:
             observable = cast(Observable, observable)
-            all_results = cast(List[MeasurementResult], all_results)
+            all_results = cast(list[MeasurementResult], all_results)
             results = [
                 observable._expectation_from_measurements(
                     all_results[i : i + result_step]
@@ -201,15 +254,15 @@ class Executor:
 
         else:
             raise ValueError(
-                f"Could not parse executed results from executor with type"
-                f" {self._executor_return_type}."
+                f"Could not parse executed results from executor with type "
+                f"{self._executor_return_type}."
             )
 
         return results
 
     def run(
         self,
-        circuits: Union[QPROGRAM, Sequence[QPROGRAM]],
+        circuits: QPROGRAM | Sequence[QPROGRAM],
         force_run_all: bool = True,
         **kwargs: Any,
     ) -> Sequence[QuantumResult]:
@@ -279,7 +332,7 @@ class Executor:
         return results
 
     def _call_executor(
-        self, to_run: Union[QPROGRAM, Sequence[QPROGRAM]], **kwargs: Any
+        self, to_run: QPROGRAM | Sequence[QPROGRAM], **kwargs: Any
     ) -> None:
         """Calls the executor on the input circuit(s) to run. Stores the
         executed circuits in ``self._executed_circuits`` and the quantum
@@ -297,43 +350,3 @@ class Executor:
         else:
             self._quantum_results.append(result)
             self._executed_circuits.append(to_run)
-
-    @staticmethod
-    def is_batched_executor(
-        executor: Callable[[Union[QPROGRAM, Sequence[QPROGRAM]]], Any],
-    ) -> bool:
-        """Returns True if the input function is recognized as a "batched
-        executor", else False.
-
-        The executor is detected as "batched" if and only if it is annotated
-        with a return type that is one of the following:
-
-        * ``Iterable[QuantumResult]``
-        * ``List[QuantumResult]``
-        * ``Sequence[QuantumResult]``
-        * ``Tuple[QuantumResult]``
-
-        Otherwise, it is considered "serial".
-
-        Batched executors can _run several quantum programs in a single call.
-        See below.
-
-        Args:
-            executor: A "serial executor" (1) or a "batched executor" (2).
-
-                #. A function which inputs a single ``QPROGRAM`` and outputs a
-                   single ``QuantumResult``.
-                #. A function which inputs a list of ``QPROGRAM`` objects and
-                   returns a list of ``QuantumResult`` instances (one for each
-                   ``QPROGRAM``).
-
-        Returns:
-            True if the executor is detected as batched, else False.
-        """
-        executor_annotation = inspect.getfullargspec(executor).annotations
-
-        return executor_annotation.get("return") in (
-            BatchedType[T]  # type: ignore[index]
-            for BatchedType in [Iterable, List, Sequence, Tuple]
-            for T in QuantumResult.__args__  # type: ignore[attr-defined]
-        )

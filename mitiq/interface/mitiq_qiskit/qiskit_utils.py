@@ -1,4 +1,4 @@
-# Copyright (C) Unitary Fund
+# Copyright (C) Unitary Foundation
 #
 # This source code is licensed under the GPL license (v3) found in the
 # LICENSE file in the root directory of this source tree.
@@ -6,7 +6,6 @@
 """Qiskit utility functions."""
 
 from functools import partial
-from typing import Optional, Tuple
 
 import numpy as np
 import numpy.typing as npt
@@ -130,7 +129,7 @@ def execute_with_shots_and_noise(
     obs: npt.NDArray[np.complex64],
     noise_model: NoiseModel,
     shots: int,
-    seed: Optional[int] = None,
+    seed: int | None = None,
 ) -> float:
     """Simulates the evolution of the noisy circuit and returns
     the statistical estimate of the expectation value of the observable.
@@ -183,11 +182,11 @@ def execute_with_shots_and_noise(
 
 def sample_bitstrings(
     circuit: QuantumCircuit,
-    backend: Optional[Backend] = None,
-    noise_model: Optional[NoiseModel] = None,
+    backend: Backend | None = None,
+    noise_model: NoiseModel | None = None,
     shots: int = 10000,
     measure_all: bool = False,
-    qubit_indices: Optional[Tuple[int]] = None,
+    qubit_indices: tuple[int] | None = None,
 ) -> MeasurementResult:
     """Returns measurement bitstrings obtained from executing the input circuit
     on a Qiskit backend (passed as an argument).
@@ -250,11 +249,11 @@ def sample_bitstrings(
 def compute_expectation_value_on_noisy_backend(
     circuit: QuantumCircuit,
     obs: Observable,
-    backend: Optional[Backend] = None,
-    noise_model: Optional[NoiseModel] = None,
+    backend: Backend | None = None,
+    noise_model: NoiseModel | None = None,
     shots: int = 10000,
     measure_all: bool = False,
-    qubit_indices: Optional[Tuple[int]] = None,
+    qubit_indices: tuple[int] | None = None,
 ) -> complex:
     """Returns the noisy expectation value of the input Mitiq observable
     obtained from executing the input circuit on a Qiskit backend.

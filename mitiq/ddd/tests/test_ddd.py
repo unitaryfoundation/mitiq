@@ -1,18 +1,21 @@
-# Copyright (C) Unitary Fund
+# Copyright (C) Unitary Foundation
 #
 # This source code is licensed under the GPL license (v3) found in the
 # LICENSE file in the root directory of this source tree.
 
 """Unit tests for high-level DDD tools."""
 
-from typing import List
-
 import cirq
 import numpy as np
 from pytest import mark
 
 from mitiq import QPROGRAM, SUPPORTED_PROGRAM_TYPES, Executor
-from mitiq.ddd import ddd_decorator, execute_with_ddd, mitigate_executor
+from mitiq.ddd import (
+    construct_circuits,
+    ddd_decorator,
+    execute_with_ddd,
+    mitigate_executor,
+)
 from mitiq.ddd.rules import xx, xyxy, yy
 from mitiq.interface import convert_from_mitiq, convert_to_mitiq
 from mitiq.interface.mitiq_cirq import compute_density_matrix
@@ -191,7 +194,7 @@ def test_ddd_decorator():
 
     # Test batched executors too
     @ddd_decorator(rule=xx)
-    def my_batched_executor(circuits) -> List[float]:
+    def my_batched_executor(circuits) -> list[float]:
         return batched_executor(circuits)
 
     assert np.isclose(*my_batched_executor([circuit_cirq_a]), ddd_value)
@@ -226,3 +229,14 @@ def test_ddd_decorator_with_rule_args():
     # What is important to test is getting different results.
     assert not np.isclose(unmitigated, mitigated_small_spacing)
     assert not np.isclose(mitigated_large_spacing, mitigated_small_spacing)
+
+
+@mark.parametrize("num_trials", [1, 10, 20, 30])
+def test_num_trials_generates_circuits(num_trials: int):
+    """Test that the number of generated circuits follows num_trials."""
+
+    circuits = construct_circuits(
+        circuit_cirq_a, rule=xx, num_trials=num_trials
+    )
+
+    assert num_trials == len(circuits)

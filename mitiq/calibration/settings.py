@@ -1,12 +1,13 @@
-# Copyright (C) Unitary Fund
+# Copyright (C) Unitary Foundation
 #
 # This source code is licensed under the GPL license (v3) found in the
 # LICENSE file in the root directory of this source tree.
 
+from collections.abc import Callable
 from dataclasses import asdict, dataclass
 from enum import Enum, auto
 from functools import partial
-from typing import Any, Callable, Dict, List, cast
+from typing import Any, cast
 
 import cirq
 import networkx as nx
@@ -20,7 +21,7 @@ from mitiq.benchmarks import (
     generate_rotated_rb_circuits,
     generate_w_circuit,
 )
-from mitiq.interface import convert_from_mitiq
+from mitiq.interface import convert_from_mitiq, convert_to_mitiq
 from mitiq.pec import execute_with_pec
 from mitiq.pec.representations import (
     represent_operation_with_local_biased_noise,
@@ -72,7 +73,7 @@ class BenchmarkProblem:
     id: int
     circuit: cirq.Circuit
     type: str
-    ideal_distribution: Dict[str, float]
+    ideal_distribution: dict[str, float]
 
     def most_likely_bitstring(self) -> str:
         distribution = self.ideal_distribution
@@ -95,7 +96,7 @@ class BenchmarkProblem:
         """
         circuit = self.circuit.copy()
         circuit.append(cirq.measure(circuit.all_qubits()))
-        return convert_from_mitiq(circuit, circuit_type.value)
+        return convert_from_mitiq(circuit, circuit_type.name)
 
     @property
     def num_qubits(self) -> int:
@@ -109,7 +110,7 @@ class BenchmarkProblem:
     def two_qubit_gate_count(self) -> int:
         return sum(len(op.qubits) > 1 for op in self.circuit.all_operations())
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         """Produces a summary of the ``BenchmarkProblem``, to be used in
         recording the results when running calibration experiments.
 
@@ -154,7 +155,7 @@ class Strategy:
 
     id: int
     technique: MitigationTechnique
-    technique_params: Dict[str, Any]
+    technique_params: dict[str, Any]
 
     @property
     def mitigation_function(self) -> Callable[..., float]:
@@ -208,7 +209,7 @@ class Strategy:
                 calibration_supported_techniques,
             )
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         """A summary of the strategies parameters, without the technique added.
 
         Returns:
@@ -236,7 +237,7 @@ class Strategy:
             summary["num_samples"] = self.technique_params["num_samples"]
         return summary
 
-    def to_pretty_dict(self) -> Dict[str, str]:
+    def to_pretty_dict(self) -> dict[str, str]:
         summary = self.to_dict()
         if self.technique is MitigationTechnique.ZNE:
             summary["scale_factors"] = str(summary["scale_factors"])[1:-1]
@@ -258,7 +259,7 @@ class Strategy:
             result += f"{title}: {value}\n"
         return result.rstrip()
 
-    def num_circuits_required(self) -> int:
+    def num_circuits_required(self) -> int | None:
         summary = self.to_dict()
         if self.technique is MitigationTechnique.ZNE:
             return len(summary["scale_factors"])
@@ -299,8 +300,8 @@ class Settings:
 
     def __init__(
         self,
-        benchmarks: List[Dict[str, Any]],
-        strategies: List[Dict[str, Any]],
+        benchmarks: list[dict[str, Any]],
+        strategies: list[dict[str, Any]],
     ):
         self.techniques = [
             MitigationTechnique[technique["technique"].upper()]
@@ -308,8 +309,8 @@ class Settings:
         ]
         self.technique_params = strategies
         self.benchmarks = benchmarks
-        self.strategy_dict: Dict[int, Strategy] = {}
-        self.problem_dict: Dict[int, BenchmarkProblem] = {}
+        self.strategy_dict: dict[int, Strategy] = {}
+        self.problem_dict: dict[int, BenchmarkProblem] = {}
 
     def get_strategy(self, strategy_id: int) -> Strategy:
         return self.strategy_dict[strategy_id]
@@ -317,16 +318,25 @@ class Settings:
     def get_problem(self, problem_id: int) -> BenchmarkProblem:
         return self.problem_dict[problem_id]
 
-    def make_problems(self) -> List[BenchmarkProblem]:
+    def make_problems(self) -> list[BenchmarkProblem]:
         """Generate the benchmark problems for the calibration experiment.
         Returns:
             A list of :class:`BenchmarkProblem` objects"""
         circuits = []
         for i, benchmark in enumerate(self.benchmarks):
             circuit_type = benchmark["circuit_type"]
-            num_qubits = benchmark["num_qubits"]
-            # Set default to return correct type
-            depth = benchmark.get("circuit_depth", -1)
+            circuit: Any
+
+            if circuit_type == "custom":
+                user_circuit = benchmark["circuit"]
+                circuit = convert_to_mitiq(user_circuit)[0]
+                num_qubits = len(circuit.all_qubits())
+                depth = len(circuit)
+                ideal = benchmark.get("ideal_distribution", {})
+            else:
+                num_qubits = benchmark["num_qubits"]
+                depth = benchmark.get("circuit_depth", -1)
+
             if circuit_type == "ghz":
                 circuit = generate_ghz_circuit(num_qubits)
                 ideal = {"0" * num_qubits: 0.5, "1" * num_qubits: 0.5}
@@ -367,10 +377,17 @@ class Settings:
                 raise NotImplementedError(
                     "quantum volume circuits not yet supported in calibration"
                 )
+            elif circuit_type == "custom":
+                # ideal distribution already set above (may be empty)
+                pass
+            elif circuit_type == "custom":
+                # ideal distribution already set above (may be empty)
+                pass
             else:
                 raise ValueError(
                     "invalid value passed for `circuit_types`. Must be "
-                    "one of `ghz`, `rb`, `mirror`, `w`, or `qv`, "
+                    "one of `ghz`, `rb`, `mirror`, `w`, `qv`, or `custom`, "
+                    "one of `ghz`, `rb`, `mirror`, `w`, `qv`, or `custom`, "
                     f"but got {circuit_type}."
                 )
 
@@ -386,7 +403,7 @@ class Settings:
 
         return circuits
 
-    def make_strategies(self) -> List[Strategy]:
+    def make_strategies(self) -> list[Strategy]:
         """Generates a list of :class:`Strategy` objects using the specified
         configurations.
 

@@ -1,3 +1,102 @@
+[build-system]
+requires = ["setuptools>=61"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "mitiq"
+dynamic = ["version"]
+readme = "README.md"
+description = "Mitiq is an open source toolkit for implementing error mitigation techniques on most current intermediate-scale quantum computers." 
+authors = [ 
+    { name = "Unitary Foundation", email = "info@unitary.foundation" },
+]
+requires-python = ">=3.11,<3.13"
+license = { text = "GPL v3.0" }
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Programming Language :: Python :: 3",
+    "License :: OSI Approved :: GNU General Public License v3 (GPLv3)",
+    "Operating System :: MacOS",
+    "Operating System :: POSIX :: Linux",
+    "Operating System :: Microsoft :: Windows",
+    "Topic :: Software Development :: Compilers",
+    "Topic :: Scientific/Engineering :: Quantum Computing",
+    "Typing :: Typed",
+]
+dependencies = [
+    "numpy>=2.0.0,<2.3.0",
+    "scipy>=1.10.1,<=1.17.1",
+    "cirq-core>=1.6.0,<1.7.0",
+    "tabulate",
+    "matplotlib>=3.8",
+]
+
+[project.optional-dependencies]
+braket = [
+    "amazon-braket-sdk>=1.97,<1.114",
+    "cirq-ionq>=1.6.0,<1.7.0",
+    "llvmlite==0.46.0",
+    "numba==0.64.0",
+]
+pennylane = [
+    "pennylane-qiskit~=0.43.0",
+    "pennylane~=0.43.1",
+]
+pyquil = [
+    "pyquil~=4.17.0",
+    "qbraid>=0.10,<0.12",
+]
+qibo = [
+    "qibo>=0.2.16,<0.4.0",
+]
+qiskit = [
+    "qiskit>=2.0.0,<3.0.0",
+    "qiskit-aer~=0.17.0",
+    "qiskit-ibm-runtime~=0.41.1",
+    "ply==3.11",
+]
+
+[dependency-groups]
+dev = [
+    "pytest==9.0.2",
+    "pytest-xdist[psutil]==3.0.2",
+    "pytest-cov==7.0.0",
+    "ruff==0.3.1",
+    "mypy==1.0.0",
+    "types-tabulate",
+]
+docs = [
+    "Sphinx==8.1.3",
+    "sphinxcontrib-bibtex==2.6.5",
+    "sphinx-copybutton==0.5.2",
+    "sphinx-autodoc-typehints==3.0.1",
+    "sphinx-design==0.6.1",
+    "sphinx-tags==0.4",
+    "myst-nb==1.3.0",
+    "myst-parser==5.0.0",
+    "pydata-sphinx-theme==0.16.1",
+    "jupytext==1.18.1",
+    "sphinx-gallery==0.19.0",
+    "nbsphinx==0.9.7",
+    "pandas==2.3.3",
+    "pyscf==2.12.0; sys_platform != 'win32'",
+    "openfermion==1.7.1; sys_platform != 'win32'",
+    "openfermionpyscf==0.5; sys_platform != 'win32'",
+    "bqskit==1.2.1",
+    "seaborn==0.13.2",
+    "stim==1.15.0",
+    "stimcirq==1.15.0",
+    "pyqrack==1.69.1",
+    "ucc==0.4.12; python_version == '3.12'",
+    "pytket-cirq==0.43.0",
+]
+
+[project.urls]
+Homepage = "https://unitary.foundation"
+Documentation = "https://mitiq.readthedocs.io/en/stable/"
+Repository = "https://github.com/unitaryfoundation/mitiq/"
+Issues = "https://github.com/unitaryfoundation/mitiq/issues/"
+
 [tool.ruff]
 exclude = ["__init__.py"]
 line-length = 79
@@ -13,8 +112,8 @@ select = [
     "I",
 ]
 
-[tool.pytest.ini_options]
-addopts = "--color=yes"
+[tool.pytest]
+addopts = ["--color=yes"]
 filterwarnings = [
     # TODO: these are probably too restrictive
     'ignore::UserWarning',
@@ -34,3 +133,9 @@ disallow_untyped_defs = true
 no_implicit_optional = true
 warn_redundant_casts = true
 warn_unused_configs = true
+
+[tool.setuptools.packages.find]
+where = ["."]
+
+[tool.setuptools.dynamic]
+version = {file = "VERSION.txt"}

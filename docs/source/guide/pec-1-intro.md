@@ -28,6 +28,13 @@ operation.
 
 +++
 
+PEC works in two main stages: generate noise-scaled circuits via inserting quasi-probability representations of noisy gates, and combining the resulting measurements post-execution.
+
+The section [Run PEC](#run-pec) applies the protocol in a single step, and then in the section [Step by step application of PEC](#step-by-step-application-of-pec), we'll show how you can apply the technique stepwise.
+
+This workflow can be executed by a single call to {func}`.execute_with_pec`.
+If more control is needed over the protocol, Mitiq provides {func}`.pec.construct_circuits` and {func}`.pec.combine_results` to handle the first and second steps respectively.
+
 As with all techniques, PEC is compatible with any frontend supported by Mitiq:
 
 ```{code-cell} ipython3
@@ -102,7 +109,7 @@ We now show how to use PEC to reduce this error.
 
 +++
 
-## Appling probabilistic error cancellation (PEC)
+## Applying probabilistic error cancellation (PEC)
 
 +++
 
@@ -176,3 +183,35 @@ print(f"Error with PEC:    {abs(ideal_value - pec_value) :.5f}")
 ```
 
 As printed above, PEC reduced the error compared to the unmitigated case.
+
+## Step by step application of PEC
+
+This section demonstrates the use of the {func}`.pec.construct_circuits` for those who want to generate and see a list of sampled circuits based on the given quasi-probability representaions.
+
+### Generate Sample Circuits
+We will now generate a list of sampled circuits. Note that the number of sampled circuits generated depends on the input provided, which can be seen using the function `len`.
+
+```{code-cell} ipython3
+sampled_circuits = pec.construct_circuits(circuit, representations=reps)
+
+print(f"Number of sample circuits:    {len(sampled_circuits)}")
+print(sampled_circuits[0])
+```
+
+Now that we have many circuits, we can inspect them (or even change them if desired).
+We can then execute the circuits and store the results in a list, which can be used by the {func}`.pec.combine_results` to get a combined result.
+
+### Combine the results
+
+We will now get the combined result of the list of circuits generated.
+
+```{code-cell} ipython3
+results = [execute(circuit) for circuit in sampled_circuits]
+
+combined_result = pec.combine_results([results], 1 , [1,1,1])
+
+print(f"Error with single-step PEC: {abs(ideal_value - pec_value) :.5f}")
+print(f"Error with multi-step PEC:    {abs(ideal_value - combined_result) :.5f}")
+```
+
+As you can see above, the multi-step PEC gives the same the error as the single step PEC error using the function {func}`.execute_with_pec`.

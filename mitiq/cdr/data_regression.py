@@ -1,11 +1,11 @@
-# Copyright (C) Unitary Fund
+# Copyright (C) Unitary Foundation
 #
 # This source code is licensed under the GPL license (v3) found in the
 # LICENSE file in the root directory of this source tree.
 
 """The data regression portion of Clifford data regression."""
 
-from typing import Sequence
+from collections.abc import Sequence
 
 import numpy as np
 import numpy.typing as npt

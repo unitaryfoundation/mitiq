@@ -1,12 +1,13 @@
-# Copyright (C) Unitary Fund
+# Copyright (C) Unitary Foundation
 #
 # This source code is licensed under the GPL license (v3) found in the
 # LICENSE file in the root directory of this source tree.
 
 import warnings
+from collections.abc import Callable, Sequence
 from enum import Enum
 from operator import itemgetter
-from typing import Callable, Dict, List, Optional, Sequence, Tuple, Union, cast
+from typing import cast
 
 import cirq
 import numpy as np
@@ -43,7 +44,7 @@ class ExperimentResults:
     for computing results based on it."""
 
     def __init__(
-        self, strategies: List[Strategy], problems: List[BenchmarkProblem]
+        self, strategies: list[Strategy], problems: list[BenchmarkProblem]
     ) -> None:
         self.strategies = strategies
         self.problems = problems
@@ -68,7 +69,7 @@ class ExperimentResults:
 
     @staticmethod
     def _performance_str(noisy_error: float, mitigated_error: float) -> str:
-        """Get human readable performance representaion."""
+        """Get human readable performance representation."""
         return (
             f"{'✔' if mitigated_error < noisy_error else '✘'}\n"
             f"Noisy error: {round(noisy_error, 4)}\n"
@@ -78,7 +79,7 @@ class ExperimentResults:
 
     def _get_errors(
         self, strategy_id: int, problem_id: int
-    ) -> Tuple[float, float]:
+    ) -> tuple[float, float]:
         """Get errors for a given strategy/problem combination.
 
         Returns:
@@ -94,35 +95,37 @@ class ExperimentResults:
         return noisy_error, mitigated_error
 
     def log_results_flat(self) -> None:
-        """Prints calibration results in the following form
-        ┌──────────────────────────┬──────────────────────────────┬────────────────────────────┐
-        │ benchmark                │ strategy                     │ performance                │
-        ├──────────────────────────┼──────────────────────────────┼────────────────────────────┤
-        │ Type: rb                 │ Technique: ZNE               │ ✔                          │
-        │ Num qubits: 2            │ Factory: Richardson          │ Noisy error: 0.101         │
-        │ Circuit depth: 323       │ Scale factors: 1.0, 3.0, 5.0 │ Mitigated error: 0.0294    │
-        │ Two qubit gate count: 77 │ Scale method: fold_global    │ Improvement factor: 3.4398 │
-        ├──────────────────────────┼──────────────────────────────┼────────────────────────────┤
-        │ Type: rb                 │ Technique: ZNE               │ ✔                          │
-        │ Num qubits: 2            │ Factory: Richardson          │ Noisy error: 0.101         │
-        │ Circuit depth: 323       │ Scale factors: 1.0, 2.0, 3.0 │ Mitigated error: 0.0501    │
-        │ Two qubit gate count: 77 │ Scale method: fold_global    │ Improvement factor: 2.016  │
-        ├──────────────────────────┼──────────────────────────────┼────────────────────────────┤
-        │ Type: ghz                │ Technique: ZNE               │ ✔                          │
-        │ Num qubits: 2            │ Factory: Richardson          │ Noisy error: 0.0128        │
-        │ Circuit depth: 2         │ Scale factors: 1.0, 2.0, 3.0 │ Mitigated error: 0.0082    │
-        │ Two qubit gate count: 1  │ Scale method: fold_global    │ Improvement factor: 1.561  │
-        ├──────────────────────────┼──────────────────────────────┼────────────────────────────┤
-        │ Type: ghz                │ Technique: ZNE               │ ✘                          │
-        │ Num qubits: 2            │ Factory: Richardson          │ Noisy error: 0.0128        │
-        │ Circuit depth: 2         │ Scale factors: 1.0, 3.0, 5.0 │ Mitigated error: 0.0137    │
-        │ Two qubit gate count: 1  │ Scale method: fold_global    │ Improvement factor: 0.9369 │
-        └──────────────────────────┴──────────────────────────────┴────────────────────────────┘
+        """
+        Prints the results of the calibrator in flat form::
+
+            ┌──────────────────────────┬──────────────────────────────┬────────────────────────────┐
+            │ benchmark                │ strategy                     │ performance                │
+            ├──────────────────────────┼──────────────────────────────┼────────────────────────────┤
+            │ Type: rb                 │ Technique: ZNE               │ ✔                          │
+            │ Num qubits: 2            │ Factory: Richardson          │ Noisy error: 0.101         │
+            │ Circuit depth: 323       │ Scale factors: 1.0, 3.0, 5.0 │ Mitigated error: 0.0294    │
+            │ Two qubit gate count: 77 │ Scale method: fold_global    │ Improvement factor: 3.4398 │
+            ├──────────────────────────┼──────────────────────────────┼────────────────────────────┤
+            │ Type: rb                 │ Technique: ZNE               │ ✔                          │
+            │ Num qubits: 2            │ Factory: Richardson          │ Noisy error: 0.101         │
+            │ Circuit depth: 323       │ Scale factors: 1.0, 2.0, 3.0 │ Mitigated error: 0.0501    │
+            │ Two qubit gate count: 77 │ Scale method: fold_global    │ Improvement factor: 2.016  │
+            ├──────────────────────────┼──────────────────────────────┼────────────────────────────┤
+            │ Type: ghz                │ Technique: ZNE               │ ✔                          │
+            │ Num qubits: 2            │ Factory: Richardson          │ Noisy error: 0.0128        │
+            │ Circuit depth: 2         │ Scale factors: 1.0, 2.0, 3.0 │ Mitigated error: 0.0082    │
+            │ Two qubit gate count: 1  │ Scale method: fold_global    │ Improvement factor: 1.561  │
+            ├──────────────────────────┼──────────────────────────────┼────────────────────────────┤
+            │ Type: ghz                │ Technique: ZNE               │ ✘                          │
+            │ Num qubits: 2            │ Factory: Richardson          │ Noisy error: 0.0128        │
+            │ Circuit depth: 2         │ Scale factors: 1.0, 3.0, 5.0 │ Mitigated error: 0.0137    │
+            │ Two qubit gate count: 1  │ Scale method: fold_global    │ Improvement factor: 0.9369 │
+            └──────────────────────────┴──────────────────────────────┴────────────────────────────┘
         """  # noqa: E501
-        table: List[List[Union[str, float]]] = []
-        headers: List[str] = ["benchmark", "strategy", "performance"]
+        table: list[list[str | float]] = []
+        headers: list[str] = ["benchmark", "strategy", "performance"]
         for problem in self.problems:
-            row_group: List[List[Union[str, float]]] = []
+            row_group: list[list[str | float]] = []
             for strategy in self.strategies:
                 nerr, merr = self._get_errors(strategy.id, problem.id)
                 row_group.append(
@@ -140,30 +143,32 @@ class ExperimentResults:
         return print(tabulate(table, headers, tablefmt="simple_grid"))
 
     def log_results_cartesian(self) -> None:
-        """Prints calibration results in the following form
-        ┌──────────────────────────────┬────────────────────────────┬────────────────────────────┐
-        │ strategy\benchmark           │ Type: rb                   │ Type: ghz                  │
-        │                              │ Num qubits: 2              │ Num qubits: 2              │
-        │                              │ Circuit depth: 337         │ Circuit depth: 2           │
-        │                              │ Two qubit gate count: 80   │ Two qubit gate count: 1    │
-        ├──────────────────────────────┼────────────────────────────┼────────────────────────────┤
-        │ Technique: ZNE               │ ✔                          │ ✘                          │
-        │ Factory: Richardson          │ Noisy error: 0.1128        │ Noisy error: 0.0117        │
-        │ Scale factors: 1.0, 2.0, 3.0 │ Mitigated error: 0.0501    │ Mitigated error: 0.0439    │
-        │ Scale method: fold_global    │ Improvement factor: 2.2515 │ Improvement factor: 0.2665 │
-        ├──────────────────────────────┼────────────────────────────┼────────────────────────────┤
-        │ Technique: ZNE               │ ✔                          │ ✘                          │
-        │ Factory: Richardson          │ Noisy error: 0.1128        │ Noisy error: 0.0117        │
-        │ Scale factors: 1.0, 3.0, 5.0 │ Mitigated error: 0.0408    │ Mitigated error: 0.0171    │
-        │ Scale method: fold_global    │ Improvement factor: 2.7672 │ Improvement factor: 0.6852 │
-        └──────────────────────────────┴────────────────────────────┴────────────────────────────┘
+        """
+        Prints the results of the calibrator in cartesian form::
+
+            ┌──────────────────────────────┬────────────────────────────┬────────────────────────────┐
+            │ strategy\\benchmark           │ Type: rb                   │ Type: ghz                  │
+            │                              │ Num qubits: 2              │ Num qubits: 2              │
+            │                              │ Circuit depth: 337         │ Circuit depth: 2           │
+            │                              │ Two qubit gate count: 80   │ Two qubit gate count: 1    │
+            ├──────────────────────────────┼────────────────────────────┼────────────────────────────┤
+            │ Technique: ZNE               │ ✔                          │ ✘                          │
+            │ Factory: Richardson          │ Noisy error: 0.1128        │ Noisy error: 0.0117        │
+            │ Scale factors: 1.0, 2.0, 3.0 │ Mitigated error: 0.0501    │ Mitigated error: 0.0439    │
+            │ Scale method: fold_global    │ Improvement factor: 2.2515 │ Improvement factor: 0.2665 │
+            ├──────────────────────────────┼────────────────────────────┼────────────────────────────┤
+            │ Technique: ZNE               │ ✔                          │ ✘                          │
+            │ Factory: Richardson          │ Noisy error: 0.1128        │ Noisy error: 0.0117        │
+            │ Scale factors: 1.0, 3.0, 5.0 │ Mitigated error: 0.0408    │ Mitigated error: 0.0171    │
+            │ Scale method: fold_global    │ Improvement factor: 2.7672 │ Improvement factor: 0.6852 │
+            └──────────────────────────────┴────────────────────────────┴────────────────────────────┘
         """  # noqa: E501
-        table: List[List[str]] = []
-        headers: List[str] = ["strategy\\benchmark"]
+        table: list[list[str]] = []
+        headers: list[str] = ["strategy\\benchmark"]
         for problem in self.problems:
             headers.append(str(problem))
         for strategy in self.strategies:
-            row: List[str] = [str(strategy)]
+            row: list[str] = [str(strategy)]
             for problem in self.problems:
                 nerr, merr = self._get_errors(strategy.id, problem.id)
                 row.append(self._performance_str(nerr, merr))
@@ -173,7 +178,7 @@ class ExperimentResults:
     def is_missing_data(self) -> bool:
         """Method to check if there is any missing data that was expected from
         the calibration experiments."""
-        return np.isnan(self.mitigated + self.noisy + self.ideal).any()
+        return bool(np.isnan(self.mitigated + self.noisy + self.ideal).any())
 
     def ensure_full(self) -> None:
         """Check to ensure all expected data is collected. All mitigated, noisy
@@ -191,7 +196,7 @@ class ExperimentResults:
         return (self.ideal - self.mitigated) ** 2
 
     def best_strategy_id(self) -> int:
-        """Returns the stategy id that corresponds to the strategy that
+        """Returns the strategy id that corresponds to the strategy that
         maintained the smallest error across all ``BenchmarkProblem``
         instances."""
         errors = self.squared_errors()
@@ -225,13 +230,13 @@ class Calibrator:
 
     def __init__(
         self,
-        executor: Union[Executor, Callable[[QPROGRAM], QuantumResult]],
+        executor: Executor | Callable[[QPROGRAM], QuantumResult],
         *,
         frontend: str,
         settings: Settings = ZNE_SETTINGS,
-        ideal_executor: Union[
-            Executor, Callable[[QPROGRAM], QuantumResult], None
-        ] = None,
+        ideal_executor: Executor
+        | Callable[[QPROGRAM], QuantumResult]
+        | None = None,
     ):
         self.executor = (
             executor if isinstance(executor, Executor) else Executor(executor)
@@ -239,7 +244,7 @@ class Calibrator:
         self.ideal_executor = (
             Executor(ideal_executor)
             if ideal_executor and not isinstance(ideal_executor, Executor)
-            else None
+            else ideal_executor
         )
         self.settings = settings
         self.problems = settings.make_problems()
@@ -260,6 +265,40 @@ class Calibrator:
 
         self._cirq_executor = Executor(cirq_execute)  # type: ignore [arg-type]
 
+        # Executor for ideal circuits if provided
+        if self.ideal_executor is not None:
+            ideal_exec: Executor = self.ideal_executor
+
+            def ideal_cirq_execute(
+                circuits: Sequence[cirq.Circuit],
+            ) -> Sequence[MeasurementResult]:
+                q_programs = [
+                    convert_from_mitiq(c, frontend) for c in circuits
+                ]
+                results = cast(
+                    Sequence[MeasurementResult],
+                    ideal_exec.run(q_programs),
+                )
+                return results
+
+            self._ideal_cirq_executor: Executor | None = Executor(
+                ideal_cirq_execute  # type: ignore[arg-type]
+            )
+        else:
+            self._ideal_cirq_executor = None
+
+        # Populate ideal distributions for custom circuits if needed
+        if self._ideal_cirq_executor is not None:
+            for problem in self.problems:
+                if problem.type == "custom" and not problem.ideal_distribution:
+                    circ = problem.circuit.copy()
+                    circ.append(cirq.measure(sorted(circ.all_qubits())))
+                    result = cast(
+                        MeasurementResult,
+                        self._ideal_cirq_executor.run([circ])[0],
+                    )
+                    problem.ideal_distribution = result.prob_distribution()
+
     @property
     def cirq_executor(self) -> Executor:
         """Returns an executor which is able to run Cirq circuits
@@ -273,7 +312,12 @@ class Calibrator:
         """
         return self._cirq_executor
 
-    def get_cost(self) -> Dict[str, int]:
+    @property
+    def ideal_cirq_executor(self) -> Executor | None:
+        """Executor running ideal circuits if provided."""
+        return self._ideal_cirq_executor
+
+    def get_cost(self) -> dict[str, int]:
         """Returns the expected number of noisy and ideal expectation values
         required for calibration.
 
@@ -282,7 +326,8 @@ class Calibrator:
         """
         num_circuits = len(self.problems)
         num_options = sum(
-            strategy.num_circuits_required() for strategy in self.strategies
+            strategy.num_circuits_required()  # type: ignore
+            for strategy in self.strategies  # type: ignore
         )
 
         noisy = num_circuits * (num_options + 1)
@@ -292,15 +337,21 @@ class Calibrator:
             "ideal_executions": ideal,
         }
 
-    def run(self, log: Optional[OutputForm] = None) -> None:
-        """Runs all the circuits required for calibration."""
+    def run(self, log: OutputForm | None = None) -> None:
+        """Runs all the circuits required for calibration.
+
+        args:
+             log: If set, detailed results of each experiment run by the
+                calibrator are printed. The value corresponds to the format of
+                the information and can be set to “flat” or “cartesian”.
+        """
         if not self.results.is_missing_data():
             self.results.reset_data()
 
         for problem in self.problems:
             # Benchmark circuits have no measurements, so we append them.
             circuit = problem.circuit.copy()
-            circuit.append(cirq.measure(circuit.all_qubits()))
+            circuit.append(cirq.measure(sorted(circuit.all_qubits())))
 
             bitstring_to_measure = problem.most_likely_bitstring()
             expval_executor = convert_to_expval_executor(
@@ -354,9 +405,9 @@ class Calibrator:
     def execute_with_mitigation(
         self,
         circuit: QPROGRAM,
-        expval_executor: Union[Executor, Callable[[QPROGRAM], QuantumResult]],
-        observable: Optional[Observable] = None,
-    ) -> Union[QuantumResult, None]:
+        expval_executor: Executor | Callable[[QPROGRAM], QuantumResult],
+        observable: Observable | None = None,
+    ) -> QuantumResult | None:
         """See :func:`execute_with_mitigation` for signature and details."""
         return execute_with_mitigation(
             circuit, expval_executor, observable, calibrator=self
@@ -383,7 +434,7 @@ def convert_to_expval_executor(executor: Executor, bitstring: str) -> Executor:
         circuit_with_meas = circuit.copy()
         if not cirq.is_measurement(circuit_with_meas):
             circuit_with_meas.append(
-                cirq.measure(circuit_with_meas.all_qubits())
+                cirq.measure(sorted(circuit_with_meas.all_qubits()))
             )
         raw = cast(MeasurementResult, executor.run([circuit_with_meas])[0])
         distribution = raw.prob_distribution()
@@ -394,11 +445,11 @@ def convert_to_expval_executor(executor: Executor, bitstring: str) -> Executor:
 
 def execute_with_mitigation(
     circuit: QPROGRAM,
-    executor: Union[Executor, Callable[[QPROGRAM], QuantumResult]],
-    observable: Optional[Observable] = None,
+    executor: Executor | Callable[[QPROGRAM], QuantumResult],
+    observable: Observable | None = None,
     *,
     calibrator: Calibrator,
-) -> Union[QuantumResult, None]:
+) -> QuantumResult | None:
     """Estimates the error-mitigated expectation value associated to the
     input circuit, via the application of the best mitigation strategy, as
     determined by calibration.
@@ -415,7 +466,7 @@ def execute_with_mitigation(
             mitigation strategy to execute the circuit.
 
     Returns:
-        The error mitigated expectation expectation value.
+        The error mitigated expectation value.
     """
 
     if calibrator.results.is_missing_data():

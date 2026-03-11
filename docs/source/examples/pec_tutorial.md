@@ -32,7 +32,6 @@ for the rest of this tutorial.
 
 ```{code-cell} ipython3
 import functools
-from typing import List, Tuple, Union
 
 # Plotting imports.
 import matplotlib.pyplot as plt
@@ -70,7 +69,7 @@ shots: int = 10_000
 num_samples: int = 100  
     
 # Qubits to use on the experiment. 
-qubits: List[int] = [0, 1, 2]
+qubits: list[int] = [0, 1, 2]
         
 # Average results over this many trials (circuit instances) at each depth.
 trials: int = 4      
@@ -79,7 +78,7 @@ trials: int = 4
 cnot_error_prob: float = 0.01
 
 # Clifford depths.
-depths: List[int] = [1, 5, 9]
+depths: list[int] = [1, 5, 9]
 ```
 
 Next, we need to define both the noisy and ideal simulator backends that we will
@@ -120,7 +119,7 @@ To define a mirror circuit, we need the device graph. We will use a subgraph of 
 Now that we have the device (sub)graph, we can generate a mirror circuit and the bitstring it should sample as follows.
 
 ```{code-cell} ipython3
-def get_circuit(depth: int, seed: int) -> Union[Tuple[cirq.Circuit, str], Tuple[qiskit.QuantumCircuit, str]]:
+def get_circuit(depth: int, seed: int) -> tuple[cirq.Circuit, str] | tuple[qiskit.QuantumCircuit, str]:
     circuit, correct_bitstring = benchmarks.generate_mirror_circuit(
         nlayers=depth,
         two_qubit_gate_prob=1.0,
@@ -139,7 +138,7 @@ terms of CNOT operations. For more information about these representations in
 the context of PEC and usage within `mitiq`, refer to the [](../guide/pec-5-theory.md) page.
 
 ```{code-cell} ipython3
-def get_cnot_representation(edge: Tuple[int, int]) -> pec.OperationRepresentation:
+def get_cnot_representation(edge: tuple[int, int]) -> pec.OperationRepresentation:
     cnot_circuit = cirq.Circuit(cirq.CNOT(cirq.LineQubit(edge[0]), cirq.LineQubit(edge[1])))              
     
     rep_exact_prob = 1 - np.sqrt(1 - cnot_error_prob)
@@ -149,7 +148,7 @@ def get_cnot_representation(edge: Tuple[int, int]) -> pec.OperationRepresentatio
     )
 
 
-def get_representations(computer: nx.Graph) -> List[pec.OperationRepresentation]:
+def get_representations(computer: nx.Graph) -> list[pec.OperationRepresentation]:
     return [get_cnot_representation(edge) for edge in computer.edges]
 ```
 
@@ -159,7 +158,7 @@ It will be useful later to us to have a number of utility functions for counting
 CNOT gates and operations.
 
 ```{code-cell} ipython3
-def get_num_cnot_count(circuit: Union[cirq.Circuit, qiskit.QuantumCircuit]) -> int:
+def get_num_cnot_count(circuit: cirq.Circuit | qiskit.QuantumCircuit) -> int:
     """Determine number of cnot gates in a given `Circuit` object."""    
     # Count CNOT gates for `cirq`-type circuit objects:
     num_cnots: int = 0
@@ -168,7 +167,7 @@ def get_num_cnot_count(circuit: Union[cirq.Circuit, qiskit.QuantumCircuit]) -> i
             num_cnots += 1
     return num_cnots
 
-def get_oneq_count(circuit: Union[cirq.Circuit, qiskit.QuantumCircuit]) -> int:
+def get_oneq_count(circuit: cirq.Circuit | qiskit.QuantumCircuit) -> int:
     return len(circuit.instructions) - get_num_cnot_count(circuit)
 ```
 
@@ -178,12 +177,12 @@ Now that we have a circuit, we define the `execute` function which inputs a circ
 
 ```{code-cell} ipython3
 def execute(
-    circuits: Union[cirq.Circuit, List[cirq.Circuit]], 
+    circuits: cirq.Circuit | list[cirq.Circuit], 
     backend,
     shots: int,
     correct_bitstring: str,
     is_noisy: bool = True,
-) -> List[float]:
+) -> list[float]:
     """Executes the input circuit(s) and returns ⟨A⟩, where 
     A = |correct_bitstring⟩⟨correct_bitstring| for each circuit.
     """
@@ -191,7 +190,7 @@ def execute(
         circuits = [circuits]
     
     # Store all circuits to run in list to be returned.
-    to_run: Union[List[braket.Circuit], List[qiskit.QuantumCircuit]] = []
+    to_run: list[braket.Circuit] | list[qiskit.QuantumCircuit] = []
     
     # Compile circuits to appropriate gateset.
     for circuit in circuits:
@@ -203,7 +202,7 @@ def execute(
         to_run.append(circuit_to_run)
         
     # Process each job.
-    results: List[float] = []
+    results: list[float] = []
     for circ_to_run in to_run:
         job_result = backend.run(circ_to_run, shots=shots).result()
         results.append(job_result.measurement_probabilities.get("".join(map(str, correct_bitstring)), 0.0))
@@ -314,4 +313,4 @@ plt.legend();
 
 We can see that PEC on average improves the expectation value at each depth. Note that the size of the error bars represents the standard deviation of the noisy values (for the "Raw" line) and the standard deviation of the PEC values (for the "PEC" line).
 
-For an example of how one applies PEC on quantum hardware consult *Russo et al. arXiv (2022)* {cite}`Russo_2022_Testing` ([arXiv:2210.07194](https://arxiv.org/abs/2210.07194)) and the companion [software repository](https://github.com/unitaryfund/research/tree/main/qem-on-hardware).
+For an example of how one applies PEC on quantum hardware consult *Russo et al. arXiv (2022)* {cite}`Russo_2022_Testing` ([arXiv:2210.07194](https://arxiv.org/abs/2210.07194)) and the companion [software repository](https://github.com/unitaryfoundation/research/tree/main/qem-on-hardware).

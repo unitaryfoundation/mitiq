@@ -1,11 +1,9 @@
-# Copyright (C) Unitary Fund
+# Copyright (C) Unitary Foundation
 #
 # This source code is licensed under the GPL license (v3) found in the
 # LICENSE file in the root directory of this source tree.
 
 """Tests for circuit conversions."""
-
-from typing import List
 
 import cirq
 import numpy as np
@@ -65,6 +63,7 @@ circuit_types = {
     "braket": BKCircuit,
     "pennylane": qml.tape.QuantumTape,
     "qibo": qibo.models.circuit.Circuit,
+    "openqasm": QASMType,
 }
 
 
@@ -75,7 +74,7 @@ def scaling_function(circ: cirq.Circuit, *args, **kwargs) -> cirq.Circuit:
 
 def one_to_many_circuit_modifier(
     circ: cirq.Circuit, *args, **kwargs
-) -> List[cirq.Circuit]:
+) -> list[cirq.Circuit]:
     return [circ, circ[0:1] + circ]
 
 
@@ -123,7 +122,7 @@ def test_register_from_to_mitiq():
     assert input_type == qasm_circuit.__module__
 
 
-@pytest.mark.parametrize("item", ("circuit", 1, None))
+@pytest.mark.parametrize("item", (1, None))
 def test_to_mitiq_bad_types(item):
     with pytest.raises(
         UnsupportedCircuitError,
@@ -186,6 +185,20 @@ def test_converter(circuit_and_type):
     cirq_scaled = scaling_function(circuit, return_mitiq=True)
     assert isinstance(cirq_scaled, cirq.Circuit)
     assert _equal(cirq_scaled, cirq_circuit)
+
+
+def test_qasm_string_converter():
+    circuit = qiskit.QuantumCircuit(2)
+    circuit.h(0)
+    circuit.cx(0, 1)
+    qasm_str = qiskit.qasm3.dumps(circuit)
+
+    cirq_circuit = cirq.Circuit()
+    qr = cirq.LineQubit.range(2)
+    cirq_circuit.append(cirq.ops.H(qr[0]))
+    cirq_circuit.append(cirq.ops.CX(qr[0], qr[1]))
+
+    assert _equal(cirq_circuit, convert_to_mitiq(qasm_str)[0])
 
 
 @pytest.mark.parametrize("nbits", [1, 10])

@@ -1,12 +1,12 @@
-# Copyright (C) Unitary Fund
+# Copyright (C) Unitary Foundation
 #
 # This source code is licensed under the GPL license (v3) found in the
 # LICENSE file in the root directory of this source tree.
 
 import copy
 from collections import defaultdict
-from numbers import Number
-from typing import Any, Callable, Iterable, List, Optional, Set, Union, cast
+from collections.abc import Callable, Iterable
+from typing import Any, cast
 
 import cirq
 import numpy as np
@@ -14,6 +14,7 @@ import numpy.typing as npt
 
 from mitiq import QPROGRAM, MeasurementResult, QuantumResult
 from mitiq.observable.pauli import PauliString, PauliStringCollection
+from mitiq.typing import Numeric
 
 
 class Observable:
@@ -26,7 +27,7 @@ class Observable:
 
     def __init__(self, *paulis: PauliString) -> None:
         self._paulis = _combine_duplicate_pauli_strings(paulis)
-        self._groups: List[PauliStringCollection]
+        self._groups: list[PauliStringCollection]
         self._ngroups: int
         self.partition()
 
@@ -34,6 +35,16 @@ class Observable:
     def from_pauli_string_collections(
         *pauli_string_collections: PauliStringCollection,
     ) -> "Observable":
+        """Creates an ``Observable`` from one or more ``PauliStringCollection``
+            instances.
+
+        Args:
+            pauli_string_collections: One or more collections of Pauli strings
+                used to define the observable.
+
+        Returns:
+            An ``Observable`` containing the given Pauli string collections.
+        """
         obs = Observable()
         obs._groups = list(pauli_string_collections)
         obs._ngroups = len(pauli_string_collections)
@@ -48,16 +59,16 @@ class Observable:
     def nterms(self) -> int:
         return len(self._paulis)
 
-    def _qubits(self) -> Set[cirq.Qid]:
+    def _qubits(self) -> set[cirq.Qid]:
         """Returns all qubits acted on by the Observable."""
         return {q for pauli in self._paulis for q in pauli._pauli.qubits}
 
     @property
-    def paulis(self) -> List[PauliString]:
+    def paulis(self) -> list[PauliString]:
         return self._paulis
 
     @property
-    def qubit_indices(self) -> List[int]:
+    def qubit_indices(self) -> list[int]:
         return [cast(cirq.LineQubit, q).x for q in sorted(self._qubits())]
 
     @property
@@ -65,9 +76,9 @@ class Observable:
         return len(self.qubit_indices)
 
     def __mul__(
-        self, other: Union["Observable", "PauliString", Number]
+        self, other: "Observable | PauliString | Numeric"
     ) -> "Observable":
-        if isinstance(other, (PauliString, Number)):
+        if isinstance(other, (PauliString, int, float, complex)):
             return Observable(*[pauli * other for pauli in self._paulis])
         elif isinstance(other, Observable):
             return Observable(
@@ -79,23 +90,37 @@ class Observable:
             )
         return NotImplemented
 
-    def __rmul__(self, other: Union["PauliString", Number]) -> "Observable":
-        if isinstance(other, (PauliString, Number)):
+    def __rmul__(self, other: "PauliString | Numeric") -> "Observable":
+        if isinstance(other, (PauliString, int, float, complex)):
             return Observable(*[other * pauli for pauli in self._paulis])
         return NotImplemented
 
     @property
-    def groups(self) -> List[PauliStringCollection]:
+    def groups(self) -> list[PauliStringCollection]:
         return self._groups
 
     @property
     def ngroups(self) -> int:
         return self._ngroups
 
-    def partition(self, seed: Optional[int] = None) -> None:
+    def partition(self, seed: int | None = None) -> None:
+        """Partitions the observable's Pauli strings into commuting groups.
+
+        This method groups the ``PauliStringCollection`` instances such that
+        each group consists of mutually commuting operators, which can be
+        measured together in a quantum circuit.
+
+        Note:
+            This method randomizes the way in which the list of
+            paulis is partitioned.
+
+        Args:
+            seed: An optional seed for shuffling to ensure deterministic
+                behavior when partitioning.
+        """
         rng = np.random.RandomState(seed)
 
-        psets: List[PauliStringCollection] = []
+        psets: list[PauliStringCollection] = []
         paulis = copy.deepcopy(self._paulis)
         rng.shuffle(paulis)  # type: ignore
 
@@ -114,14 +139,35 @@ class Observable:
         self._groups = psets
         self._ngroups = len(self._groups)
 
-    def measure_in(self, circuit: QPROGRAM) -> List[QPROGRAM]:
+    def measure_in(self, circuit: QPROGRAM) -> list[QPROGRAM]:
+        """Given a quantum circuit, this method returns a list of circuits
+        where each circuit corresponds to a different group of commuting Pauli
+        strings, which allows measurement in the appropriate basis.
+
+        Args:
+            circuit: The quantum circuit in which the observable should be
+            measured.
+
+        Returns:
+            A list of quantum circuits with the appropriate measurement
+            settings for each group of Pauli strings.
+        """
         return [pset.measure_in(circuit) for pset in self._groups]
 
     def matrix(
         self,
-        qubit_indices: Optional[List[int]] = None,
+        qubit_indices: list[int] | None = None,
     ) -> npt.NDArray[np.complex64]:
-        """Returns the (potentially very large) matrix of the Observable."""
+        """Returns the (potentially very large) matrix of the ``Observable``.
+
+        Args:
+            qubit_indices: Optional list of qubit indices specifying the order
+            of qubits in the matrix representation. If None, the default
+            ordering from `self.qubit_indices` is used.
+
+        Returns:
+            A ``NumPy`` array representing the matrix form of the observable.
+        """
         if qubit_indices is None:
             qubit_indices = self.qubit_indices
         n = len(qubit_indices)
@@ -135,12 +181,25 @@ class Observable:
     def expectation(
         self, circuit: QPROGRAM, execute: Callable[[QPROGRAM], QuantumResult]
     ) -> complex:
+        """Computes the expectation value of the observable.
+
+        This method executes the given quantum circuit and estimates the
+        expectation value of the observable based on the measurement results.
+
+        Args:
+            circuit: The quantum circuit to be executed.
+            execute: A function that takes a quantum circuit as input and
+            returns a QuantumResult containing measurement outcomes.
+
+        Returns:
+            The expectation value of the observable.
+        """
         from mitiq.executor import Executor  # Avoid circular import.
 
         return Executor(execute).evaluate(circuit, observable=self)[0]
 
     def _expectation_from_measurements(
-        self, measurements: List[MeasurementResult]
+        self, measurements: list[MeasurementResult]
     ) -> float:
         return sum(
             pset._expectation_from_measurements(bitstrings)
@@ -172,7 +231,7 @@ class Observable:
 
 def _combine_duplicate_pauli_strings(
     paulis: Iterable[PauliString],
-) -> List[PauliString]:
+) -> list[PauliString]:
     """Combines duplicate PauliStrings by adding their coefficients.
     Discards paulis with zero coefficients.
 

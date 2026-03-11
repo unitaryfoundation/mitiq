@@ -3,28 +3,37 @@
 All contributions to this project are welcome, and they are greatly appreciated; every little bit helps.
 The most common ways to contribute here are
 
-1. opening an [issue](https://github.com/unitaryfund/mitiq/issues/new) to report a bug or propose a new feature, or ask a question, and
-2. opening a [pull request](https://github.com/unitaryfund/mitiq/pulls) to fix a bug, or implement a desired feature.
-3. opening a [discussion post](https://github.com/unitaryfund/mitiq/discussions) to ask a question (all questions welcome!), provide feedback, or show something off!
+1. opening an [issue](https://github.com/unitaryfoundation/mitiq/issues/new) to report a bug or propose a new feature, or ask a question, and
+2. opening a [pull request](https://github.com/unitaryfoundation/mitiq/pulls) to fix a bug, or implement a desired feature.
+3. opening a [discussion post](https://github.com/unitaryfoundation/mitiq/discussions) to ask a question (all questions welcome!), provide feedback, or show something off!
 
 The rest of this document describes the technical details of getting set up to develop, and make your first contribution to Mitiq.
 
 
 ## Development environment
 
-1. Ensure you have python 3.10 or greater installed. If not, you can find the downloads [here](https://www.python.org/downloads/).
-2. Set up a virtual environment to isolate dependencies. This can be done with many different tools including [Virtualenv](https://virtualenv.pypa.io/en/latest/), [Pipenv](https://pypi.org/project/pipenv/), [Poetry](https://python-poetry.org/), and [Anaconda](https://www.anaconda.com/download). In what follows we will use Anaconda, but if you're familiar with other tools feel free to use those.
-3. Set up a local version of the [Mitiq repository](https://github.com/unitaryfund/mitiq). To do this you will need to use `git` which is a version control system. If you're unfamiliar, check out the [docs](https://git-scm.com/), and learn about what the typical [`git` workflow](https://www.asmeurer.com/git-workflow/) looks like.
-4. Inside the Mitiq repository (`cd mitiq`), activate a virtual environment. With conda this is done using the following command.
-```
-conda create --name myenv python=3
-conda activate myenv
-```
-5. Install the dependencies. First, to get an updated version of [`pip`](https://pypi.org/project/pip/) inside the virtual environment run `conda install pip` followed by
-```
+Mitiq uses [uv](https://docs.astral.sh/uv/) for packaging and dependency management. It may also be used for managing the virtual environment. 
+
+1. Ensure you have [`uv` installed](https://docs.astral.sh/uv/getting-started/installation/).
+2. Clone the [Mitiq repository](https://github.com/unitaryfoundation/mitiq). If you are unfamiliar with `git`, check out the [docs](https://git-scm.com/), and learn about what the typical [`git` workflow](https://www.asmeurer.com/git-workflow/) looks like.
+3. Inside the Mitiq directory (`cd mitiq`), use uv to create a virtual environment (/.venv) and install the dependencies by calling `make install`.
+
+```bash
+pip install uv
+git clone https://github.com/unitaryfoundation/mitiq.git
+cd mitiq
 make install
 ```
-6. You should now have a development environment set up to work on Mitiq! 🎉 To go forward with making the desired changes, please consult the ["Making changes" section](https://www.asmeurer.com/git-workflow/#making-changes) of the `git` workflow article. If you've encountered any problems thus far, please let us know by opening an issue! More information about workflow can be found below in the [lifecycle](#lifecycle) section.
+
+You should now have a development environment set up to work on Mitiq! 🎉 To go forward with making the desired changes, please consult the ["Making changes" section](https://www.asmeurer.com/git-workflow/#making-changes) of the `git` workflow article. If you've encountered any problems thus far, please let us know by opening an issue! More information about workflow can be found below in the [lifecycle](#lifecycle) section.
+
+```{note}
+
+Since uv uses a virtual environment, any commands to be run inside the virtual environment will need to be prefaced with `uv run` or the uv [managed virtual environment](https://docs.astral.sh/uv/pip/environments/#using-a-virtual-environment) will need to be activated by running `source .venv/bin/activate` in your shell. 
+
+Running `make` commands do NOT require prepending `uv run`.
+```
+
 
 What follows are recommendations/requirements to keep in mind while contributing.
 
@@ -40,7 +49,7 @@ The only exception to this is that any tests requiring a QVM should be placed in
 ### Running tests
 
 After making changes, ensure your changes pass all the existing tests (and any new tests you've added).
-Use `pytest mitiq/$MODULE` to run the tests for the module you are working on.
+Use `uv run pytest mitiq/$MODULE` to run the tests for the module you are working on.
 Once they pass, you can run the entire test suite (excluding those that require the pyQuil QVM) by running the following command.
 
 ```bash
@@ -99,18 +108,20 @@ make check-types
 
 If you aren't presented with any errors, then that means your code is ready to commit!
 
-It is recommended to install pre-configured [Git hooks](https://github.com/unitaryfund/mitiq/blob/main/.git-hooks/) from Mitiq repository by running `make install-hooks` from the root of the repository immediately after cloning.
+It is recommended to install pre-configured [Git hooks](https://github.com/unitaryfoundation/mitiq/blob/main/.git-hooks/) from Mitiq repository by running `make install-hooks` from the root of the repository immediately after cloning.
 In particular, the pre-commit hook will run both `make check-format` and `make check-types` before each commit.
 
 ## Proposing a new feature to Mitiq
 If you are interested in adding a substantial new feature or functionality to Mitiq, please make a copy of our Request For Comments (RFC) [template](https://docs.google.com/document/d/1adomheXpbqp4YIBFQ49IsAJzuJKWyr75GRO1NeWg0Fo/) and fill out the details of your enhancement proposal.
 Take a look at [previous RFCs](#list-of-accepted-rfcs) for examples on how to fill out your proposal.
-Once you have completed your proposal, [create a feature request issue](https://github.com/unitaryfund/mitiq/issues/new?assignees=&labels=feature-request&template=feature_request.md&title=) and add a link to your proposal document (make sure to enable commenting on the RFC!).
+Once you have completed your proposal, [create a feature request issue](https://github.com/unitaryfoundation/mitiq/issues/new?assignees=&labels=feature-request&template=feature_request.md&title=) and add a link to your proposal document (make sure to enable commenting on the RFC!).
 For any part of the template that you weren't able to complete please mention that in the issue description.
 
 ### List of accepted RFCs
 This is a list of accepted request-for-comments (RFC) documents by date of creation (reverse chronological order):
 
+- [Virtual Distillation RFC](https://docs.google.com/document/d/1833IaqzpJ7DbfasgXt59AA93fJk4_EUDfBV4yNHHyic/edit?usp=sharing) by Chris de Hart, Jari Egbers, Kajetan Knopp and Lara Boloni Jan 31, 2025
+- [Probabilistic Error Amplification RFC](https://docs.google.com/document/d/1l-74EFdMA0CSFUpHjqCyQYb3ZKCmY77seB1_mOZo5Co/edit?usp=sharing) by Misty Wahl (@Misty-W) Dec 20, 2024
 - [Layerwise Richardson Extrapolation RFC](https://docs.google.com/document/d/1oFRl4wMGMtn57V0c_1egaHh0WUUAbtgW-U_QxNL9_kY/edit?usp=sharing) by Purva Thakre (@purva-thakre) and Vincent Russo (@vprusso) Apr 24, 2024
 - [Robust Shadow Estimation](https://docs.google.com/document/d/1B5FnqQDvoRYap5fGPqzcbp-RXIrUFjbBcLiWIUrLmuA) by Min Li (@Min-Li) Jun 16, 2023
 - [Error Mitigation by Subspace Expansion](https://docs.google.com/document/d/1JyQAwiw8BRT_oucZ6tQv0id6UhSdd3df1mNSPpOvu1I) by Ammar Jahin, Dariel Mok , Preksha Naik, Abdulrahman Sahmoud (@bubakazouba) Apr 28, 2023
@@ -139,8 +150,8 @@ Mitiq development abides to the [](./code_of_conduct.md).
 
 ## Lifecycle
 The basic development workflow for Mitiq is done in units of milestones which are usually one month periods where we focus our efforts on thrusts decided by the development team, alongside community members.
-Milestones are tracked using the [GitHub milestone feature](https://github.com/unitaryfund/mitiq/milestones) and all issues that are planned to be addressed should be tagged accordingly.
+Milestones are tracked using the [GitHub milestone feature](https://github.com/unitaryfoundation/mitiq/milestones) and all issues that are planned to be addressed should be tagged accordingly.
 
 All releases for Mitiq are tagged on the `main` branch with tags for the version number of the release.
-Find all the previous releases [here](https://github.com/unitaryfund/mitiq/releases).
+Find all the previous releases [here](https://github.com/unitaryfoundation/mitiq/releases).
 

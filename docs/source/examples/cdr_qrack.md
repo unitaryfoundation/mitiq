@@ -28,7 +28,7 @@ To start, relevant modules and libraries are imported. Please ensure that the fo
 +++
 
 ```{note}
-In the code below the environmental variable, `QRACK_MAX_CPU_QB`, is set to `-1`. This enviroment variable sets the maximum on how many qubits can be allocated on a single QEngineCPU instance. More information can be found on the [Qrack README page](https://github.com/unitaryfund/qrack/blob/main/README.md#maximum-allocation-guard).
+In the code below the environmental variable, `QRACK_MAX_CPU_QB`, is set to `-1`. This environment variable sets the maximum on how many qubits can be allocated on a single QEngineCPU instance. More information can be found on the [Qrack README page](https://github.com/unitaryfoundation/qrack/blob/main/README.md#maximum-allocation-guard).
 ```
 
 ```{code-cell}
@@ -37,7 +37,7 @@ import collections
 
 import os
 import warnings
-warnings.simplefilter("ignore", np.ComplexWarning)
+warnings.simplefilter("ignore", np.exceptions.ComplexWarning)
 
 from pyqrack import QrackSimulator, QrackCircuit
 os.environ["QRACK_MAX_CPU_QB"]="-1"
@@ -48,7 +48,7 @@ from mitiq import cdr, Observable, PauliString
 
 import cirq
 
-from qiskit.providers.fake_provider import Fake5QV1
+from qiskit.providers.fake_provider import GenericBackendV2
 ```
 
 ## Sample Circuit
@@ -114,7 +114,7 @@ def qrack_simulate(circuit: cirq.Circuit, shots=1000) -> float:
 
 CDR requires the use of a quantum device or a noisy simulator. The near-Clifford circuits that are generated from the original circuit are executed on the quantum device or noisy simulator in order to compare against the simulated results.
 
-In this example, a Qiskit 5 Qubit Fake Backend is used. The [Fake5QV1](https://docs.quantum.ibm.com/api/qiskit/qiskit.providers.fake_provider.Fake5QV1) uses configurations and noise settings taken previously from the 5 qubit IBM Quantum Yorktown device. The `qiskit_noisy` function takes the Cirq circuit and uses Mitiq to change it into a Qiskit circuit. After adding measurements, the circuit is run on the fake backend. The expectation value for `00` is then returned.
+In this example, a Qiskit GenericBackendV2 is used. The [GenericBackendV2](https://docs.quantum.ibm.com/api/qiskit/qiskit.providers.fake_provider.GenericBackendV2) uses configurations and default noise settings for gates and qubits. The `qiskit_noisy` function takes the Cirq circuit and uses Mitiq to change it into a Qiskit circuit. After adding measurements, the circuit is run on the fake backend. The expectation value for `00` is then returned.
 
 ```{code-cell}
 # Use Qiskit's Fave5QV1 as a noisy simulator
@@ -128,7 +128,7 @@ def qiskit_noisy(circuit: cirq.Circuit, shots=1000):
     qiskit_circ.measure_all()
 
     # Setup the fake backend and run the circuit
-    noisy_backend = Fake5QV1()
+    noisy_backend = GenericBackendV2(5)
     job = noisy_backend.run(qiskit_circ, shots=shots)
 
     # Use the resulting counts to return the expectation value of 00
@@ -139,7 +139,7 @@ def qiskit_noisy(circuit: cirq.Circuit, shots=1000):
 
 ### Cirq Simulator for exact result
 
-The `compute_density_matrix` is the Cirq density matrix simulator with a Mitiq wrapper. It is used to obtain the exact `00` expectation value. This is then used to determine the accuracy of the mitigated and unmitigated reuslts.
+The `compute_density_matrix` is the Cirq density matrix simulator with a Mitiq wrapper. It is used to obtain the exact `00` expectation value. This is then used to determine the accuracy of the mitigated and unmitigated results.
 
 ```{code-cell}
 def cirq_simulate(circuit: cirq.Circuit) -> np.ndarray:
@@ -187,4 +187,4 @@ improvement_factor = unmitigated_error / mitigated_error
 print(f"Improvement factor with CDR: {improvement_factor:.2f}")
 ```
 
-To learn more about CDR, please check the [User Guide](../guide/cdr.md) or the [ZNE and CDR with Cirq: 1D Ising Simulation](./quantum_simulation_1d_ising.md) example. If you have any questions, please do not hesitate to open a [Github discussion](https://github.com/unitaryfund/mitiq/discussions) or reach out to the Mitiq team on [Discord](http://discord.unitary.fund).
+To learn more about CDR, please check the [User Guide](../guide/cdr.md) or the [ZNE and CDR with Cirq: 1D Ising Simulation](./quantum_simulation_1d_ising.md) example. If you have any questions, please do not hesitate to open a [Github discussion](https://github.com/unitaryfoundation/mitiq/discussions) or reach out to the Mitiq team on [Discord](http://discord.unitary.foundation).

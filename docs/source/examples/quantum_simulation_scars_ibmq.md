@@ -25,6 +25,11 @@ import time
 import numpy as np
 
 import matplotlib.pyplot as plt
+
+from qiskit_ibm_runtime import QiskitRuntimeService, SamplerV2 as Sampler
+from qiskit.transpiler.preset_passmanagers import generate_preset_pass_manager
+
+from qiskit_aer import QasmSimulator
 ```
 
 # Use ZNE to simulate quantum many body scars with Qiskit on IBMQ backends
@@ -158,12 +163,12 @@ USE_REAL_HARDWARE = False
 
 ```{code-cell} ipython3
 if USE_REAL_HARDWARE:
-    from qiskit_ibm_runtime import QiskitRuntimeService
     
-    service = QiskitRuntimeService(channel="ibm_quantum", token="MY_IBM_QUANTUM_TOKEN")   # Get the API token in https://quantum-computing.ibm.com/account
+    service = QiskitRuntimeService(channel="ibm_quantum") #, token="MY_IBM_QUANTUM_TOKEN")   # Get the API token in https://quantum-computing.ibm.com/account
     backend = service.least_busy(operational=True, simulator=False)
+    noise_model = False
 else:
-    from qiskit_aer import QasmSimulator
+    
 
     # Simulate the circuit with noise
     noise_model = initialized_depolarizing_noise(noise_level=0.02)
@@ -184,25 +189,30 @@ def ibmq_executor_full(circuit: qiskit.QuantumCircuit,
         the expectation value.
     """
     # Transpile the circuit so it can be properly run
-    exec_circuit = qiskit.transpile(
-        circuit,
-        backend=backend_noiseless if NO_NOISE else backend ,
+    pm = generate_preset_pass_manager(
+        backend=backend, 
+        optimization_level=0, 
         basis_gates=noise_model.basis_gates if noise_model else None,
-        optimization_level=0, # Important to preserve folded gates.
     )
 
+    exec_circuit = pm.run(circuit)
+
+    if not isinstance(exec_circuit, list):
+        exec_circuit = [exec_circuit]
+
     # Run the circuit
-    job = backend.run(exec_circuit, shots=shots)
+    sampler = Sampler(backend)
+    job = sampler.run(exec_circuit, shots=shots)
 
     # Convert from raw measurement counts to the expectation value
     if type(circuit) == list:
         # In case the input is a list of circuits
-        all_counts = [job.result().get_counts(i) for i in range(len(folded_circuits))]
+        all_counts = [job.result()[i].data.meas.get_counts() for i in range(len(folded_circuits))]
         sz_list = [staggered_mz(L, counts) for counts in all_counts]
         
     else:
         # In case the input is a single circuit
-        counts = job.result().get_counts()
+        counts = job.result()[0].data.meas.get_counts()
         sz_list = staggered_mz(L, counts)
 
     

@@ -1,10 +1,10 @@
-# Copyright (C) Unitary Fund
+# Copyright (C) Unitary Foundation
 #
 # This source code is licensed under the GPL license (v3) found in the
 # LICENSE file in the root directory of this source tree.
 """Cirq utility functions."""
 
-from typing import Callable, Tuple
+from collections.abc import Callable
 
 import cirq
 import numpy as np
@@ -19,7 +19,7 @@ def sample_bitstrings(
     noise_model_function: Callable[
         ..., cirq.NOISE_MODEL_LIKE
     ] = cirq.amplitude_damp,
-    noise_level: Tuple[float] = (0.01,),
+    noise_level: tuple[float] = (0.01,),
     sampler: cirq.Sampler = cirq.DensityMatrixSimulator(),
     shots: int = 8192,
 ) -> MeasurementResult:
@@ -27,7 +27,7 @@ def sample_bitstrings(
     particular noise model and some value for the error rate.
 
     Args:
-        circuit: The input Cirq circuit.
+        circuit: The input Cirq circuit with measurements applied.
         noise_model: Input Cirq noise model. Default is amplitude damping.
         noise_level: Noise rate as a tuple of floats.
         sampler: Cirq simulator from which the result will be sampled from.
@@ -56,7 +56,7 @@ def compute_density_matrix(
     noise_model_function: Callable[
         ..., cirq.NOISE_MODEL_LIKE
     ] = cirq.amplitude_damp,
-    noise_level: Tuple[float] = (0.01,),
+    noise_level: tuple[float] = (0.01,),
 ) -> npt.NDArray[np.complex64]:
     """Returns the density matrix of the quantum state after the
     (noisy) execution of the input circuit.

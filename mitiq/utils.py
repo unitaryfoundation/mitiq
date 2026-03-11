@@ -1,13 +1,14 @@
-# Copyright (C) Unitary Fund
+# Copyright (C) Unitary Foundation
 #
 # This source code is licensed under the GPL license (v3) found in the
 # LICENSE file in the root directory of this source tree.
 
 """Utility functions."""
 
+from collections.abc import Sequence
 from copy import deepcopy
 from itertools import product
-from typing import Any, Dict, List, Tuple
+from typing import Any
 
 import cirq
 import numpy as np
@@ -26,7 +27,6 @@ from cirq import (
     ops,
 )
 from cirq.ops.measurement_gate import MeasurementGate
-from numpy.typing import NDArray
 
 
 def _simplify_gate_exponent(gate: EigenGate) -> EigenGate:
@@ -84,7 +84,7 @@ def _is_measurement(op: ops.Operation) -> bool:
 
 def _pop_measurements(
     circuit: Circuit,
-) -> List[Tuple[int, ops.Operation]]:
+) -> list[tuple[int, ops.Operation]]:
     """Removes all measurements from a circuit.
 
     Args:
@@ -103,7 +103,7 @@ def _pop_measurements(
 
 
 def _append_measurements(
-    circuit: Circuit, measurements: List[Tuple[int, ops.Operation]]
+    circuit: Circuit, measurements: list[tuple[int, ops.Operation]]
 ) -> None:
     """Appends all measurements into the final moment of the circuit.
 
@@ -111,7 +111,7 @@ def _append_measurements(
         circuit: a quantum circuit as a :class:`cirq.Circuit`.
         measurements: measurements to perform.
     """
-    new_measurements: List[Tuple[int, ops.Operation]] = []
+    new_measurements: list[tuple[int, ops.Operation]] = []
     for i in range(len(measurements)):
         # Make sure the moment to insert into is the last in the circuit
         new_measurements.append((len(circuit) + 1, measurements[i][1]))
@@ -169,7 +169,7 @@ def _equal(
     return circuit_one == circuit_two
 
 
-def _are_close_dict(dict_a: Dict[Any, Any], dict_b: Dict[Any, Any]) -> bool:
+def _are_close_dict(dict_a: dict[Any, Any], dict_b: dict[Any, Any]) -> bool:
     """Returns True if the two dictionaries have equal keys and
     their corresponding values are "sufficiently" close."""
     keys_a = dict_a.keys()
@@ -234,7 +234,9 @@ def _circuit_to_choi(circuit: Circuit) -> npt.NDArray[np.complex64]:
     return simulator.simulate(full_circ).final_density_matrix
 
 
-def _operation_to_choi(operation_tree: OP_TREE) -> npt.NDArray[np.complex64]:
+def _operation_to_choi(
+    operation_tree: OP_TREE,
+) -> npt.NDArray[np.complex64]:
     """Returns the density matrix of the Choi state associated to the
     input operation tree (e.g. a single operation or a sequence of operations).
 
@@ -324,7 +326,9 @@ PAULIS = [
 ]
 
 
-def matrix_kronecker_product(matrices: List[NDArray[Any]]) -> NDArray[Any]:
+def matrix_kronecker_product(
+    matrices: Sequence[npt.NDArray[Any]],
+) -> npt.NDArray[Any]:
     """
     Returns the Kronecker product of a list of matrices.
     Args:
@@ -338,7 +342,9 @@ def matrix_kronecker_product(matrices: List[NDArray[Any]]) -> NDArray[Any]:
     return result
 
 
-def operator_ptm_vector_rep(opt: NDArray[Any]) -> NDArray[Any]:
+def operator_ptm_vector_rep(
+    opt: npt.NDArray[np.complex64],
+) -> npt.NDArray[np.complex64]:
     r"""
     Returns the PTM vector representation of an operator.
     :math:`\mathcal{L}(\mathcal{H}_{2^n})\ni \mathtt{opt}\rightarrow
@@ -363,7 +369,7 @@ def operator_ptm_vector_rep(opt: NDArray[Any]) -> NDArray[Any]:
     return np.array(opt_vec)
 
 
-def qem_methods() -> Dict[str, str]:
+def qem_methods() -> dict[str, str]:
     """
     Returns a dictionary of Quantum Error Mitigation techniques
     currently available in Mitiq. Updated v0.36.0

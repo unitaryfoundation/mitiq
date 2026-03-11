@@ -57,6 +57,19 @@ print(cal.get_cost())
 cal.run()
 ```
 
+## Verbose Log Output
+
+To print results from the experiments the calibrator performs, the `log` parameter can be passed in to the `run` method with either the value of `flat` or `cartesian`. By using the `log` parameter, detailed information about each experiment is printed when the `run` method completes. 
+
+The detailed information can also be generated from the results of the calibrator after `run` is called by calling either {meth}`.log_results_flat` or {meth}`.log_results_cartesian`.
+
+The two options display the information in different formats, though both use a cross (✘) or a check (✔) to signal whether the error mitigation expirement obtained an expectation value better than the non-mitigated one.
+
+```{code-cell} ipython3
+# cal.results.log_results_flat()
+cal.results.log_results_cartesian()
+```
+
 ## Applying the optimal error mitigation strategy
 
 We first define randomized benchmarking circuit to test the effect of error mitigation.
@@ -86,12 +99,10 @@ def execute(circuit, noise_level=0.001):
 cal.execute_with_mitigation(circuit, execute)
 ```
 
-```{code-cell} ipython3
-
-```
-
 ## Tutorial
 
 You can find an example on quantum error mitigation calibration in the **[Examples](../examples/calibration-tutorial.md)** section of the documentation.
 This example illustrates functionalities from the calibration module using ZNE
 on a simulated IBM Quantum backend using Qiskit, defining a new settings object.
+
++++

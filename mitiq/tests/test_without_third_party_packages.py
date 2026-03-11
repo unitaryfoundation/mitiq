@@ -1,4 +1,4 @@
-# Copyright (C) Unitary Fund
+# Copyright (C) Unitary Foundation
 #
 # This source code is licensed under the GPL license (v3) found in the
 # LICENSE file in the root directory of this source tree.
@@ -11,6 +11,7 @@ mitiq.interface.mitiq_[package], where [package] is any supported package that
 interfaces with Mitiq (see mitiq.SUPPORTED_PROGRAM_TYPES).
 """
 
+from types import UnionType
 from typing import Union, get_origin
 
 from cirq import Circuit
@@ -22,7 +23,7 @@ def test_import():
     """
     import mitiq
 
-    if get_origin(mitiq.QPROGRAM) is Union:
+    if get_origin(mitiq.QPROGRAM) in (Union, UnionType):
         assert (
             1  # cirq.Circuit is always supported.
             <= len(mitiq.QPROGRAM.__args__)  # All installed types.

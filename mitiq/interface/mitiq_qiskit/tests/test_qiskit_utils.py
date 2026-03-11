@@ -1,4 +1,4 @@
-# Copyright (C) Unitary Fund
+# Copyright (C) Unitary Foundation
 #
 # This source code is licensed under the GPL license (v3) found in the
 # LICENSE file in the root directory of this source tree.
@@ -8,7 +8,7 @@
 import numpy as np
 import pytest
 from qiskit import QuantumCircuit
-from qiskit_ibm_runtime.fake_provider import FakeLima
+from qiskit_ibm_runtime.fake_provider import FakeLimaV2
 
 from mitiq import MeasurementResult, Observable, PauliString
 from mitiq.interface.mitiq_qiskit.qiskit_utils import (
@@ -217,7 +217,7 @@ def test_sample_bitstrings_with_backend():
     two_qubit_circ.cx(0, 1)
     measurement_result = sample_bitstrings(
         circuit=two_qubit_circ,
-        backend=FakeLima(),
+        backend=FakeLimaV2(),
         shots=5,
         measure_all=True,
     )
@@ -276,7 +276,7 @@ def test_compute_expectation_value_on_noisy_backend_with_qiskit_backend():
     expval = compute_expectation_value_on_noisy_backend(
         qiskit_circuit,
         obs,
-        backend=FakeLima(),
+        backend=FakeLimaV2(),
     )
 
     assert isinstance(expval, complex)

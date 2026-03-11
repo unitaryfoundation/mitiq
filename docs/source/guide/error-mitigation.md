@@ -124,7 +124,7 @@ mitigation\" or \"error mitigation\" has only recently coalesced (from
 \~2015 onward), while even in the previous decade similar concepts or
 techniques were scattered across these and other fields. Suggestions for
 additional references are
-[welcome](https://github.com/unitaryfund/mitiq/issues/new/choose).
+[welcome](https://github.com/unitaryfoundation/mitiq/issues/new/choose).
 
 ### Quantum error correction
 
@@ -230,7 +230,7 @@ A list of research articles academic resources on error mitigation:
       {cite}`Endo_2018_PRX`
     - Experiment on trapped ions, S. Zhang *et al.*, *Nature
       Comm.* 2020 {cite}`Zhang_2020_NatComm`
-    - Experiment with gate set tomography on a supeconducting
+    - Experiment with gate set tomography on a superconducting
       circuit device, J. Sun *et al.*, 2019 arXiv
       {cite}`Sun_2021_PRAppl`
 
@@ -310,7 +310,7 @@ This is just a selection of open-source projects related to quantum
 error mitigation.
 A more comprehensive collection of quantum computing related software can be found
 [here](https://github.com/qosf/awesome-quantum-software) and on [Unitary
-Fund](https://unitary.fund/grants.html)\'s list of supported projects.
+Fund](https://unitary.foundation/grants.html)\'s list of supported projects.
 
 ### Resources on noise in quantum computers
 

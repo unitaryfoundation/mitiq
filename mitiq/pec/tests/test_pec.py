@@ -1,13 +1,12 @@
-# Copyright (C) Unitary Fund
+# Copyright (C) Unitary Foundation
 #
 # This source code is licensed under the GPL license (v3) found in the
 # LICENSE file in the root directory of this source tree.
 
 """Unit tests for PEC."""
 
-import warnings
 from functools import partial
-from typing import List, Optional
+from unittest.mock import patch
 
 import cirq
 import numpy as np
@@ -21,10 +20,13 @@ from mitiq.interface.mitiq_cirq import compute_density_matrix
 from mitiq.pec import (
     NoisyOperation,
     OperationRepresentation,
+    combine_results,
+    construct_circuits,
     execute_with_pec,
     mitigate_executor,
     pec_decorator,
 )
+from mitiq.pec.pec import LargeSampleWarning
 from mitiq.pec.representations import (
     represent_operations_in_circuit_with_local_depolarizing_noise,
 )
@@ -33,8 +35,8 @@ from mitiq.pec.representations import (
 # Noisy representations of Pauli and CNOT operations for testing.
 def get_pauli_and_cnot_representations(
     base_noise: float,
-    qubits: Optional[List[cirq.Qid]] = None,
-) -> List[OperationRepresentation]:
+    qubits: list[cirq.Qid] | None = None,
+) -> list[OperationRepresentation]:
     if qubits is None:
         qreg = cirq.LineQubit.range(2)
     else:
@@ -74,7 +76,7 @@ def serial_executor(circuit: QPROGRAM, noise: float = BASE_NOISE) -> float:
     )[0, 0].real
 
 
-def batched_executor(circuits) -> List[float]:
+def batched_executor(circuits) -> list[float]:
     return [serial_executor(circuit) for circuit in circuits]
 
 
@@ -82,7 +84,9 @@ def noiseless_serial_executor(circuit: QPROGRAM) -> float:
     return serial_executor(circuit, noise=0.0)
 
 
-def fake_executor(circuit: cirq.Circuit, random_state: np.random.RandomState):
+def fake_executor(
+    circuit: cirq.Circuit, random_state: np.random.RandomState
+) -> float:
     """A fake executor which just samples from a normal distribution."""
     return random_state.randn()
 
@@ -171,7 +175,7 @@ def test_execute_with_pec_cirq_noiseless_decomposition(circuit):
 
 
 @pytest.mark.parametrize("nqubits", [1, 2])
-def test_pyquil_noiseless_decomposition_multiqubit(nqubits):
+def test_pyquil_noiseless_decomposition_multiqubit(nqubits: int):
     circuit = pyquil.Program(pyquil.gates.H(q) for q in range(nqubits))
 
     # Decompose H(q) for each qubit q into Paulis.
@@ -200,7 +204,7 @@ def test_pyquil_noiseless_decomposition_multiqubit(nqubits):
 
 
 @pytest.mark.parametrize("nqubits", [1, 2])
-def test_qiskit_noiseless_decomposition_multiqubit(nqubits):
+def test_qiskit_noiseless_decomposition_multiqubit(nqubits: int):
     qreg = [qiskit.QuantumRegister(1) for _ in range(nqubits)]
     circuit = qiskit.QuantumCircuit(*qreg)
     for q in qreg:
@@ -252,14 +256,12 @@ def test_execute_with_pec_mitigates_noise(circuit, executor, circuit_type):
     true_noiseless_value = 1.0
     unmitigated = serial_executor(circuit)
 
-    if circuit_type in ["qiskit", "pennylane", "qibo"]:
+    if circuit_type in ["qiskit", "pennylane", "qibo", "openqasm"]:
         # Note this is an important subtlety necessary because of conversions.
         reps = get_pauli_and_cnot_representations(
             base_noise=BASE_NOISE,
             qubits=[cirq.NamedQubit(name) for name in ("q_0", "q_1")],
         )
-        # TODO: PEC with Qiskit is slow.
-        #  See https://github.com/unitaryfund/mitiq/issues/507.
         circuit, _ = convert_to_mitiq(circuit)
     else:
         reps = pauli_representations
@@ -325,7 +327,7 @@ def test_execute_with_pec_partial_representations():
 
 @pytest.mark.parametrize("circuit", [oneq_circ, twoq_circ])
 @pytest.mark.parametrize("seed", (2, 3))
-def test_execute_with_pec_with_different_samples(circuit, seed):
+def test_execute_with_pec_with_different_samples(circuit, seed: int):
     """Tests that, on average, the error decreases as the number of samples is
     increased.
     """
@@ -366,63 +368,60 @@ def test_execute_with_pec_error_scaling(num_samples: int):
 
 
 @pytest.mark.parametrize("precision", [0.2, 0.1])
-def test_precision_option_in_execute_with_pec(precision: float):
+def test_precision_option_used_in_num_samples(precision: float):
     """Tests that the 'precision' argument is used to deduce num_samples."""
-    # For a noiseless circuit we expect num_samples = 1/precision^2:
-    _, pec_data = execute_with_pec(
+    circuits, _, _ = construct_circuits(
         oneq_circ,
-        partial(fake_executor, random_state=np.random.RandomState(0)),
         representations=pauli_representations,
         precision=precision,
-        force_run_all=True,
         full_output=True,
         random_state=1,
     )
-    # The error should scale as precision
-    assert np.isclose(pec_data["pec_error"] / precision, 1.0, atol=0.15)
+    num_circuits = len(circuits)
+    # we expect num_samples = 1/precision^2:
+    assert np.isclose(precision**2 * num_circuits, 1, atol=0.2)
 
-    # Check precision is ignored when num_samples is given.
-    num_samples = 1
-    _, pec_data = execute_with_pec(
+
+def test_precision_ignored_when_num_samples_present():
+    """Check precision is ignored when num_samples is given."""
+    num_expected_circuits = 123
+    circuits, _, _ = construct_circuits(
         oneq_circ,
-        partial(fake_executor, random_state=np.random.RandomState(0)),
         representations=pauli_representations,
-        precision=precision,
-        num_samples=num_samples,
-        force_run_all=False,
+        precision=0.1,
+        num_samples=num_expected_circuits,
         full_output=True,
+        random_state=1,
     )
-    assert pec_data["num_samples"] == num_samples
+    num_circuits = len(circuits)
+    assert num_circuits == num_expected_circuits
 
 
 @pytest.mark.parametrize("bad_value", (0, -1, 2))
-def test_bad_precision_argument(bad_value: float):
+def test_bad_precision_argument(bad_value: int):
     """Tests that if 'precision' is not within (0, 1] an error is raised."""
     with pytest.raises(ValueError, match="The value of 'precision' should"):
-        execute_with_pec(
+        construct_circuits(
             oneq_circ,
-            serial_executor,
             representations=pauli_representations,
             precision=bad_value,
         )
 
 
-def test_large_sample_size_warning():
-    """Tests whether a warning is raised when PEC sample size
-    is greater than 10 ** 5.
-    """
-    warnings.simplefilter("error")
-    with pytest.raises(
-        Warning,
-        match="The number of PEC samples is very large.",
-    ):
-        execute_with_pec(
+@patch("mitiq.pec.pec.sample_circuit")
+def test_large_sample_size_warning(mock_sample_circuit):
+    """Ensure a warning is raised when sample size is greater than 100k."""
+
+    mock_sample_circuit.return_value = ([], [], 0.911)
+
+    with pytest.warns(LargeSampleWarning):
+        construct_circuits(
             oneq_circ,
-            partial(fake_executor, random_state=np.random.RandomState(0)),
-            representations=pauli_representations,
-            num_samples=100001,
-            force_run_all=False,
+            representations=[],
+            num_samples=100_001,
         )
+
+    assert mock_sample_circuit.call_count == 2
 
 
 def test_pec_data_with_full_output():
@@ -633,7 +632,7 @@ def test_doc_is_preserved():
 
 
 @pytest.mark.parametrize("circuit_type", SUPPORTED_PROGRAM_TYPES.keys())
-def test_executed_circuits_have_the_expected_type(circuit_type):
+def test_executed_circuits_have_the_expected_type(circuit_type: str):
     circuit = convert_from_mitiq(oneq_circ, circuit_type)
     circuit_type = type(circuit)
 
@@ -649,3 +648,12 @@ def test_executed_circuits_have_the_expected_type(circuit_type):
         num_samples=1,
     )
     assert np.isclose(mitigated, 0.0)
+
+
+def test_combining_results():
+    """simple arithmetic test"""
+    results = [0.1, 0.2, 0.3]
+    norm = 23
+    signs = [1, -1, 1]
+    pec_estimate = combine_results(results, norm, signs)
+    assert np.isclose(pec_estimate, 1.53, atol=0.01)

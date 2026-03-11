@@ -1,4 +1,4 @@
-# Copyright (C) Unitary Fund
+# Copyright (C) Unitary Foundation
 #
 # This source code is licensed under the GPL license (v3) found in the
 # LICENSE file in the root directory of this source tree.
@@ -32,7 +32,7 @@ all_gates.append(cirq.measure)
         nx.Graph({0: (99,), 10: (20,), 5: (6,)}),
     ],
 )
-def test_random_paulis(graph):
+def test_random_paulis(graph: nx.Graph):
     circuit = mirror_circuits.random_paulis(
         connectivity_graph=graph, random_state=random.RandomState()
     )
@@ -102,8 +102,9 @@ def test_random_single_cliffords():
             graph, random_state=random.RandomState()
         )
         assert isinstance(circuit, cirq.Circuit)
-        assert set(circuit.all_qubits()).issubset
-        ([cirq.LineQubit(qubit) for qubit in qubits[x]])
+        assert set(circuit.all_qubits()).issubset(
+            [cirq.LineQubit(qubit) for qubit in qubits[x]]
+        )
         assert set(op.gate for op in circuit.all_operations()).issubset(
             single_cliffords
         )
@@ -117,7 +118,9 @@ def test_random_single_cliffords():
         (24, 0.5, nx.complete_graph(5)),
     ],
 )
-def test_generate_mirror_circuit(depth_twoqprob_graph):
+def test_generate_mirror_circuit(
+    depth_twoqprob_graph: tuple[int, float, nx.Graph],
+):
     depth, xi, connectivity_graph = depth_twoqprob_graph
     n = connectivity_graph.number_of_nodes()
     circ, _ = mirror_circuits.generate_mirror_circuit(
@@ -138,7 +141,7 @@ def test_generate_mirror_circuit(depth_twoqprob_graph):
 
 
 @pytest.mark.parametrize("seed", (0, 3))
-def test_mirror_circuit_seeding(seed):
+def test_mirror_circuit_seeding(seed: int):
     nlayers = 5
     two_qubit_gate_prob = 0.4
     connectivity_graph = nx.complete_graph(5)
@@ -158,7 +161,7 @@ def test_mirror_circuit_seeding(seed):
 
 
 @pytest.mark.parametrize("return_type", SUPPORTED_PROGRAM_TYPES.keys())
-def test_mirror_circuits_conversions(return_type):
+def test_mirror_circuits_conversions(return_type: str):
     nlayers = 5
     two_qubit_gate_prob = 0.4
     connectivity_graph = nx.complete_graph(5)
@@ -174,7 +177,7 @@ def test_mirror_circuits_conversions(return_type):
 @pytest.mark.parametrize(
     "twoq_name_and_gate", [("CNOT", cirq.CNOT), ("CZ", cirq.CZ)]
 )
-def test_two_qubit_gate(twoq_name_and_gate):
+def test_two_qubit_gate(twoq_name_and_gate: tuple[str, cirq.Gate]):
     twoq_name, twoq_gate = twoq_name_and_gate
     circuit, _ = mirror_circuits.generate_mirror_circuit(
         nlayers=2,

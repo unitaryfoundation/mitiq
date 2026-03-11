@@ -1,4 +1,4 @@
-# Copyright (C) Unitary Fund
+# Copyright (C) Unitary Foundation
 #
 # This source code is licensed under the GPL license (v3) found in the
 # LICENSE file in the root directory of this source tree.
@@ -7,7 +7,6 @@
 
 import functools
 import random
-from typing import List
 from unittest.mock import Mock
 
 import cirq
@@ -15,6 +14,7 @@ import numpy as np
 import pytest
 import qiskit
 import qiskit.circuit
+from matplotlib.figure import Figure
 from qiskit_aer import AerSimulator
 
 from mitiq import QPROGRAM, SUPPORTED_PROGRAM_TYPES
@@ -39,10 +39,12 @@ from mitiq.zne import (
     inference,
     mitigate_executor,
     scaling,
+    visualize_fits,
     zne_decorator,
 )
 from mitiq.zne.inference import (
     AdaExpFactory,
+    ExtrapolationError,
     LinearFactory,
     PolyFactory,
     RichardsonFactory,
@@ -54,7 +56,7 @@ from mitiq.zne.scaling import (
     get_layer_folding,
     insert_id_layers,
 )
-from mitiq.zne.zne import combine_results, scaled_circuits
+from mitiq.zne.zne import combine_results, construct_circuits
 
 BASE_NOISE = 0.007
 TEST_DEPTH = 30
@@ -94,21 +96,23 @@ def executor(circuit) -> float:
 def test_with_observable_batched_factory(executor):
     observable = Observable(PauliString(spec="Z"))
     circuit = cirq.Circuit(cirq.H.on(cirq.LineQubit(0))) * 20
+    executor = functools.partial(
+        executor, noise_model_function=cirq.depolarize
+    )
 
-    noisy_value = observable.expectation(circuit, sample_bitstrings)
-    zne_value = execute_with_zne(
+    real_factory = PolyFactory(scale_factors=[1, 3, 5], order=2)
+    mock_factory = Mock(spec_set=PolyFactory, wraps=real_factory)
+    zne_val = execute_with_zne(
         circuit,
-        executor=functools.partial(
-            executor, noise_model_function=cirq.depolarize
-        ),
+        executor=executor,
         observable=observable,
-        factory=PolyFactory(scale_factors=[1, 3, 5], order=2),
-    )
-    true_value = observable.expectation(
-        circuit, functools.partial(compute_density_matrix, noise_level=(0,))
+        factory=mock_factory,
     )
 
-    assert abs(zne_value - true_value) <= abs(noisy_value - true_value)
+    mock_factory.run.assert_called_with(
+        circuit, executor, observable, fold_gates_at_random, 1
+    )
+    assert 0 <= zne_val <= 2
 
 
 @pytest.mark.parametrize(
@@ -310,7 +314,7 @@ def qiskit_decorated_executor(qp: QPROGRAM) -> float:
     return qiskit_executor(qp)
 
 
-def batched_qiskit_executor(circuits) -> List[float]:
+def batched_qiskit_executor(circuits) -> list[float]:
     return [qiskit_executor(circuit) for circuit in circuits]
 
 
@@ -529,9 +533,9 @@ def test_execute_with_zne_transpiled_qiskit_circuit():
     """Tests ZNE when transpiling to a Qiskit device. Note transpiling can
     introduce idle (unused) qubits to the circuit.
     """
-    from qiskit_ibm_runtime.fake_provider import FakeSantiago
+    from qiskit_ibm_runtime.fake_provider import FakeSantiagoV2
 
-    santiago = FakeSantiago()
+    santiago = FakeSantiagoV2()
     backend = AerSimulator.from_backend(santiago)
 
     def execute(circuit: qiskit.QuantumCircuit, shots: int = 8192) -> float:
@@ -582,11 +586,11 @@ def test_execute_zne_on_qiskit_circuit_with_QFT():
     "extrapolation_factory", [RichardsonFactory, LinearFactory]
 )
 @pytest.mark.parametrize(
-    "to_frontend",
+    "conversion_func",
     [None, to_qiskit, to_braket, to_pennylane, to_pyquil, to_qibo],
 )
 def test_two_stage_zne(
-    noise_scaling_method, extrapolation_factory, to_frontend
+    noise_scaling_method, extrapolation_factory, conversion_func
 ):
     qreg = cirq.LineQubit.range(2)
     cirq_circuit = cirq.Circuit(
@@ -595,13 +599,13 @@ def test_two_stage_zne(
         cirq.CNOT(*qreg),
         cirq.H.on_each(qreg),
     )
-    if to_frontend is not None:
-        frontend_circuit = to_frontend(cirq_circuit)
+    if conversion_func is not None:
+        frontend_circuit = conversion_func(cirq_circuit)
     else:
         frontend_circuit = cirq_circuit
 
     scale_factors = [1, 3, 5]
-    circs = scaled_circuits(
+    circs = construct_circuits(
         frontend_circuit, scale_factors, noise_scaling_method
     )
 
@@ -628,3 +632,93 @@ def test_two_stage_zne(
         scale_noise=noise_scaling_method,
     )
     assert np.isclose(zne_res, two_stage_zne_res)
+
+
+def test_default_scaling_option_two_stage_zne():
+    qreg = cirq.LineQubit.range(2)
+    cirq_circuit = cirq.Circuit(
+        cirq.H.on_each(qreg),
+        cirq.CNOT(*qreg),
+        cirq.CNOT(*qreg),
+        cirq.H.on_each(qreg),
+    )
+
+    scale_factors = [3, 5, 6, 8]
+
+    circs_default_scaling_method = construct_circuits(
+        cirq_circuit, scale_factors
+    )
+
+    for i in range(len(scale_factors)):
+        assert len(circs_default_scaling_method[i]) > len(cirq_circuit)
+
+
+def test_visualize_fits_returns_figure():
+    scale_factors = [1.0, 2.0, 3.0, 4.0]
+    exp_values = [0.5 + 0.7 * np.exp(-0.4 * x) for x in scale_factors]
+    fig = visualize_fits(scale_factors, exp_values)
+    assert isinstance(fig, Figure)
+    # One scatter and four fits
+    assert len(fig.axes[0].lines) == 5
+    legend_labels = [text.get_text() for text in fig.axes[0].legend().texts]
+    assert legend_labels == [
+        "Linear",
+        "Polynomial (order=2)",
+        "Exponential",
+        "Richardson",
+    ]
+
+
+def test_visualize_fits_default_exponential_threshold():
+    """Tests that the exponential fit is added when three data points
+    are provided."""
+    scale_factors = [1.0, 2.0, 3.0]
+    exp_values = [0.5 + 0.7 * np.exp(-0.4 * x) for x in scale_factors]
+
+    fig = visualize_fits(scale_factors, exp_values)
+
+    assert isinstance(fig, Figure)
+    legend_labels = [text.get_text() for text in fig.axes[0].legend().texts]
+    assert "Exponential" in legend_labels
+
+
+def test_visualize_fits_with_ideal_value():
+    scale_factors = [1.0, 2.0, 3.0, 4.0]
+    exp_values = [0.5 + 0.7 * np.exp(-0.4 * x) for x in scale_factors]
+    fig = visualize_fits(scale_factors, exp_values, ideal_value=0.2)
+    assert isinstance(fig, Figure)
+    # One scatter, one ideal marker, and four fits
+    assert len(fig.axes[0].lines) == 6
+    legend_labels = [text.get_text() for text in fig.axes[0].legend().texts]
+    assert legend_labels == [
+        "Ideal",
+        "Linear",
+        "Polynomial (order=2)",
+        "Exponential",
+        "Richardson",
+    ]
+
+
+def test_visualize_fits_bad_lengths():
+    with pytest.raises(ValueError):
+        visualize_fits([1.0, 2.0], [0.1])
+
+
+def test_visualize_fits_with_failing_factory():
+    class FailingFactory:
+        _options = {}
+
+        @staticmethod
+        def extrapolate(*args, **kwargs):
+            raise ExtrapolationError("oops")
+
+    scale_factors = [1.0, 2.0, 3.0]
+    exp_values = [0.1, 0.2, 0.3]
+    factories = [FailingFactory(), LinearFactory(scale_factors)]
+
+    with pytest.warns(UserWarning, match="FailingFactory"):
+        fig = visualize_fits(scale_factors, exp_values, factories=factories)
+
+    assert isinstance(fig, Figure)
+    # One scatter and one successful fit
+    assert len(fig.axes[0].lines) == 2

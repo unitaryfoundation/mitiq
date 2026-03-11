@@ -1,10 +1,11 @@
-# Copyright (C) Unitary Fund
+# Copyright (C) Unitary Foundation
 #
 # This source code is licensed under the GPL license (v3) found in the
 # LICENSE file in the root directory of this source tree.
 
+from collections.abc import Sequence
 from functools import reduce
-from typing import Sequence
+from typing import cast
 
 import numpy as np
 import numpy.typing as npt
@@ -124,7 +125,7 @@ def generate_tensored_inverse_confusion_matrix(
             f"{tensored_inv_cm.shape} should be {expected_shape}."
         )
 
-    return tensored_inv_cm
+    return cast(npt.NDArray[np.float64], tensored_inv_cm)
 
 
 def closest_positive_distribution(
@@ -144,8 +145,8 @@ def closest_positive_distribution(
     init_guess = quasi_probabilities.clip(min=0)
     init_guess /= np.sum(init_guess)
 
-    def distance(probabilities: npt.NDArray[np.float64]) -> np.float64:
-        return np.linalg.norm(probabilities - quasi_probabilities)
+    def distance(probabilities: npt.NDArray[np.float64]) -> float:
+        return float(np.linalg.norm(probabilities - quasi_probabilities))
 
     num_vars = len(init_guess)
     bounds = scipy.optimize.Bounds(np.zeros(num_vars), np.ones(num_vars))

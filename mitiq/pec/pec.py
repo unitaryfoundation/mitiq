@@ -1,4 +1,4 @@
-# Copyright (C) Unitary Fund
+# Copyright (C) Unitary Foundation
 #
 # This source code is licensed under the GPL license (v3) found in the
 # LICENSE file in the root directory of this source tree.
@@ -6,18 +6,9 @@
 """High-level probabilistic error cancellation tools."""
 
 import warnings
+from collections.abc import Callable, Iterable, Sequence
 from functools import wraps
-from typing import (
-    Any,
-    Callable,
-    Dict,
-    List,
-    Optional,
-    Sequence,
-    Tuple,
-    Union,
-    cast,
-)
+from typing import Any, cast
 
 import numpy as np
 
@@ -37,18 +28,108 @@ _LARGE_SAMPLE_WARN = (
 )
 
 
+def construct_circuits(
+    circuit: QPROGRAM,
+    representations: Sequence[OperationRepresentation],
+    precision: float = 0.03,
+    num_samples: int | None = None,
+    random_state: int | np.random.RandomState | None = None,
+    full_output: bool = False,
+) -> list[QPROGRAM] | tuple[list[QPROGRAM], list[int], float]:
+    """Generates a list of sampled circuits based on the given
+    quasi-probability representations.
+
+    Args:
+        circuit: The quantum circuit to be sampled.
+        representations: The quasi-probability representations of the circuit
+            operations.
+        precision: The desired precision for the sampling process.
+            Default is 0.03.
+        num_samples: The number of samples to generate. If None, the number of
+            samples is deduced based on the precision. Default is None.
+        random_state: The random state or seed for reproducibility.
+        full_output: If True, returns the signs and the norm along with the
+            sampled circuits. Default is False.
+
+    Returns:
+        A list of sampled circuits. If ``full_output`` is True, also returns a
+        list of signs, the norm.
+
+    Raises:
+        ValueError: If the precision is not within the interval (0, 1].
+    """
+    if isinstance(random_state, int):
+        random_state = np.random.RandomState(random_state)
+
+    if not (0 < precision <= 1):
+        raise ValueError(
+            "The value of 'precision' should be within the interval (0, 1],"
+            f" but precision is {precision}."
+        )
+
+    # Get the 1-norm of the circuit quasi-probability representation
+    _, _, norm = sample_circuit(
+        circuit,
+        representations,
+        num_samples=1,
+    )
+
+    # Deduce the number of samples (if not given by the user)
+    if num_samples is None:
+        num_samples = int((norm / precision) ** 2)
+
+    if num_samples > 10**5:
+        warnings.warn(_LARGE_SAMPLE_WARN, LargeSampleWarning)
+
+    sampled_circuits, signs, _ = sample_circuit(
+        circuit,
+        representations,
+        random_state=random_state,
+        num_samples=num_samples,
+    )
+
+    if full_output:
+        return sampled_circuits, signs, norm
+    return sampled_circuits
+
+
+def combine_results(
+    results: Iterable[float], norm: float, signs: Iterable[int]
+) -> float:
+    """Combine expectation values coming from probabilistically sampled
+    circuits.
+
+    Warning:
+        The ``results`` must be in the same order as the circuits were
+        generated.
+
+    Args:
+        results: Results as obtained from running circuits.
+        norm: The one-norm of the circuit representation.
+        signs: The signs corresponding to the positivity of the sampled
+            circuits.
+
+    Returns:
+        The PEC estimate of the expectation value.
+    """
+    unbiased_estimators = [norm * s * val for s, val in zip(signs, results)]
+
+    pec_value = cast(float, np.average(unbiased_estimators))
+    return pec_value
+
+
 def execute_with_pec(
     circuit: QPROGRAM,
-    executor: Union[Executor, Callable[[QPROGRAM], QuantumResult]],
-    observable: Optional[Observable] = None,
+    executor: Executor | Callable[[QPROGRAM], QuantumResult],
+    observable: Observable | None = None,
     *,
     representations: Sequence[OperationRepresentation],
     precision: float = 0.03,
-    num_samples: Optional[int] = None,
+    num_samples: int | None = None,
     force_run_all: bool = True,
-    random_state: Optional[Union[int, np.random.RandomState]] = None,
+    random_state: int | np.random.RandomState | None = None,
     full_output: bool = False,
-) -> Union[float, Tuple[float, Dict[str, Any]]]:
+) -> float | tuple[float, dict[str, Any]]:
     r"""Estimates the error-mitigated expectation value associated to the
     input circuit, via the application of probabilistic error cancellation
     (PEC). :cite:`Temme_2017_PRL` :cite:`Endo_2018_PRX`.
@@ -95,39 +176,16 @@ def execute_with_pec(
         The error is estimated as ``pec_std / sqrt(num_samples)``, where
         ``pec_std`` is the standard deviation of the PEC samples, i.e., the
         square root of the mean squared deviation of the sampled values from
-        ``pec_value``. If ``full_output`` is ``True``, only ``pec_value`` is
+        ``pec_value``. If ``full_output`` is ``False``, only ``pec_value`` is
         returned.
     """
-    if isinstance(random_state, int):
-        random_state = np.random.RandomState(random_state)
-
-    if not (0 < precision <= 1):
-        raise ValueError(
-            "The value of 'precision' should be within the interval (0, 1],"
-            f" but precision is {precision}."
-        )
-
-    # Get the 1-norm of the circuit quasi-probability representation
-    _, _, norm = sample_circuit(
+    sampled_circuits, signs, norm = construct_circuits(
         circuit,
         representations,
-        num_samples=1,
-    )
-
-    # Deduce the number of samples (if not given by the user)
-    if not isinstance(num_samples, int):
-        num_samples = int((norm / precision) ** 2)
-
-    # Issue warning for very large sample size
-    if num_samples > 10**5:
-        warnings.warn(_LARGE_SAMPLE_WARN, LargeSampleWarning)
-
-    # Sample all the circuits
-    sampled_circuits, signs, _ = sample_circuit(
-        circuit,
-        representations,
+        precision,
+        num_samples,
         random_state=random_state,
-        num_samples=num_samples,
+        full_output=True,
     )
 
     # Execute all sampled circuits
@@ -144,12 +202,13 @@ def execute_with_pec(
     if not full_output:
         return pec_value
 
+    num_circuits = len(sampled_circuits)
     # Build dictionary with additional results and data
-    pec_data: Dict[str, Any] = {
-        "num_samples": num_samples,
+    pec_data: dict[str, Any] = {
+        "num_samples": num_circuits,
         "precision": precision,
         "pec_value": pec_value,
-        "pec_error": np.std(unbiased_estimators) / np.sqrt(num_samples),
+        "pec_error": np.std(unbiased_estimators) / np.sqrt(num_circuits),
         "unbiased_estimators": unbiased_estimators,
         "measured_expectation_values": results,
         "sampled_circuits": sampled_circuits,
@@ -160,15 +219,15 @@ def execute_with_pec(
 
 def mitigate_executor(
     executor: Callable[[QPROGRAM], QuantumResult],
-    observable: Optional[Observable] = None,
+    observable: Observable | None = None,
     *,
     representations: Sequence[OperationRepresentation],
     precision: float = 0.03,
-    num_samples: Optional[int] = None,
+    num_samples: int | None = None,
     force_run_all: bool = True,
-    random_state: Optional[Union[int, np.random.RandomState]] = None,
+    random_state: int | np.random.RandomState | None = None,
     full_output: bool = False,
-) -> Callable[[QPROGRAM], Union[float, Tuple[float, Dict[str, Any]]]]:
+) -> Callable[[QPROGRAM], float | tuple[float, dict[str, Any]]]:
     """Returns a modified version of the input 'executor' which is
     error-mitigated with probabilistic error cancellation (PEC).
 
@@ -204,7 +263,7 @@ def mitigate_executor(
         @wraps(executor)
         def new_executor(
             circuit: QPROGRAM,
-        ) -> Union[float, Tuple[float, Dict[str, Any]]]:
+        ) -> float | tuple[float, dict[str, Any]]:
             return execute_with_pec(
                 circuit,
                 executor,
@@ -221,8 +280,8 @@ def mitigate_executor(
 
         @wraps(executor)
         def new_executor(
-            circuits: List[QPROGRAM],
-        ) -> List[Union[float, Tuple[float, Dict[str, Any]]]]:
+            circuits: list[QPROGRAM],
+        ) -> list[float | tuple[float, dict[str, Any]]]:
             return [
                 execute_with_pec(
                     circuit,
@@ -242,19 +301,19 @@ def mitigate_executor(
 
 
 def pec_decorator(
-    observable: Optional[Observable] = None,
+    observable: Observable | None = None,
     *,
     representations: Sequence[OperationRepresentation],
     precision: float = 0.03,
-    num_samples: Optional[int] = None,
+    num_samples: int | None = None,
     force_run_all: bool = True,
-    random_state: Optional[Union[int, np.random.RandomState]] = None,
+    random_state: int | np.random.RandomState | None = None,
     full_output: bool = False,
 ) -> Callable[
     [Callable[[QPROGRAM], QuantumResult]],
     Callable[
         [QPROGRAM],
-        Union[float, Tuple[float, Dict[str, Any]]],
+        float | tuple[float, dict[str, Any]],
     ],
 ]:
     """Decorator which adds an error-mitigation layer based on probabilistic
@@ -291,7 +350,7 @@ def pec_decorator(
 
     def decorator(
         executor: Callable[[QPROGRAM], QuantumResult],
-    ) -> Callable[[QPROGRAM], Union[float, Tuple[float, Dict[str, Any]]]]:
+    ) -> Callable[[QPROGRAM], float | tuple[float, dict[str, Any]]]:
         return mitigate_executor(
             executor,
             observable,

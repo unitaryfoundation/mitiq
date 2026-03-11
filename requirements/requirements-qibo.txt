@@ -1,1 +1,0 @@
-qibo==0.2.12 # TODO: unpin this

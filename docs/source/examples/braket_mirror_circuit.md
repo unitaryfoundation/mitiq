@@ -30,12 +30,10 @@ This requires an AWS account.
 try:
     import mitiq
 except ImportError:
-    !pip install git+https://github.com/unitaryfund/mitiq --quiet
+    !pip install git+https://github.com/unitaryfoundation/mitiq --quiet
 ```
 
 ```{code-cell} ipython3
-from typing import Tuple
-
 import matplotlib.pyplot as plt
 import networkx as nx
 import numpy as np
@@ -175,7 +173,7 @@ In this example we return the frequency of sampling the correct bitstring.
 def execute(
     circuit: Circuit,
     shots: int = 1_000,
-    s3_folder: Tuple[str, str] = ("bucket", "folder/"),
+    s3_folder: tuple[str, str] = ("bucket", "folder/"),
 ) -> float:
     if on_aws:
         # Add verbatim compiling so that ZNE can be used.

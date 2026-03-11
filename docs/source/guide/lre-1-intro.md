@@ -18,11 +18,6 @@ LRE works in two main stages: generate noise-scaled circuits via layerwise scali
 This workflow can be executed by a single call to {func}`.execute_with_lre`.
 If more control is needed over the protocol, Mitiq provides {func}`.multivariate_layer_scaling` and {func}`.multivariate_richardson_coefficients` to handle the first and second steps respectively.
 
-```{danger}
-LRE is currently compatible with quantum programs written using `cirq`.
-Work on making this technique compatible with other frontends is ongoing. 🚧
-```
-
 ## Problem Setup
 
 To demonstrate the use of LRE, we'll first define a quantum circuit, and a method of executing circuits for demonstration purposes.

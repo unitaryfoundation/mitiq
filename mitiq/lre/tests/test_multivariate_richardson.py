@@ -1,4 +1,4 @@
-# Copyright (C) Unitary Fund
+# Copyright (C) Unitary Foundation
 #
 # This source code is licensed under the GPL license (v3) found in the
 # LICENSE file in the root directory of this source tree.
@@ -9,6 +9,8 @@ import numpy as np
 import pytest
 from cirq import Circuit, LineQubit, ops
 
+from mitiq import SUPPORTED_PROGRAM_TYPES
+from mitiq.interface import convert_from_mitiq
 from mitiq.lre.inference.multivariate_richardson import (
     _full_monomial_basis_term_exponents,
     multivariate_richardson_coefficients,
@@ -79,6 +81,7 @@ def test_basis_exp_len(test_num_layers, test_degree):
         assert len(i) == test_num_layers
 
 
+@pytest.mark.parametrize("circuit_type", SUPPORTED_PROGRAM_TYPES.keys())
 @pytest.mark.parametrize(
     "test_circ, test_degree, expected_matrix",
     [
@@ -87,12 +90,12 @@ def test_basis_exp_len(test_num_layers, test_degree):
             2,
             np.array(
                 [
-                    [1.0, 1.0, 1.0, 1.0, 1.0, 1.0],
-                    [1.0, 3.0, 1.0, 9.0, 3.0, 1.0],
-                    [1.0, 1.0, 3.0, 1.0, 3.0, 9.0],
-                    [1.0, 5.0, 1.0, 25.0, 5.0, 1.0],
-                    [1.0, 3.0, 3.0, 9.0, 9.0, 9.0],
-                    [1.0, 1.0, 5.0, 1.0, 5.0, 25.0],
+                    [1, 1, 1, 1, 1, 1],
+                    [1, 3, 1, 9, 3, 1],
+                    [1, 1, 3, 1, 3, 9],
+                    [1, 5, 1, 25, 5, 1],
+                    [1, 3, 3, 9, 9, 9],
+                    [1, 1, 5, 1, 5, 25],
                 ]
             ),
         ),
@@ -101,24 +104,25 @@ def test_basis_exp_len(test_num_layers, test_degree):
             2,
             np.array(
                 [
-                    [1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0],
-                    [1.0, 3.0, 1.0, 1.0, 9.0, 3.0, 1.0, 3.0, 1.0, 1.0],
-                    [1.0, 1.0, 3.0, 1.0, 1.0, 3.0, 9.0, 1.0, 3.0, 1.0],
-                    [1.0, 1.0, 1.0, 3.0, 1.0, 1.0, 1.0, 3.0, 3.0, 9.0],
-                    [1.0, 5.0, 1.0, 1.0, 25.0, 5.0, 1.0, 5.0, 1.0, 1.0],
-                    [1.0, 3.0, 3.0, 1.0, 9.0, 9.0, 9.0, 3.0, 3.0, 1.0],
-                    [1.0, 3.0, 1.0, 3.0, 9.0, 3.0, 1.0, 9.0, 3.0, 9.0],
-                    [1.0, 1.0, 5.0, 1.0, 1.0, 5.0, 25.0, 1.0, 5.0, 1.0],
-                    [1.0, 1.0, 3.0, 3.0, 1.0, 3.0, 9.0, 3.0, 9.0, 9.0],
-                    [1.0, 1.0, 1.0, 5.0, 1.0, 1.0, 1.0, 5.0, 5.0, 25.0],
+                    [1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
+                    [1, 3, 1, 1, 9, 3, 1, 3, 1, 1],
+                    [1, 1, 3, 1, 1, 3, 9, 1, 3, 1],
+                    [1, 1, 1, 3, 1, 1, 1, 3, 3, 9],
+                    [1, 5, 1, 1, 25, 5, 1, 5, 1, 1],
+                    [1, 3, 3, 1, 9, 9, 9, 3, 3, 1],
+                    [1, 3, 1, 3, 9, 3, 1, 9, 3, 9],
+                    [1, 1, 5, 1, 1, 5, 25, 1, 5, 1],
+                    [1, 1, 3, 3, 1, 3, 9, 3, 9, 9],
+                    [1, 1, 1, 5, 1, 1, 1, 5, 5, 25],
                 ]
             ),
         ),
     ],
 )
-def test_sample_matrix(test_circ, test_degree, expected_matrix):
+def test_sample_matrix(test_circ, test_degree, expected_matrix, circuit_type):
+    converted_circuit = convert_from_mitiq(test_circ, circuit_type)
     assert np.allclose(
-        expected_matrix, sample_matrix(test_circ, test_degree, 1), atol=1e-3
+        expected_matrix, sample_matrix(converted_circuit, test_degree, 1)
     )
 
 

@@ -111,6 +111,29 @@ See Ref. {cite}`Czarnik_2021_Quantum` for more details on these methods.
    :members:
 ```
 
+### Probabilistic Error Amplification
+
+#### Probabilistic Error Amplification (High-Level Tools)
+
+```{eval-rst}
+.. automodule:: mitiq.pea.pea
+   :members:
+```
+
+#### Noise Amplification Utilities
+
+```{eval-rst}
+.. automodule:: mitiq.pea.scale_amplifications
+   :members:
+```
+
+#### Depolarizing Amplifications
+
+```{eval-rst}
+.. automodule:: mitiq.pea.amplifications.amplify_depolarizing
+   :members:
+```
+
 ### Probabilistic Error Cancellation
 
 #### Probabilistic Error Cancellation (High-Level Tools)
@@ -228,6 +251,13 @@ See Ref. {cite}`Czarnik_2021_Quantum` for more details on these methods.
 
 ```{eval-rst}
 .. automodule:: mitiq.zne.scaling.parameter
+   :members:
+```
+
+### Virtual Distillation
+
+```{eval-rst}
+.. automodule:: mitiq.vd.vd
    :members:
 ```
 
@@ -376,6 +406,13 @@ See Ref. {cite}`Czarnik_2021_Quantum` for more details on these methods.
    :members:
 ```
 
+#### Pennylane Conversions
+
+```{eval-rst}
+.. automodule:: mitiq.interface.mitiq_pennylane.conversions
+   :members:
+```
+
 #### PyQuil Conversions
 
 ```{eval-rst}
@@ -401,5 +438,12 @@ See Ref. {cite}`Czarnik_2021_Quantum` for more details on these methods.
 
 ```{eval-rst}
 .. automodule:: mitiq.interface.mitiq_qiskit.qiskit_utils
+   :members:
+```
+
+#### OpenQASM Conversions
+
+```{eval-rst}
+.. automodule:: mitiq.interface.mitiq_openqasm.conversions
    :members:
 ```

@@ -1,4 +1,4 @@
-# Copyright (C) Unitary Fund
+# Copyright (C) Unitary Foundation
 #
 # This source code is licensed under the GPL license (v3) found in the
 # LICENSE file in the root directory of this source tree.
@@ -14,4 +14,4 @@ from mitiq.ddd.insertion import (
     insert_ddd_sequences,
 )
 
-from mitiq.ddd.ddd import execute_with_ddd, mitigate_executor, ddd_decorator
+from mitiq.ddd.ddd import execute_with_ddd, mitigate_executor, ddd_decorator, construct_circuits, combine_results

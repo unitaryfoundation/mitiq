@@ -32,7 +32,6 @@ In this example, we variationally estimate the potential energy surface of the m
 
 ```{code-cell} ipython3
 from functools import partial
-from typing import List
 import matplotlib.pyplot as plt
 import numpy as np
 from scipy.optimize import brute
@@ -73,7 +72,7 @@ This results in slightly modified hamiltonians of the form:
 ```{code-cell} ipython3
 radii = [0.2 * i for i in range(1, 14)]
 
-def qubit_operator_to_pauli_sum(qubit_op) -> List:
+def qubit_operator_to_pauli_sum(qubit_op) -> list[PauliString]:
     """Converts the OpenFermion qubit operator to a list of mitiq Pauli Strings."""
     psum = []
     for ind_ops, coeff in qubit_op.terms.items():

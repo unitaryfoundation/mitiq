@@ -1,4 +1,4 @@
-# Copyright (C) Unitary Fund
+# Copyright (C) Unitary Foundation
 #
 # This source code is licensed under the GPL license (v3) found in the
 # LICENSE file in the root directory of this source tree.
@@ -7,7 +7,7 @@
 
 import warnings
 from copy import deepcopy
-from typing import Any, List, Optional, Tuple, Union
+from typing import Any
 
 import cirq
 import numpy as np
@@ -41,7 +41,7 @@ class NoisyOperation:
     def __init__(
         self,
         circuit: QPROGRAM,
-        channel_matrix: Optional[npt.NDArray[np.complex64]] = None,
+        channel_matrix: npt.NDArray[np.complex64] | None = None,
     ) -> None:
         self._native_circuit = deepcopy(circuit)
 
@@ -68,7 +68,7 @@ class NoisyOperation:
             raise ValueError(
                 f"Arg `channel_matrix` has shape {channel_matrix.shape}"
                 " but the expected shape is"
-                f" {dimension ** 2, dimension ** 2}."
+                f" {dimension**2, dimension**2}."
             )
         self._channel_matrix = deepcopy(channel_matrix)
 
@@ -83,7 +83,7 @@ class NoisyOperation:
         return self._native_circuit
 
     @property
-    def qubits(self) -> Tuple[cirq.Qid, ...]:
+    def qubits(self) -> tuple[cirq.Qid, ...]:
         return tuple(self._circuit.all_qubits())
 
     @property
@@ -152,8 +152,8 @@ class OperationRepresentation:
     def __init__(
         self,
         ideal: QPROGRAM,
-        noisy_operations: List[NoisyOperation],
-        coeffs: List[float],
+        noisy_operations: list[NoisyOperation],
+        coeffs: list[float],
         is_qubit_dependent: bool = True,
     ) -> None:
         if not all(isinstance(o, NoisyOperation) for o in noisy_operations):
@@ -197,15 +197,15 @@ class OperationRepresentation:
         return self._ideal
 
     @property
-    def basis_expansion(self) -> List[Tuple[float, NoisyOperation]]:
+    def basis_expansion(self) -> list[tuple[float, NoisyOperation]]:
         return [(c, o) for c, o in zip(self._coeffs, self._noisy_operations)]
 
     @property
-    def noisy_operations(self) -> List[NoisyOperation]:
+    def noisy_operations(self) -> list[NoisyOperation]:
         return self._noisy_operations
 
     @property
-    def coeffs(self) -> List[float]:
+    def coeffs(self) -> list[float]:
         """Returns the coefficients of the quasi-probability distribution."""
         return self._coeffs
 
@@ -215,15 +215,15 @@ class OperationRepresentation:
         return self._norm
 
     @property
-    def distribution(self) -> List[float]:
+    def distribution(self) -> list[float]:
         """Returns the probability distribution obtained from taking
         the absolute value and normalizing the quasi-probability distribution.
         """
         return self._distribution
 
     def sample(
-        self, random_state: Optional[Union[int, np.random.RandomState]] = None
-    ) -> Tuple[NoisyOperation, int, float]:
+        self, random_state: int | np.random.RandomState | None = None
+    ) -> tuple[NoisyOperation, int, float]:
         """Returns a randomly sampled NoisyOperation from the basis expansion.
 
         Args:

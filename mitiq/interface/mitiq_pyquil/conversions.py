@@ -1,4 +1,4 @@
-# Copyright (C) Unitary Fund
+# Copyright (C) Unitary Foundation
 #
 # This source code is licensed under the GPL license (v3) found in the
 # LICENSE file in the root directory of this source tree.
@@ -7,10 +7,10 @@
 pyQuil's circuit representation (Quil programs).
 """
 
-from cirq import Circuit, LineQubit
-from cirq_rigetti import circuit_from_quil
-from cirq_rigetti.quil_output import QuilOutput
+from cirq import Circuit
 from pyquil import Program
+from qbraid.transpiler.conversions.cirq import cirq_to_pyquil
+from qbraid.transpiler.conversions.pyquil import pyquil_to_cirq
 
 QuilType = str
 
@@ -24,17 +24,7 @@ def to_quil(circuit: Circuit) -> QuilType:
     Returns:
         QuilType: Quil string equivalent to the input Mitiq circuit.
     """
-    max_qubit = max(circuit.all_qubits())
-    # if we are using LineQubits, keep the qubit labeling the same
-    if isinstance(max_qubit, LineQubit):
-        qubit_range = max_qubit.x + 1
-        return str(
-            QuilOutput(circuit.all_operations(), LineQubit.range(qubit_range))
-        )
-    # otherwise, use the default ordering (starting from zero)
-    return str(
-        QuilOutput(circuit.all_operations(), sorted(circuit.all_qubits()))
-    )
+    return cirq_to_pyquil(circuit).out()
 
 
 def to_pyquil(circuit: Circuit) -> Program:
@@ -46,7 +36,7 @@ def to_pyquil(circuit: Circuit) -> Program:
     Returns:
         pyquil.Program object equivalent to the input Mitiq circuit.
     """
-    return Program(to_quil(circuit))
+    return cirq_to_pyquil(circuit)
 
 
 def from_pyquil(program: Program) -> Circuit:
@@ -58,7 +48,7 @@ def from_pyquil(program: Program) -> Circuit:
     Returns:
         Mitiq circuit representation equivalent to the input pyQuil Program.
     """
-    return from_quil(program.out())
+    return pyquil_to_cirq(program)
 
 
 def from_quil(quil: QuilType) -> Circuit:
@@ -70,4 +60,4 @@ def from_quil(quil: QuilType) -> Circuit:
     Returns:
         Mitiq circuit representation equivalent to the input Quil string.
     """
-    return circuit_from_quil(quil)
+    return pyquil_to_cirq(Program(quil))

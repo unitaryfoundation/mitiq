@@ -307,4 +307,4 @@ One alternative noise scaling method for logical qubits is scaling the code dist
 
 Modeling the noise as in [](logical-err-equation), assuming the computation is operating in the fault tolerant regime, we see that logical error rate decreases as code distance increases.
 We can therefore scale the noise level (here the logical error rate) by scaling the code distance and extrapolate back to the zero noise limit, obtaining an error-mitigated expectation value with a reduced effective logical error rate {cite}`Wahl_2023_arXiv_ds_zne`.
-The DS-ZNE workflow implementation is contained in notebooks in the [`ds-zne`](https://github.com/unitaryfund/research/tree/main/ds_zne) folder of the [`unitaryfund/research`](https://github.com/unitaryfund/research) repository.
+The DS-ZNE workflow implementation is contained in notebooks in the [`ds-zne`](https://github.com/unitaryfoundation/research/tree/main/ds_zne) folder of the [`unitaryfoundation/research`](https://github.com/unitaryfoundation/research) repository.

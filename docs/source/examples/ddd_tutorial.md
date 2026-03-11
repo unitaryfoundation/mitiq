@@ -27,7 +27,6 @@ for the rest of this tutorial.
 
 ```{code-cell} ipython3
 import functools
-from typing import List, Tuple
 
 # Plotting imports.
 import matplotlib.pyplot as plt
@@ -101,7 +100,7 @@ We will use a subgraph of the device, and our first step is picking a subgraph w
 Now that we have the device graph, we can generate a mirror circuit and the bitstring it should sample as follows.
 
 ```{code-cell} ipython3
-def get_circuit(depth: int, seed: int) -> Tuple[cirq.Circuit, List[int]]:
+def get_circuit(depth: int, seed: int) -> tuple[cirq.Circuit, list[int]]:
     circuit, correct_bitstring = benchmarks.generate_mirror_circuit(
         nlayers=depth,
         two_qubit_gate_prob=1.0,
@@ -126,7 +125,7 @@ This corresponds to a dephasing noise which is strongly time-correlated and, the
 def execute(
     circuit: cirq.Circuit,
     shots: int,
-    correct_bitstring: List[int],
+    correct_bitstring: list[int],
     is_noisy: bool = True,
 ) -> float:
     """Executes the input circuit(s) and returns ⟨A⟩, where

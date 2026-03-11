@@ -196,7 +196,7 @@ assert depolarizing_h_rep == h_rep
 
 It is possible to define a qubit-independent {class}`.OperationRepresentation` by setting the option `is_qubit_dependent` to `False`.
 
-In this case, a signle {class}`.OperationRepresentation` representing a gate acting on some arbitrary qubits can be used to mitigate
+In this case, a single {class}`.OperationRepresentation` representing a gate acting on some arbitrary qubits can be used to mitigate
 the same gate even if acting on different qubits.
 
 ```{code-cell} ipython3

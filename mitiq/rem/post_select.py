@@ -1,9 +1,9 @@
-# Copyright (C) Unitary Fund
+# Copyright (C) Unitary Foundation
 #
 # This source code is licensed under the GPL license (v3) found in the
 # LICENSE file in the root directory of this source tree.
 
-from typing import Callable
+from collections.abc import Callable
 
 from mitiq import Bitstring, MeasurementResult
 
@@ -24,7 +24,7 @@ def post_select(
             * ``selector = lambda bitstring: sum(bitstring) <= k``
               - Select all bitstrings of Hamming weight at most ``k``.
             * ``selector = lambda bitstring: bitstring[0] == 1``
-              - Select all bitstrings such that the the first bit is 1.
+              - Select all bitstrings such that the first bit is 1.
 
         inverted: Invert the selector predicate so that bitstrings which obey
             ``selector(bitstring) == False`` are selected and returned.

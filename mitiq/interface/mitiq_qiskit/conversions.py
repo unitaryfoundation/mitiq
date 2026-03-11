@@ -1,4 +1,4 @@
-# Copyright (C) Unitary Fund
+# Copyright (C) Unitary Foundation
 #
 # This source code is licensed under the GPL license (v3) found in the
 # LICENSE file in the root directory of this source tree.
@@ -8,7 +8,7 @@ Qiskit's circuit representation.
 """
 
 import re
-from typing import Any, List, Optional, Set, Tuple
+from typing import Any
 
 import cirq
 import numpy as np
@@ -53,8 +53,8 @@ def _remove_qasm_barriers(qasm: QASMType) -> QASMType:
 
 
 def _map_bit_index(
-    bit_index: int, new_register_sizes: List[int]
-) -> Tuple[int, int]:
+    bit_index: int, new_register_sizes: list[int]
+) -> tuple[int, int]:
     """Returns the register index and (qu)bit index in this register for the
     mapped bit_index.
 
@@ -92,7 +92,7 @@ def _map_bit_index(
 
 def _add_identity_to_idle(
     circuit: qiskit.QuantumCircuit,
-) -> Set[qiskit.circuit.Qubit]:
+) -> set[qiskit.circuit.Qubit]:
     """Adds identities to idle qubits in the circuit and returns the altered
     indices. Used to preserve idle qubits and indices in conversion.
 
@@ -110,7 +110,7 @@ def _add_identity_to_idle(
     idle_qubits = set()
     # Get used qubits
     for op in circuit.data:
-        _, qubits, _ = op
+        qubits = op.qubits
         used_qubits.update(set(qubits))
     idle_qubits = all_qubits - used_qubits
     # Modify input circuit applying I to idle qubits
@@ -122,7 +122,7 @@ def _add_identity_to_idle(
 
 def _remove_identity_from_idle(
     circuit: qiskit.QuantumCircuit,
-    idle_qubits: Set[qiskit.circuit.Qubit],
+    idle_qubits: set[qiskit.circuit.Qubit],
 ) -> None:
     """Removes identities from the circuit corresponding to the input
     idle qubits.
@@ -133,9 +133,9 @@ def _remove_identity_from_idle(
         circuit: Qiskit circuit to have identities removed
         idle_indices: Set of altered idle qubits.
     """
-    to_delete_indices: List[int] = []
+    to_delete_indices: list[int] = []
     for index, op in enumerate(circuit._data):
-        gate, qubits, cbits = op
+        gate, qubits = op.operation, op.qubits
         if gate.name == "id" and set(qubits).intersection(idle_qubits):
             to_delete_indices.append(index)
     # Traverse data from list end to preserve index
@@ -145,7 +145,7 @@ def _remove_identity_from_idle(
 
 def _measurement_order(
     circuit: qiskit.QuantumCircuit,
-) -> List[Tuple[Any, ...]]:
+) -> list[tuple[Any, ...]]:
     """Returns the left-to-right measurement order in the circuit.
 
     The "measurement order" is a list of tuples (qubit, bit) involved in
@@ -164,7 +164,8 @@ def _measurement_order(
         circuit: Qiskit circuit to get the measurement order of.
     """
     order = []
-    for gate, qubits, cbits in circuit.data:
+    for op in circuit.data:
+        gate, qubits, cbits = op.operation, op.qubits, op.clbits
         if isinstance(gate, qiskit.circuit.Measure):
             if len(qubits) != 1 or len(cbits) != 1:
                 raise ValueError(
@@ -172,7 +173,7 @@ def _measurement_order(
                     f"supported, but this measurement has {len(qubits)} "
                     f"qubit(s) and {len(cbits)} bit(s). If you think this "
                     f"should be supported and is a bug, please open an issue "
-                    f"at https://github.com/unitaryfund/mitiq."
+                    f"at https://github.com/unitaryfoundation/mitiq."
                 )
             order.append((*qubits, *cbits))
     return order
@@ -180,7 +181,7 @@ def _measurement_order(
 
 def _transform_registers(
     circuit: qiskit.QuantumCircuit,
-    new_qregs: Optional[List[qiskit.QuantumRegister]] = None,
+    new_qregs: list[qiskit.QuantumRegister] | None = None,
 ) -> qiskit.QuantumCircuit:
     """Transforms the registers in the circuit to the new registers.
 
@@ -251,11 +252,39 @@ def from_qiskit(circuit: qiskit.QuantumCircuit) -> cirq.Circuit:
     """
     try:
         mitiq_circuit = from_qasm(qasm2.dumps(circuit))
+
     except QasmException:
         # Try to decompose circuit before running
         # This is necessary for converting qiskit circuits with
         # custom packaged gates, e.g., QFT gates
-        circuit = circuit.decompose()
+        BASIS_GATES = [
+            "sx",
+            "sxdg",
+            "rx",
+            "ry",
+            "rz",
+            "id",
+            "u1",
+            "u2",
+            "u3",
+            "r",
+            "x",
+            "y",
+            "z",
+            "h",
+            "s",
+            "t",
+            "cx",
+            "cy",
+            "cz",
+            "ch",
+            "swap",
+            "cswap",
+            "ccx",
+            "sdg",
+            "tdg",
+        ]
+        circuit = qiskit.transpile(circuit, basis_gates=BASIS_GATES)
         mitiq_circuit = from_qasm(qasm2.dumps(circuit))
     return mitiq_circuit
 

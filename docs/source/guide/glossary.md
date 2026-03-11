@@ -56,6 +56,10 @@ trained with quantum circuits that resemble the circuit of interest, but which a
 : Sequences of gates are applied to slack windows (single-qubit idle windows) in a quantum circuit to reduce the coupling
 between the qubits and the environment, mitigating the effects of noise.
 
+[Layerwise Richardson Extrapolation (LRE)](lre.md)
+: Expectation values from multiple layerwise noise-scaled circuits are used to compute the error-mitigated expectation value
+through multivariate Richardson extrapolation.
+
 [Probabilistic Error Cancellation (PEC)](pec.md)
 : Ideal operations are represented as quasi-probability distributions over noisy implementable operations, and unbiased estimates of expectation values are obtained by averaging over circuits sampled according to this representation.
 

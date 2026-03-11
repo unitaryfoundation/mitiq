@@ -1,14 +1,15 @@
-# Copyright (C) Unitary Fund
+# Copyright (C) Unitary Foundation
 #
 # This source code is licensed under the GPL license (v3) found in the
 # LICENSE file in the root directory of this source tree.
 """Classical shadow estimation for quantum circuits."""
 
-from typing import Any, Callable, Dict, List, Mapping, Optional, Tuple, Union
+from collections.abc import Callable, Mapping
+from typing import Any
 
 import cirq
 import numpy as np
-from numpy.typing import NDArray
+import numpy.typing as npt
 
 import mitiq
 from mitiq import MeasurementResult
@@ -22,19 +23,19 @@ from mitiq.shadows.quantum_processing import random_pauli_measurement
 
 def pauli_twirling_calibrate(
     k_calibration: int = 1,
-    locality: Optional[int] = None,
-    zero_state_shadow_outcomes: Optional[Tuple[List[str], List[str]]] = None,
-    qubits: Optional[List[cirq.Qid]] = None,
-    executor: Optional[Callable[[cirq.Circuit], MeasurementResult]] = None,
-    num_total_measurements_calibration: Optional[int] = 20000,
-) -> Dict[str, complex]:
+    locality: int | None = None,
+    zero_state_shadow_outcomes: tuple[list[str] | list[str]] | None = None,
+    qubits: list[cirq.Qid] | None = None,
+    executor: Callable[[cirq.Circuit], MeasurementResult] | None = None,
+    num_total_measurements_calibration: int | None = 20000,
+) -> dict[str, complex]:
     r"""
     This function returns the dictionary of the median of means estimation
     of Pauli fidelities: :math:`\{`"b": :math:`f_{b}\}_{b\in\{0,1\}^n}`.
     The number of :math:`f_b` is :math:`2^n`, or :math:`\sum_{i=1}^d C_n^i` if
     the locality :math:`d` is given.
 
-    In the notation of arXiv:2011.09636, this function estimates the
+    In the notation of :cite:`chen2021robust`, this function estimates the
     coefficient :math:`f_b`, which are expansion coefficients of the twirled
     channel :math:`\mathcal{M}=\sum_b f_b\Pi_b`.
 
@@ -90,7 +91,7 @@ def pauli_twirling_calibrate(
             qubits=qubits,
         )
     else:
-        calibration_measurement_outcomes = zero_state_shadow_outcomes
+        calibration_measurement_outcomes = zero_state_shadow_outcomes  # type: ignore
     # get the median of means estimation of Pauli fidelities
     return get_pauli_fidelities(
         calibration_measurement_outcomes, k_calibration, locality=locality
@@ -101,9 +102,9 @@ def shadow_quantum_processing(
     circuit: cirq.Circuit,
     executor: Callable[[cirq.Circuit], MeasurementResult],
     num_total_measurements_shadow: int,
-    random_seed: Optional[int] = None,
-    qubits: Optional[List[cirq.Qid]] = None,
-) -> Tuple[List[str], List[str]]:
+    random_seed: int | None = None,
+    qubits: list[cirq.Qid] | None = None,
+) -> tuple[list[str], list[str]]:
     r"""
     This function returns the bit strings and Pauli strings corresponding to
     the executor measurement outcomes for a given circuit, rotated by unitaries
@@ -153,12 +154,12 @@ def shadow_quantum_processing(
 
 
 def classical_post_processing(
-    shadow_outcomes: Tuple[List[str], List[str]],
-    calibration_results: Optional[Dict[str, float]] = None,
-    observables: Optional[List[mitiq.PauliString]] = None,
-    k_shadows: Optional[int] = None,
-    state_reconstruction: Optional[bool] = False,
-) -> Mapping[str, Union[float, NDArray[Any]]]:
+    shadow_outcomes: tuple[list[str], list[str]],
+    calibration_results: dict[str, float] | None = None,
+    observables: list[mitiq.PauliString] | None = None,
+    k_shadows: int | None = None,
+    state_reconstruction: bool = False,
+) -> Mapping[str, float | npt.NDArray[Any]]:
     r"""
     Executes a circuit with classical shadows. This function can be used for
     state reconstruction or expectation value estimation of observables.
@@ -186,7 +187,7 @@ def classical_post_processing(
     Shadow stage 2: Estimate the expectation value of the observables OR
     reconstruct the state
     """
-    output: Dict[str, Union[float, NDArray[Any]]] = {}
+    output: dict[str, float | npt.NDArray[Any]] = {}
     if state_reconstruction:
         reconstructed_state = shadow_state_reconstruction(
             shadow_outcomes, fidelities=calibration_results

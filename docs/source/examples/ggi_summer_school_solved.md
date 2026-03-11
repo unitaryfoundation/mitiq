@@ -23,11 +23,11 @@ intended to be a hands-on exercise, the solutions to the examples are provided i
 
 Useful links :
 
-- [`Mitiq repository`](https://github.com/unitaryfund/mitiq)
+- [`Mitiq repository`](https://github.com/unitaryfoundation/mitiq)
 - [`Mitiq documentation`](https://mitiq.readthedocs.io/en/stable/)
 - [`Mitiq docs on ZNE`](https://mitiq.readthedocs.io/en/stable/guide/zne.html)
 - [`Mitiq white paper`](https://arxiv.org/abs/2009.04417)
-- [`Unitary Fund`](https://unitary.fund)
+- [`Unitary Foundation`](https://unitary.foundation)
 
 ```{figure} ../img/zne_workflow2_steps.png
 ---

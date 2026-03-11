@@ -19,7 +19,7 @@ For more information, check the Mitiq style guidelines (https://mitiq.readthedoc
 
 ### License
 
-- [ ] I license this contribution under the terms of the GNU GPL, version 3 and grant Unitary Fund the right to provide additional permissions as described in section 7 of the GNU GPL, version 3.
+- [ ] I license this contribution under the terms of the GNU GPL, version 3 and grant Unitary Foundation the right to provide additional permissions as described in section 7 of the GNU GPL, version 3.
 
 Before opening the PR, please ensure you have completed the following where appropriate.
 

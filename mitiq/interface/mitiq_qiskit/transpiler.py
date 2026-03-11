@@ -1,4 +1,4 @@
-# Copyright (C) Unitary Fund
+# Copyright (C) Unitary Foundation
 #
 # This source code is licensed under the GPL license (v3) found in the
 # LICENSE file in the root directory of this source tree.
@@ -21,8 +21,6 @@
 # - Modified docstring format
 # - Modified length check
 
-from typing import List
-
 from qiskit import QuantumRegister
 from qiskit.dagcircuit import DAGCircuit
 from qiskit.transpiler.basepasses import TransformationPass
@@ -42,7 +40,7 @@ class ApplyMitiqLayout(TransformationPass):  # type: ignore
         new_qregs: The new quantum registers for the circuit.
     """
 
-    def __init__(self, new_qregs: List[QuantumRegister]) -> None:
+    def __init__(self, new_qregs: list[QuantumRegister]) -> None:
         super().__init__()
         self._new_qregs = new_qregs
 
@@ -93,7 +91,7 @@ class ApplyMitiqLayout(TransformationPass):  # type: ignore
                 node.op, qargs, node.cargs, check=False
             )
 
-        new_dag._global_phase = dag._global_phase
+        new_dag.global_phase = dag.global_phase
 
         return new_dag
 

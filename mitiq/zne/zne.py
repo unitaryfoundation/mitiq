@@ -1,22 +1,25 @@
-# Copyright (C) Unitary Fund
+# Copyright (C) Unitary Foundation
 #
 # This source code is licensed under the GPL license (v3) found in the
 # LICENSE file in the root directory of this source tree.
 
 """High-level zero-noise extrapolation tools."""
 
+from collections.abc import Callable, Sequence
 from functools import wraps
-from typing import Callable, List, Optional, Sequence, Union
 
 from mitiq import QPROGRAM, Executor, Observable, QuantumResult
-from mitiq.zne.inference import Factory, RichardsonFactory
+from mitiq.zne.inference import (
+    Factory,
+    RichardsonFactory,
+)
 from mitiq.zne.scaling import fold_gates_at_random
 
 
-def scaled_circuits(
+def construct_circuits(
     circuit: QPROGRAM,
     scale_factors: list[float],
-    scale_method: Callable[[QPROGRAM, float], QPROGRAM],
+    scale_method: Callable[[QPROGRAM, float], QPROGRAM] = fold_gates_at_random,  # type:ignore [has-type]
 ) -> list[QPROGRAM]:
     """Given a circuit, scale_factors and a scale_method, outputs a list
        of circuits that will be used in ZNE.
@@ -49,9 +52,9 @@ def combine_results(
     Args:
         scale_factors: An array of noise scale factors.
         results: An array storing the results of running the scaled circuits.
-        extrapolation_method: The function for scaling the noise of a
-            quantum circuit. A list of built-in functions can be found
-            in ``mitiq.zne.scaling``.
+        extrapolation_method: The method of extrapolation to use when fitting
+            the measured results. A list of built-in functions can be found
+            in ``mitiq.zne.inference``.
 
     Returns:
         The expectation value estimated with ZNE.
@@ -63,10 +66,10 @@ def combine_results(
 
 def execute_with_zne(
     circuit: QPROGRAM,
-    executor: Union[Executor, Callable[[QPROGRAM], QuantumResult]],
-    observable: Optional[Observable] = None,
+    executor: Executor | Callable[[QPROGRAM], QuantumResult],
+    observable: Observable | None = None,
     *,
-    factory: Optional[Factory] = None,
+    factory: Factory | None = None,
     scale_noise: Callable[[QPROGRAM, float], QPROGRAM] = fold_gates_at_random,  # type: ignore [has-type]
     num_to_average: int = 1,
 ) -> float:
@@ -113,9 +116,9 @@ def execute_with_zne(
 
 def mitigate_executor(
     executor: Callable[[QPROGRAM], QuantumResult],
-    observable: Optional[Observable] = None,
+    observable: Observable | None = None,
     *,
-    factory: Optional[Factory] = None,
+    factory: Factory | None = None,
     scale_noise: Callable[[QPROGRAM, float], QPROGRAM] = fold_gates_at_random,  # type:ignore [has-type]
     num_to_average: int = 1,
 ) -> Callable[[QPROGRAM], float]:
@@ -155,7 +158,7 @@ def mitigate_executor(
     else:
 
         @wraps(executor)
-        def new_executor(circuits: List[QPROGRAM]) -> List[float]:
+        def new_executor(circuits: list[QPROGRAM]) -> list[float]:
             return [
                 execute_with_zne(
                     circuit,
@@ -172,9 +175,9 @@ def mitigate_executor(
 
 
 def zne_decorator(
-    observable: Optional[Observable] = None,
+    observable: Observable | None = None,
     *,
-    factory: Optional[Factory] = None,
+    factory: Factory | None = None,
     scale_noise: Callable[[QPROGRAM, float], QPROGRAM] = fold_gates_at_random,  # type: ignore [has-type]
     num_to_average: int = 1,
 ) -> Callable[

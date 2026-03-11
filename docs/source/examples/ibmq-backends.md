@@ -24,7 +24,8 @@ This tutorial shows an example of how to mitigate noise on IBMQ backends.
 ```{code-cell} ipython3
 import qiskit
 from qiskit_aer import QasmSimulator
-from qiskit_ibm_runtime import QiskitRuntimeService
+from qiskit_ibm_runtime import QiskitRuntimeService, SamplerV2 as Sampler
+from qiskit.transpiler.preset_passmanagers import generate_preset_pass_manager
 
 from mitiq import zne
 from mitiq.interface.mitiq_qiskit.qiskit_utils import initialized_depolarizing_noise
@@ -74,7 +75,7 @@ for instructions to create an account, save credentials, and see online quantum 
 
 ```{code-cell} ipython3
 if QiskitRuntimeService.saved_accounts() and USE_REAL_HARDWARE:
-    service = QiskitRuntimeService()
+    service = QiskitRuntimeService(channel="ibm_quantum")
     backend = service.least_busy(operational=True, simulator=False)
     noise_model = False
 else:
@@ -92,18 +93,24 @@ def ibmq_executor(circuit: qiskit.QuantumCircuit, shots: int = 8192) -> float:
         shots: Number of times to execute the circuit to compute the expectation value.
     """
     # Transpile the circuit so it can be properly run
-    exec_circuit = qiskit.transpile(
-        circuit,
+    pm = generate_preset_pass_manager(
         backend=backend,
         basis_gates=noise_model.basis_gates if noise_model else None,
         optimization_level=0, # Important to preserve folded gates.
     )
-    
+
+    exec_circuit = pm.run(circuit)
+
+    if not isinstance(exec_circuit, list):
+        exec_circuit = [exec_circuit]
+
     # Run the circuit
-    job = backend.run(exec_circuit, shots=shots)
+    sampler = Sampler(backend)
+    
+    job = sampler.run(exec_circuit, shots=shots)
 
     # Convert from raw measurement counts to the expectation value
-    counts = job.result().get_counts()
+    counts = job.result()[0].join_data().get_counts()
     if counts.get("0") is None:
         expectation_value = 0.
     else:
@@ -186,15 +193,20 @@ Below we execute the folded circuits using the ``backend`` defined at the start 
 shots = 8192
 
 # Transpile the circuit so it can be properly run
-exec_circuit = qiskit.transpile(
-    folded_circuits,
+pm = generate_preset_pass_manager(
     backend=backend,
     basis_gates=noise_model.basis_gates if noise_model else None,
     optimization_level=0, # Important to preserve folded gates.
 )
+    
+exec_circuit = pm.run(folded_circuits)
+
+if not isinstance(exec_circuit, list):
+        exec_circuit = [exec_circuit]
 
 # Run the circuit
-job = backend.run(exec_circuit, shots=shots)
+sampler = Sampler(backend)
+job = sampler.run(exec_circuit, shots=shots)
 ```
 
 **Note:** We set the ``optimization_level=0`` to prevent any compilation by Qiskit transpilers.
@@ -202,9 +214,10 @@ job = backend.run(exec_circuit, shots=shots)
 
 Once the job has finished executing, we can convert the raw measurement statistics to observable values by running the
 following code block.
+<!-- #endregion -->
 
 ```{code-cell} ipython3
-all_counts = [job.result().get_counts(i) for i in range(len(folded_circuits))]
+all_counts = [job.result()[i].join_data().get_counts() for i in range(len(folded_circuits))]
 expectation_values = [counts.get("0") / shots for counts in all_counts]
 print(f"Expectation values:\n{expectation_values}")
 ```

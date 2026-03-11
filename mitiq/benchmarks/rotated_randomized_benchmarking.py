@@ -1,11 +1,11 @@
-# Copyright (C) Unitary Fund
+# Copyright (C) Unitary Foundation
 #
 # This source code is licensed under the GPL license (v3) found in the
 # LICENSE file in the root directory of this source tree.
 
 """Functions for generating rotated randomized benchmarking circuits."""
 
-from typing import List, Optional, cast
+from typing import cast
 
 import cirq
 import numpy as np
@@ -18,11 +18,11 @@ from mitiq.interface import convert_from_mitiq
 def generate_rotated_rb_circuits(
     n_qubits: int,
     num_cliffords: int,
-    theta: Optional[float] = None,
+    theta: float | None = None,
     trials: int = 1,
-    return_type: Optional[str] = None,
-    seed: Optional[int] = None,
-) -> List[QPROGRAM]:
+    return_type: str | None = None,
+    seed: int | None = None,
+) -> list[QPROGRAM]:
     r"""
     Generates a list of "rotated" randomized benchmarking circuits.
     This benchmarking method enables testing QEM techniques in more general
@@ -66,7 +66,7 @@ def generate_rotated_rb_circuits(
     """
 
     circuits = cast(
-        List[cirq.Circuit],
+        list[cirq.Circuit],
         generate_rb_circuits(n_qubits, num_cliffords, trials, seed=seed),
     )
 

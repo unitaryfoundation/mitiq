@@ -1,12 +1,19 @@
-# Copyright (C) Unitary Fund
+# Copyright (C) Unitary Foundation
 #
 # This source code is licensed under the GPL license (v3) found in the
 # LICENSE file in the root directory of this source tree.
 
 """Functions for converting to/from Mitiq's internal circuit representation."""
 
+from collections.abc import Callable, Collection
 from functools import wraps
-from typing import Any, Callable, Dict, Iterable, Optional, Tuple, cast
+from typing import (
+    Any,
+    Concatenate,
+    ParamSpec,
+    TypeVar,
+    cast,
+)
 
 import cirq
 
@@ -21,13 +28,13 @@ class CircuitConversionError(Exception):
     pass
 
 
-FROM_MITIQ_DICT: Dict[str, Callable[[cirq.Circuit], Any]]
+FROM_MITIQ_DICT: dict[str, Callable[[cirq.Circuit], Any]]
 try:
     FROM_MITIQ_DICT
 except NameError:
     FROM_MITIQ_DICT = {}
 
-TO_MITIQ_DICT: Dict[str, Callable[[Any], cirq.Circuit]]
+TO_MITIQ_DICT: dict[str, Callable[[Any], cirq.Circuit]]
 try:
     TO_MITIQ_DICT
 except NameError:
@@ -58,7 +65,7 @@ def register_mitiq_converters(
     TO_MITIQ_DICT[package_name] = convert_from_function
 
 
-def convert_to_mitiq(circuit: QPROGRAM) -> Tuple[cirq.Circuit, str]:
+def convert_to_mitiq(circuit: QPROGRAM) -> tuple[cirq.Circuit, str]:
     """Converts any valid input circuit to a mitiq circuit.
 
     Args:
@@ -73,6 +80,11 @@ def convert_to_mitiq(circuit: QPROGRAM) -> Tuple[cirq.Circuit, str]:
         input_circuit_type: Type of input circuit represented by a string.
     """
     conversion_function: Callable[[Any], cirq.Circuit]
+
+    if isinstance(circuit, str) and hasattr(circuit, "__module__") is False:
+        from mitiq.typing import QasmStringType
+
+        circuit = QasmStringType(circuit)
 
     try:
         package = circuit.__module__
@@ -107,6 +119,12 @@ def convert_to_mitiq(circuit: QPROGRAM) -> Tuple[cirq.Circuit, str]:
         input_circuit_type = "qibo"
         conversion_function = from_qibo
 
+    elif "openqasm3.ast" in package:
+        from mitiq.interface.mitiq_openqasm.conversions import from_openqasm
+
+        input_circuit_type = "openqasm"
+        conversion_function = from_openqasm
+
     elif package in TO_MITIQ_DICT:
         input_circuit_type = package
         conversion_function = TO_MITIQ_DICT[package]
@@ -120,22 +138,23 @@ def convert_to_mitiq(circuit: QPROGRAM) -> Tuple[cirq.Circuit, str]:
     else:
         raise UnsupportedCircuitError(
             f"Circuit from module {package} is not supported.\n\n"
-            f"Please register converters with register_mitiq_converters(),"
-            f"\n or specify a supported Circuit type:"
+            "Please register converters with register_mitiq_converters(),"
+            "\n or specify a supported Circuit type:"
             f"\n {SUPPORTED_PROGRAM_TYPES}"
         )
 
     try:
-        mitiq_circuit = conversion_function(circuit)
+        mitiq_circuit = conversion_function(circuit)  # type: ignore
     except Exception:
         raise CircuitConversionError(
             "Circuit could not be converted to an internal Mitiq circuit. "
             "This may be because the circuit contains custom gates or Pragmas "
             "(pyQuil). If you think this is a bug or that this circuit should "
             "be supported, you can open an issue at "
-            "https://github.com/unitaryfund/mitiq. \n\n Provided circuit has "
-            f"type {type(circuit)} and is:\n\n{circuit}\n\nCircuit types "
-            f"supported by Mitiq are \n{SUPPORTED_PROGRAM_TYPES}."
+            "https://github.com/unitaryfoundation/mitiq. \n\n Provided "
+            f"circuit has type {type(circuit)} and is:\n\n{circuit}\n\n "
+            "Circuit types supported by Mitiq are "
+            f"\n{SUPPORTED_PROGRAM_TYPES}."
         )
 
     return mitiq_circuit, input_circuit_type
@@ -150,6 +169,7 @@ def convert_from_mitiq(
         circuit: Mitiq circuit to convert.
         conversion_type: String specifier for the converted circuit type.
     """
+    conversion_type = conversion_type.lower()
     conversion_function: Callable[[cirq.Circuit], QPROGRAM]
     if conversion_type == "qiskit":
         from mitiq.interface.mitiq_qiskit.conversions import to_qiskit
@@ -179,6 +199,11 @@ def convert_from_mitiq(
         def conversion_function(circ: cirq.Circuit) -> cirq.Circuit:
             return circ
 
+    elif conversion_type == "openqasm":
+        from mitiq.interface.mitiq_openqasm.conversions import to_openqasm
+
+        conversion_function = to_openqasm
+
     else:
         raise UnsupportedCircuitError(
             f"Conversion to circuit type {conversion_type} is unsupported."
@@ -199,13 +224,21 @@ def convert_from_mitiq(
     return converted_circuit
 
 
+P = ParamSpec("P")
+R = TypeVar("R")
+
+
 def accept_any_qprogram_as_input(
-    accept_cirq_circuit_function: Callable[[cirq.Circuit], Any],
-) -> Callable[[QPROGRAM], Any]:
+    accept_cirq_circuit_function: Callable[Concatenate[cirq.Circuit, P], R],
+) -> Callable[Concatenate[QPROGRAM, P], R]:
+    """Converts functions which take as input cirq.Circuit object (and return
+    anything), to function which can accept any QPROGRAM.
+    """
+
     @wraps(accept_cirq_circuit_function)
     def accept_any_qprogram_function(
-        circuit: QPROGRAM, *args: Any, **kwargs: Any
-    ) -> Any:
+        circuit: QPROGRAM, *args: P.args, **kwargs: P.kwargs
+    ) -> R:
         cirq_circuit, _ = convert_to_mitiq(circuit)
         return accept_cirq_circuit_function(cirq_circuit, *args, **kwargs)
 
@@ -245,15 +278,19 @@ def atomic_converter(
 
 
 def atomic_one_to_many_converter(
-    cirq_circuit_modifier: Callable[..., Iterable[cirq.Circuit]],
-) -> Callable[..., Iterable[QPROGRAM]]:
+    cirq_circuit_modifier: Callable[..., Collection[cirq.Circuit]],
+) -> Callable[..., Collection[QPROGRAM]]:
+    """Convert function which returns multiple cirq.Circuits into a function
+    which returns multiple QPROGRAM instances.
+    """
+
     @wraps(cirq_circuit_modifier)
     def qprogram_modifier(
         circuit: QPROGRAM, *args: Any, **kwargs: Any
-    ) -> Iterable[QPROGRAM]:
+    ) -> Collection[QPROGRAM]:
         mitiq_circuit, input_circuit_type = convert_to_mitiq(circuit)
 
-        modified_circuits: Iterable[cirq.Circuit] = cirq_circuit_modifier(
+        modified_circuits = cirq_circuit_modifier(
             mitiq_circuit, *args, **kwargs
         )
 
@@ -270,7 +307,7 @@ def atomic_one_to_many_converter(
 
 def accept_qprogram_and_validate(
     cirq_circuit_modifier: Callable[..., Any],
-    one_to_many: Optional[bool] = False,
+    one_to_many: bool = False,
 ) -> Callable[..., Any]:
     """This decorator performs two functions:
 

@@ -27,8 +27,8 @@ sys.path.insert(0, os.path.abspath("../../"))
 # -- Project information -----------------------------------------------------
 
 project = "Mitiq"
-copyright = f"2020 - {datetime.date.today().year}, Tech Team @ Unitary Fund"
-author = "Tech Team @ Unitary Fund"
+copyright = f"2020 - {datetime.date.today().year} Unitary Foundation"
+author = "Tech Team @ Unitary Foundation"
 
 # The full version, including alpha/beta/rc tags
 directory_of_this_file = os.path.dirname(os.path.abspath(__file__))
@@ -138,15 +138,13 @@ tags_badge_colors = {
 html_sidebars = {"apidoc": [], "changelog": [], "bibliography": []}
 
 intersphinx_mapping = {
-    "python": ("https://docs.python.org/3.10", None),
-    "numpy": ("https://numpy.org/doc/stable/", None),
-    "scipy": ("https://docs.scipy.org/doc/scipy/", None),
-    # Cirq is no longer using sphinx docs so interlinking is not possible.
-    # "cirq": ("https://quantumai.google/cirq", None),
-    "pyquil": ("https://pyquil-docs.rigetti.com/en/stable/", None),
-    "qiskit": ("https://docs.quantum.ibm.com/api/qiskit/", None),
-    # TODO: qutip docs moved and the objects.inv file not yet found
-    # "qutip": ("https://qutip.org/docs/latest/", None),
+    "python": ("https://docs.python.org/3.11", None),
+    "numpy": ("https://numpy.org/doc/stable", None),
+    "scipy": ("https://docs.scipy.org/doc/scipy", None),
+    "pyquil": ("https://pyquil-docs.rigetti.com/en/stable", None),
+    "qiskit": ("https://quantum.cloud.ibm.com/docs/api/qiskit", None),
+    "qibo": ("https://qibo.science/qibo/stable", None),
+    "pennylane": ("https://docs.pennylane.ai/en/stable", None),
 }
 
 # Add any paths that contain templates here, relative to this directory.
@@ -201,10 +199,13 @@ nb_execution_timeout = 600
 # By default, if nothing has changed in the source, a notebook won't be
 # re-run for a subsequent docs build.
 nb_execution_mode = "cache"
+if os.environ.get("DOCS_LITE"):
+    print("*** Skipping all notebook execution ***")
+    nb_execution_mode = "off"
 
 # If SKIP_PYQUIL is True, do not re-run PyQuil notebooks.
 if os.environ.get("SKIP_PYQUIL"):
-    print("Skipping PyQuil notebooks execution since SKIP_PYQUIL is True")
+    print("Skipping PyQuil notebooks execution since SKIP_PYQUIL is set.")
     nb_execution_excludepatterns = ["*pyquil*.ipynb"]
 
 # -- Options for autodoc -----------------------------------------------------
@@ -233,14 +234,15 @@ linkcheck_ignore = [
     r"https://doi\.org/.*",
     r"https://link\.aps\.org/doi/.*",
     r"https://www\.sciencedirect\.com/science/article/.*",
-    r"https://github.com/unitaryfund/mitiq/compare/.*",
-    r"https://github.com/unitaryfund/mitiq/projects/7",
+    r"https://github.com/unitaryfoundation/mitiq/compare/.*",
+    r"https://github.com/unitaryfoundation/mitiq/compare/.*",
+    r"https://github.com/unitaryfoundation/mitiq/projects/7",
 ]
 
 linkcheck_retries = 3
 
 linkcheck_anchors_ignore_for_url = [
-    "https://github.com/unitaryfund/qrack/blob/main/README.md"
+    "https://github.com/unitaryfoundation/qrack/blob/main/README.md"
 ]
 
 
@@ -397,12 +399,13 @@ html_theme_options = {
     "icon_links": [
         {
             "name": "Source Repository",
-            "url": "https://github.com/unitaryfund/mitiq",
+            "url": "https://github.com/unitaryfoundation/mitiq",
             "icon": "fa-brands fa-github",
             "type": "fontawesome",
         }
     ],
     "secondary_sidebar_items": ["page-toc", "sourcelink", "notebook-download"],
+    "show_toc_level": 2,
 }
 
 myst_update_mathjax = False
@@ -410,6 +413,7 @@ myst_update_mathjax = False
 nbsphinx_custom_formats = {
     ".mystnb": ["jupytext.reads", {"fmt": "mystnb"}],
 }
+
 nbsphinx_execute = "always"
 
 nbsphinx_thumbnails = {
@@ -445,6 +449,11 @@ nbsphinx_thumbnails = {
     "examples/zne_logical_rb_cirq_stim": "_static/mitiq_stim_logo.png",
     "examples/quantum_simulation_1d_ising": "_static/quantum_simulation.png",
     "examples/cdr_qrack": "_static/cdr-qrack.png",
+    "examples/loschmidt_echo_revival_zne": "_static/loschmidt_echo_qiskit.png",
+    "examples/pt_zne": "_static/pt_zne.png",
+    "examples/advanced_error_mitigation_pipeline": (
+        "_static/error_mitigation_pipeline.png"
+    ),
     # default images if no thumbnail is specified
     "examples/*": "_static/mitiq-logo.png",
 }

@@ -24,7 +24,6 @@ This notebook is a prototype of how to perform robust shadow estimation protocol
 ```{code-cell} ipython3
 import cirq
 import numpy as np
-from typing import List
 from mitiq.shadows.shadows import *
 from mitiq.shadows.quantum_processing import *
 from mitiq.shadows.classical_postprocessing import *
@@ -77,7 +76,7 @@ We focus on the case where $J = g =1$. We use the ground state of such a system 
 # import groud state of 1-D Ising model w/ periodic boundary condition
 download_ising_circuits = True
 num_qubits = 8
-qubits: List[cirq.Qid] = cirq.LineQubit.range(num_qubits)
+qubits: list[cirq.Qid] = cirq.LineQubit.range(num_qubits)
 
 if download_ising_circuits:
     with open(f"{file_directory}/rshadows-tutorial-1D_Ising_g=1_{num_qubits}qubits.json", "rb") as file:

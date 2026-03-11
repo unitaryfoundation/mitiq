@@ -1,12 +1,462 @@
 # Changelog
 
+## Version 0.49.0 (March 8, 2026)
+
+([Full Changelog](https://github.com/unitaryfoundation/mitiq/compare/v0.48.1...v0.49.0))
+
+### Highlights
+
+This release adds an OpenQASM 3 frontend, allowing users to pass OpenQASM 3 strings directly to Mitiq's error mitigation routines.
+Support for `PRx` and `MS` gates was also added to the Qibo interface.
+Mitiq now also supports NumPy 2.0!
+
+Thanks to @ACE07-Sev, and @vprusso for your continued contributions and @schrodinteq, and @orisus42 for their **first** contributions!
+
+#### ✨ Enhancements
+
+- NumPy 2.0 support (#2918) [@natestemen + @ACE07-Sev]
+- OpenQASM3 Frontend (#2842) [@ACE07-Sev]
+- Added support for PRx and MS gates in Qibo interface (#2879) [@ACE07-Sev]
+- Add quantum computing classifier to project metadata (#2880) [@orisus42]
+
+#### 📓 Documentation
+
+- Update docs to correctly reflect `num_chunks` argument in LRE (#2915) [@vprusso]
+- Fix typo in README.md (#2898) [@schrodinteq]
+- README cleanup (#2928) [@natestemen]
+
+#### 🧑🏽‍💻 Developer Improvements
+
+- Set permissions for all github actions (#2932) [@natestemen]
+- Bound qiskit above by 3.0 (#2886) [@dependabot]
+
+#### 📦 Dependency Updates
+
+- Bump amazon-braket-sdk from 1.112.1 to 1.113.0 (#2935) [@dependabot]
+- Bump scipy from 1.17.0 to 1.17.1 (#2931) [@dependabot]
+- Bump amazon-braket-sdk from 1.111.0 to 1.112.1 (#2930) [@dependabot]
+- Bump nbconvert from 7.16.6 to 7.17.0 (#2924) [@dependabot]
+- Bump pillow from 12.0.0 to 12.1.1 (#2926) [@dependabot]
+- Bump cryptography from 46.0.3 to 46.0.5 (#2925) [@dependabot]
+- Bump qbraid from 0.10.1 to 0.11.0 (#2921) [@dependabot]
+- Bump protobuf from 5.29.5 to 5.29.6 (#2919) [@dependabot]
+- Bump amazon-braket-sdk from 1.110.1 to 1.111.0 (#2916) [@dependabot]
+- Bump pyasn1 from 0.6.1 to 0.6.2 (#2907) [@dependabot]
+- Bump scipy from 1.16.2 to 1.17.0 (#2903) [@dependabot]
+- Bump pyscf from 2.11.0 to 2.12.0 (#2912) [@dependabot]
+- Bump amazon-braket-sdk from 1.108.1 to 1.110.1 (#2913) [@dependabot]
+- Bump pytket-cirq from 0.42.0 to 0.43.0 (#2900) [@dependabot]
+- Bump myst-parser from 4.0.1 to 5.0.0 (#2911) [@dependabot]
+- Bump qibo from 0.2.16 to 0.2.22 (#2870) [@dependabot]
+- Bump fonttools from 4.60.1 to 4.60.2 (#2909) [@dependabot]
+- Bump urllib3 from 2.5.0 to 2.6.3 (#2910) [@dependabot]
+- Bump qbraid from 0.10.0 to 0.10.1 (#2906) [@dependabot]
+- Bump amazon-braket-sdk from 1.103.0 to 1.108.1 (#2904) [@dependabot]
+- Bump ucc from 0.4.10 to 0.4.12 (#2899) [@dependabot]
+- Bump actions/cache from 4 to 5 (#2895) [@dependabot]
+- Bump pytest from 8.0.0 to 9.0.2 (#2890) [@dependabot]
+- Bump actions/checkout from 5 to 6 (#2881) [@dependabot]
+
+## Version 0.48.1
+
+([Full Changelog](https://github.com/unitaryfoundation/mitiq/compare/v0.48.0...v0.48.1))
+
+### Highlights
+
+This release adds support for the latest major versions of Qiskit (2.0) and PennyLane (0.43)!
+
+#### All changes
+
+- Bump pennylane from 0.36.0 to 0.43.1 (#2869) [@dependabot + @natestemen + @bdg221]
+- Add payouts page to README (#2868) [@natestemen + @bdg221]
+- ignore non-dependency files (#2867) [@natestemen]
+
+## Version 0.48.0
+
+([Full Changelog](https://github.com/unitaryfoundation/mitiq/compare/v0.47.0...v0.48.0))
+
+### Highlights
+
+Bug fixes and dependency upgrade palooza!
+In upgrading to cirq >=1.5, we unblocked supporting reset gates in Qiskit circuits!
+
+Thank you to @bdg221, @maloleroy, @ACE07-Sev and first time contributors @omahs and @sukrucildirr for helping make this release happen!
+
+#### ✨ Enhancements
+
+- Support qiskit reset ops in PEC (#2821) [@natestemen]
+
+#### 🐛 Bug fixes
+
+- Move pennylane import and code inside check for module (#2843) [@bdg221]
+- Fix typos (#2830) [@omahs]
+- chore: fix typos across codebase (#2826) [@sukrucildirr]
+- Fix deprecated access to members of CircuitInstruction (#2831) [@maloleroy]
+
+#### 📦 Dependency Updates
+
+- Bump stim from 1.14.0 to 1.15.0 (#2851) [@dependabot]
+- bump docs dependencies (#2862) [@natestemen]
+- bump dependencies (#2861) [@natestemen]
+- pin first-interaction to avoid issue-message breaking change (#2858) [@natestemen]
+- Bump pytket-cirq from 0.39.0 to 0.42.0 (#2855) [@dependabot]
+- Bump pytest-cov from 6.0.0 to 7.0.0 (#2856) [@dependabot]
+- Bump bqskit from 1.1.1 to 1.2.1 (#2845) [@dependabot]
+- Bump pyscf from 2.9.0 to 2.11.0 (#2844) [@dependabot]
+- Bump openfermion from 1.7.0 to 1.7.1 (#2847) [@dependabot]
+- Cirq 1.6 update (#2837) [@bdg221]
+- Bump astral-sh/setup-uv from 6 to 7 (#2836) [@dependabot]
+
+#### 🧑🏽‍💻 Developer Improvements
+
+- Qbraid integration for pyquil - remove cirq-rigetti (#2832) [@bdg221]
+- Address CI errors with Windows + tcl/tkinter and Ubuntu + Code Coverage (#2834) [@bdg221]
+- Bumped `myst_nb` and `nbsphinx` to try and resolve #2723 . (#2835) [@ACE07-Sev]
+
+## Version 0.47.0
+
+([Full Changelog](https://github.com/unitaryfoundation/mitiq/compare/v0.46.0...v0.47.0))
+
+### Highlights
+
+A new utility function was added to help compare the cost of QEM circuits, and we've made some quality-of-life fixes to calibration and documentation.
+
+We also added functions to complete the Probabilistic Error Amplification (PEA) workflow!
+This module is still being documented, but the main functions are now available:
+- `mitiq.pea.execute_with_pea`
+- `mitiq.pea.construct_circuits`
+- `mitiq.pea.combine_results`
+
+Give it a shot and let us know if you run into any issues.
+
+Thanks to @q-inho, @bdg221, @natestemen, @Misty-W, and first-time contributor @maloleroy for their work in this release!
+
+#### ✨ Enhancements
+
+- Add `compare_cost` utility function to show overhead of QEM circuits (#2809) [@q-inho]
+- Add functions to complete PEA workflow (#2785) [@Misty-W]
+
+#### 🐛 Bug fixes
+
+- Fix typo in error message (#2822) [@maloleroy]
+- Sort qubits before measurement in calibrator (#2813) [@natestemen]
+- Fix typo (#2811) [@q-inho]
+
+#### 📓 Documentation
+
+- Update calibration screencast in docs (#2823) [@bdg221]
+- Update unitary_foundation_logo.png image file (#2810) [@q-inho]
+
+#### 📦 Dependency Updates
+
+- Bump actions/setup-python from 5 to 6 (#2825) [@dependabot]
+- Bump actions/checkout from 4 to 5 (#2820) [@dependabot]
+- Bump actions/first-interaction from 2 to 3 (#2819) [@dependabot]
+- Bump actions/first-interaction from 1 to 2 (#2807) [@dependabot]
+
+## Version 0.46.0
+
+([Full Changelog](https://github.com/unitaryfoundation/mitiq/compare/v0.45.1...v0.46.0))
+
+### Highlights
+
+Happy solstice season!
+This release got started with a bang thanks to unitaryHACK 2025 which took place May 28-June 11.
+We had 5 issues closed by 4 different first time contributors!
+
+- @q-inho added support for custom circuits in the `Calibrator` class, allowing users to specify their own circuits when running calibration experments.
+  They also added a new function `mitiq.zne.visualize_fits` to plot ZNE results with multiple extrapolation techniques, which is useful for comparing the performance of different extrapolation methods.
+- @MChang360686 added a new page to the user guide showing how to use Mitiq's two-stage technique approach to understand the resources required when running a specific protocol.
+- @ACE07-Sev upgraded typehints across the mitiq codebase to remove deprecated features, and use the latest functionality.
+- @ahkatlio added a new tutorial demonstrating how to combine Pauli Twirling, Digital Dynamical Decoupling, Zero Noise Extrapolation, and Readout Error Mitigation.
+
+#### ✨ Enhancements
+
+- Create `scale_amplifications.py` for Probabilistic Error Amplification (PEA) (#2655) [@Misty-W]
+- add `visualize_fits` to plot ZNE results with multiple extrapolation techniques (#2777) [@q-inho] (unitaryHACK)
+- add custom circuit support in `Calibrator` (#2779) [@q-inho] (unitaryHACK)
+
+#### 🐛 Bug fixes
+
+- Fix mutable default args (#2756) [@willzeng]
+
+#### 📓 Documentation
+
+- Switch order of PT/ZNE in tutorial (#2800) [@natestemen]
+- adding a diagram for VD workflow in the docs (#2801) [@FarLab]
+- Use qiskit throught layerwise folding tutorial (#2799) [@natestemen]
+- added to documentation (#2788) [@MChang360686] (unitaryHACK)
+- use latest contributor covenant CoC (#2781) [@natestemen]
+
+#### 🧑🏽‍💻 Developer Improvements
+
+- Lighter docs build option (#2743) [@natestemen]
+- Fix deprecated typings (#2775) [@ACE07-Sev] (unitaryHACK)
+- upgrade pypi publish workflow (#2798) [@natestemen + @bdg221]
+
+#### 📦 Dependency Updates
+
+- Bump qibo from 0.2.16 to 0.2.18 (#2753) [@dependabot]
+- Bump amazon-braket-sdk from 1.91.2 to 1.93.0 (#2792) [@dependabot]
+- Bump astral-sh/setup-uv from 5 to 6 (#2749) [@dependabot]
+- Bump setuptools from 80.0.0 to 80.9.0 (#2763) [@dependabot]
+
+
+## Version 0.45.1
+
+Fix packaging issue that caused `import mitiq` to fail due to missing VERSION.txt in wheel.
+
+## Version 0.45.0
+
+([Full Changelog](https://github.com/unitaryfoundation/mitiq/compare/v0.44.0...v0.45.0))
+
+### Highlights
+
+- Many tutorials are now updated with modern Qiskit code, ready to run on the latest IBM devices thanks to @bdg221!
+- A new tutorial demonstrating how to use [UCC](https://github.com/unitaryfoundation/ucc) in conjunction with Mitiq that shows how compilation and mitigation work well together.
+- The Virtual Distillation technique now has a complete [user guide](https://mitiq.readthedocs.io/en/stable/guide/vd.html) along with [API-docs](https://mitiq.readthedocs.io/en/stable/apidoc.html#mitiq.vd.vd.execute_with_vd).
+
+#### ✨ Enhancements
+
+- Update get_scale_factors for static scale factors (#2727) [@bdg221]
+- Use uv and pyproject.toml for dependencies and configs (#2724) [@bdg221] (this will not impact users of `mitiq`, but it makes development much easier! Come try it out :))
+
+#### 📓 Documentation
+
+- add Virtual Distillation documentation (#2760) [@FarLab]
+- add VD to api-doc (#2761) [@natestemen]
+- Update tutorials for IBM hardware (#2759) [@bdg221]
+- Add tutorial demonstrating basic usage of mitiq & ucc (#2728) [@natestemen]
+- Update README.md (#2718) [@lifechange777]
+- fix shadows path (#2717) [@natestemen]
+
+#### 📦 Dependency Updates
+
+- Bump pyscf from 2.8.0 to 2.9.0 (#2725) [@dependabot[bot]]
+
+
+## Version 0.44.0
+
+([Full Changelog](https://github.com/unitaryfoundation/mitiq/compare/v0.43.0...v0.44.0))
+
+### Highlights
+
+🚀 This release introduces the first version of the **Virtual Distillation** (VD) technique in Mitiq, which is now available for use!
+This technique was prototyped and implemented by a team of students at the University of Amsterdam.
+VD uses additional qubits to distill a purer version of the quantum state of interest.
+The implementation is in its early stages so lacks support for all `QPROGRAM` types.
+Currently only programs written in `cirq` are supported.
+We welcome feedback and suggestions for improvement.
+
+```py
+from mitiq import vd
+
+vd.execute_with_vd(circuit, execute)
+>>> np.array([0.5, 0.5]) # [<Z_0>, <Z_1>] assuming the circuit acts on 2 qubits
+```
+
+We've also made further enhancements to the **Layerwise Richardson Extrapolation** (LRE) technique, including support for observables and the `mitiq.Executor` class.
+`mitiq.lre` also has two new functions `mitiq.lre.construct_circuits` and `mitiq.lre.combine_results` that allow users to generate circuits and combine results in a more modular way (bringing this module in line with the other error mitigation techniques).
+An example workflow for the two step application LRE is shown below:
+
+```py
+from mitiq import lre
+
+lre_circuits = lre.construct_circuits(circuit, degree, fold_multiplier)
+
+results = execute(lre_circuits)
+
+lre_result = lre.combine_results(results, circuit, degree, fold_multiplier)
+```
+
+### 🚨 Breaking Changes
+
+For uniformity across modules within Mitiq we have renamed the folowing functions:
+1. `mitiq.zne.scaled_circuits` -> `mitiq.zne.construct_circuits`
+2. `mitiq.ddd.generate_circuits_with_ddd` -> `mitiq.ddd.construct_circuits`
+3. `mitiq.pec.generate_sampled_circuits` -> `mitiq.pec.construct_circuits`
+
+With this change, you will find the function `mitiq.<module>.construct_circuits` in all of ZNE, PEC, DDD, LRE, and VD.
+
+We've also bound the version of `numpy` to be less than `2.0.0` due to some conflicts when using this latest major version.
+We hope to support `numpy` 2.0.0 in a coming release.
+
+---
+
+If you're interested in error mitigation, check out our upcoming error resilience workshop in NYC!
+WERQSHOP: Workshop on Error Resilience Quantum computing (https://werq.shop).
+
+---
+
+
+#### ✨ Enhancements
+
+- Modularization uniformity for ZNE, PEC, DDD, and LRE (#2709) [@bdg221]
+- Add main API entry points for virtual distillation (#2658) [@Jegbrz]
+- UFund => UFoundation (#2706) [@natestemen]
+- allow list/tuple constructor in executor typehints (#2700) [@natestemen]
+- Adding utility functions for Virtual Distillation. (#2698) [@FarLab]
+- Auxilliary code for VD to apply a Bi matrix on a circuit (#2650) [@khknopp]
+- Adding support for observables in LRE executors (#2681) [@Shivansh20128]
+- Adding modularized function generate_circuits_with_ddd (#2618) [@Shivansh20128]
+- Allow for Executor class and batched Executors for LRE (#2676) [@bdg221]
+- Adding modularized function generate_sampled_circuits (#2619) [@Shivansh20128]
+- Default scaling method in modularized ZNE function (#2666) [@purva-thakre]
+
+#### 📓 Documentation
+
+- Adding docstrings to Observable class (#2699) [@Shivansh20128]
+- add Virtual Distillation rfc to the contributing page and a new row in the error mitigation techniques in the readme. (#2691) [@FarLab]
+
+#### 📦 Dependency Updates
+
+- bound numpy from above (#2712) [@natestemen]
+- Update qiskit-ibm-runtime requirement from ~=0.36.1 to ~=0.37.0 (#2693) [@dependabot]
+- Update qiskit-aer requirement from ~=0.15.1 to ~=0.17.0 (#2694) [@dependabot]
+- Update amazon-braket-sdk requirement from ~=1.90.2 to ~=1.91.0 (#2697) [@dependabot]
+- Update qiskit requirement from ~=1.4.1 to ~=1.4.2 (#2696) [@dependabot]
+- Bump openfermion from 1.6.1 to 1.7.0 (#2671) [@dependabot]
+- Update amazon-braket-sdk requirement from ~=1.69.0 to ~=1.90.2 (#2690) [@dependabot]
+- Update qibo requirement from ~=0.2.15 to ~=0.2.16 (#2689) [@dependabot]
+- Update qiskit-ibm-runtime requirement from ~=0.20.0 to ~=0.36.1 (#2314) [@dependabot]
+- Update scipy requirement from <=1.14.1,>=1.10.1 to >=1.10.1,<=1.15.2 (#2673) [@dependabot]
+- Update qiskit requirement from ~=1.3.1 to ~=1.4.1 (#2685) [@dependabot]
+- Update pyquil requirement from ~=3.5.4 to ~=4.11.0 (#2063) [@dependabot]
+
+## Version 0.43.0
+
+([Full Changelog](https://github.com/unitaryfoundation/mitiq/compare/v0.42.0...v0.43.0))
+
+### Highlights
+
+This release marks the first step toward Virtual Distillation (VD) in Mitiq, with an initial helper function that vertically copies a circuit _M_ times.
+A team of students at the University of Amsterdam worked for the month of January on implementing the technique that will be integrated into Mitiq over the coming releases.
+We also have a new tutorial thanks to @purva-thakre on combining Pauli Twirling and Zero-Noise Extrapolation!
+
+We are currently testing Layerwise Richardson Extrapolation (LRE) on hardware, and work has begun on Probabilistic Error Amplification (PEA)---stay tuned for more updates in future releases!
+
+#### ✨ Enhancements
+
+- First PR for VD, helper function that copies a circuit M times (#2649) [@chrispy-chicken]
+
+#### 📓 Documentation
+
+- added section on modular functions for ZNE (#2657) [@FarLab + @natestemen]
+- PT + ZNE tutorial (#2601) [@purva-thakre]
+- Changed the badge to Unitary Foundation (#2645) [@muddi900]
+- Typos in PEC User Guide (#2637) [@purva-thakre]
+- typo corrected from supeconducting to superconducting (#2617) [@vrajan1996]
+- Small fixes in docstrings (#2663) [@cosenal]
+
+#### 🧑🏽‍💻 Developer Improvements
+
+- LRE failure for chunking (#2608) [@purva-thakre]
+- update version, changelog (#2613) [@purva-thakre]
+
+#### 📦 Dependency Updates
+
+- Bump pyscf from 2.7.0 to 2.8.0 (#2633) [@dependabot]
+- Update qibo requirement from ~=0.2.13 to ~=0.2.15 (#2643) [@dependabot]
+
+## Version 0.42.0
+
+([Full Changelog](https://github.com/unitaryfoundation/mitiq/compare/v0.41.0...v0.42.0))
+
+### Highlights
+
+🎊 Thanks for a great 2024! Our end of the year recap should be out soon. Subscribe [here](https://forms.gle/wVBki9n9ywA4c1Dj6) to get the newsletter in your mailbox.
+
+🚀 Many thanks to **first time contributors** @gluonhiggs, @JMuff22, @sanketsharma and @Shivansh20128!
+
+- @gluonhiggs added support for some additional Qiskit gates through using gate decomposition for gates that are unavailable
+in Cirq. A similar idea was applied to gates not recognized by QASM. 
+- @Shivansh20128 added a new page in the documentation for benchmarking circuits.
+- @JMuff22 and @sanketsharma corrected typos in the documentation.
+
+💡 A new error-mitigation technique is on its way. Thanks to @Misty-W for the
+[Probabilistic Error Amplification RFC](https://docs.google.com/document/d/1l-74EFdMA0CSFUpHjqCyQYb3ZKCmY77seB1_mOZo5Co/edit?usp=sharing)!
+
+🎏 Modular PEC functions are now available, courtesy of @natestemen! These functions allow a
+user to generate the intermediary sampled circuits and combine the results in a a two step process. E.g.
+
+```py
+from mitiq import pec
+
+circuits = pec.intermediary_sampled_circuits(circuit, representations)
+
+sampled_circuit_results = ...  # execute the circuits on a simulator/hardware/toothbrush/etc
+
+pec_estimate = pec.combine_results(sampled_circuit_results, ...)
+```
+
+#### ✨ Enhancements
+
+- Fix converting Rxx and similar Qiskit gates (#2579) [@gluonhiggs]
+- Handle unsupported gates (#2585) [@gluonhiggs]
+- RFC for Probabilistic Error Amplification technique (#2550) [@Misty-W]
+- Address executor and observable incompatibility (#2514) [@bdg221]
+- Modularize PEC functionality (#2604) [@natestemen]
+
+
+#### 🧑🏽‍💻 Developer Improvements
+
+- Fix flaky ZNE factory + observable test (#2602) [@natestemen]
+- Ensure further LRE compatibility with non-Cirq circuits (#2599) [@natestemen]
+- Throw Erorr on Multiple Measurements per Qubit with Observables (#2593) [@bdg221]
+
+#### 📓 Documentation
+
+- Update Calibration run docstring for API-doc (#2516) [@bdg221]
+- Add benchmarking circuits to user guide (#2566) [@Shivansh20128]
+- Correct run-on sentences in the API-doc for CDR function docstrings (#2589) [@Shivansh20128]
+- Quick fix: Fix typo and headings in classical shadows tutorial (#2574) [@JMuff22]
+- Update executor and observable docs (#2594) [@bdg221]
+- Add log param to calibration guide (#2568) [@bdg221]
+- Fix constant value in ZNE docs (#2591) [@cosenal]
+- Fixed typo in documentation (##2611) [@sanketsharma]
+
+#### 📦 Dependency Updates
+
+- Update qiskit requirement from ~=1.2.4 to ~=1.3.1 (#2603) [@dependabot, @cosenal]
+- Update qibo requirement from ~=0.2.7 to ~=0.2.13 (#2559) [@dependabot]
+- Bump pyqrack from 1.32.21 to 1.32.27 (#2582) [@dependabot, @natestemen]
+- Bump codecov/codecov-action from 4 to 5 (#2576) [@dependabot]
+- Bump pyqrack from 1.32.11 to 1.32.21 (#2580) [@dependabot]
+
 ## Version 0.41.0
 
-_In development._
+([Full Changelog](https://github.com/unitaryfoundation/mitiq/compare/v0.40.0...v0.41.0))
+
+### Highlights
+
+📓 The Layerwise Richardson Extrapolation **(LRE) user guide is complete**!
+The user guide contains information about both the ins and outs of using the implementation, as well as covering the theory behind the technique so you can make judgements about when to apply the technique.
+In addition to finishing the user guide, we also have a new tutorial comparing both the performance and overhead needed for LRE and ZNE.
+Big thanks to @purva-thakre and @FarLab for the documentation!
+
+📹 As part of launching LRE we made a **short tutorial video** to showcase the technique, along with how to use it.
+Check it out [here](https://www.youtube.com/watch?v=47GWi4h7TWM)!
+
+🧑‍🔬 **First time contributor** @jpacold recreated results from [a paper](https://arxiv.org/abs/2211.08318) on phase transitions in the Ising model.
+Both the paper authors, and @jpacold both used Mitiq's ZNE module to apply error mitigation.
+This is both an informative tutorial on turning physics problems into something amenable on a quantum computer, and a class in applying error-mitigation.
+
+#### ✨ Enhancements
+
+-  Ensure LRE compatibility with all supported frontends (#2547) [@natestemen]
+
+#### 🧑🏽‍💻 Developer Improvements
+
+- remove failing test; simplify layerwise ZNE tests (#2545) [@natestemen]
+
+### 📞 Call for ideas
+
+We're currently looking into what features we could add to make Mitiq more **noise-aware**.
+If you have ideas and features requests in this area, do make a post on the GitHub discussion [here](https://github.com/unitaryfoundation/mitiq/discussions/2193)!
 
 ## Version 0.40.0
 
-([Full Changelog](https://github.com/unitaryfund/mitiq/compare/v0.39.0...v0.40.0))
+([Full Changelog](https://github.com/unitaryfoundation/mitiq/compare/v0.39.0...v0.40.0))
 
 ### Highlights
 
@@ -16,7 +466,7 @@ Documentation is also available in the user guide, with more advanced docs and d
 Special thanks to Purva Thakre for this contribution!
 
 🥇 We had two **first time contributions** from @ecarlander and @mbrotos!
-Thank you both for your contributions! 
+Thank you both for your contributions!
 
 🛡️ A **helpful error message** is raised when passing data of the incorrect type to the `MeasurementResult` class, where before it silently gave confusing results.
 
@@ -63,12 +513,12 @@ Thank you both for your contributions!
 
 ## Version 0.39.0
 
-([Full Changelog](https://github.com/unitaryfund/mitiq/compare/v0.38.0...v0.39.0))
+([Full Changelog](https://github.com/unitaryfoundation/mitiq/compare/v0.38.0...v0.39.0))
 
 ### Highlights
 
 We've made updates to our documentation, beginning with the completion of the first section of the Pauli Twirling user guide, which offers a comprehensive introduction to this feature.
-Additionally, we've added a new tutorial on CDR (Clifford Data Regression) using [Qrack](https://github.com/unitaryfund/qrack/) as an efficient near-Clifford simulator.
+Additionally, we've added a new tutorial on CDR (Clifford Data Regression) using [Qrack](https://github.com/unitaryfoundation/qrack/) as an efficient near-Clifford simulator.
 This demonstrates a workflow that harnesses the speed of Qrack in the CDR training phase, while providing users with an in-depth look at how to integrate Mitiq and Qrack effectively.
 
 #### 📓 Documentation
@@ -90,7 +540,7 @@ This demonstrates a workflow that harnesses the speed of Qrack in the CDR traini
 
 ## Version 0.38.0 
 
-([Full Changelog](https://github.com/unitaryfund/mitiq/compare/v0.37.0...v0.38.0))
+([Full Changelog](https://github.com/unitaryfoundation/mitiq/compare/v0.37.0...v0.38.0))
 
 ### Highlights
 
@@ -125,7 +575,7 @@ This demonstrates a workflow that harnesses the speed of Qrack in the CDR traini
 
 ## Version 0.37.0
 
-([Full Changelog](https://github.com/unitaryfund/mitiq/compare/v0.36.0...v0.37.0))
+([Full Changelog](https://github.com/unitaryfoundation/mitiq/compare/v0.36.0...v0.37.0))
 
 ### Highlights
 
@@ -167,7 +617,7 @@ This demonstrates a workflow that harnesses the speed of Qrack in the CDR traini
 
 ## Version 0.36.0
 
-([Full Changelog](https://github.com/unitaryfund/mitiq/compare/v0.35.0...v0.36.0))
+([Full Changelog](https://github.com/unitaryfoundation/mitiq/compare/v0.35.0...v0.36.0))
 
 ### Highlights
 
@@ -178,7 +628,7 @@ This demonstrates a workflow that harnesses the speed of Qrack in the CDR traini
 ```bash
 pip install mitiq[qiskit]
 ```
-and similarly for all other [supported integrations](https://github.com/unitaryfund/mitiq/blob/main/INTEGRATIONS.txt).
+and similarly for all other [supported integrations](https://github.com/unitaryfoundation/mitiq/blob/main/INTEGRATIONS.txt).
 This ensures compatibility between all dependency packages required by Mitiq for frontend integration and those in the user's environment.
 
 **Quantum Error Mitigation methods**: Users can now discover the available quantum error mitigation techniques by executing:
@@ -596,7 +1046,7 @@ execute_with_qse(circuit, executor, check_operators, code_hamiltonian, observabl
 ```
 
 This feature is still in flux, and would greatly benefit from further testing.
-Do give a try, and [let us know if you have feedback](https://github.com/unitaryfund/mitiq/issues/new/)!
+Do give a try, and [let us know if you have feedback](https://github.com/unitaryfoundation/mitiq/issues/new/)!
 More details can be found in our [API-doc](https://mitiq.readthedocs.io/en/latest/apidoc.html#module-mitiq.qse.qse).
 Congratulations to @bubakazouba for the great work here.
 
@@ -716,7 +1166,7 @@ twirled_value = pt.execute_with_pauli_twirling(circuit, expval_executor)
 ```
 
 <sup>\*</sup>Thorough testing and documentation of Pauli Twirling to follow in future releases.
-If any bugs or inconsistencies are encountered, please [open an issue](https://github.com/unitaryfund/mitiq/issues/new).
+If any bugs or inconsistencies are encountered, please [open an issue](https://github.com/unitaryfoundation/mitiq/issues/new).
 
 ### All changes
 
@@ -900,7 +1350,7 @@ This release officially adds support for the learning-based PEC sub-technique wh
 [fully documented](https://mitiq.readthedocs.io/en/latest/guide/pec-3-options.html#applying-learning-based-pec) and ready to be applied by
 Mitiq users.
 We are still assessing the stability of this new sub-technique, so if you notice any bugs, please let us know by opening
-[issues](https://github.com/unitaryfund/mitiq/issues) on GitHub.
+[issues](https://github.com/unitaryfoundation/mitiq/issues) on GitHub.
 
 Functions to apply Readout Error Mitigation (REM) are also introduced in this release, special thanks to Amir Ebrahimi for this contribution!
 
@@ -909,7 +1359,7 @@ method is included in the ZNE section of the user guide.
 Special thanks to Purva Thakre for this contribution!
 
 During the release cycle we accepted the
-[RFC for implementation of calibration tools (Solution 1)](https://github.com/unitaryfund/mitiq/issues/1578).
+[RFC for implementation of calibration tools (Solution 1)](https://github.com/unitaryfoundation/mitiq/issues/1578).
 We also completed a prototype of this approach, which will be released in a future version of Mitiq.
 
 In addition, this release adds support for qubit-independent representations for PEC, along with bug fixes and minor dependency upgrades.
@@ -1035,7 +1485,7 @@ Special thanks to the external contributors @yitchen-tim, @amirebrahimi and @isa
 
 ### Summary
 
-This release cycle focused on review and approval of two RFCs, one for Readout Error Mitigation (REM) [#1387](https://github.com/unitaryfund/mitiq/issues/1387) and one for Identity insertion noise scaling [#335](https://github.com/unitaryfund/mitiq/issues/335) (not listed as PRs). It also includes bug fixes and minor dependency upgrades.
+This release cycle focused on review and approval of two RFCs, one for Readout Error Mitigation (REM) [#1387](https://github.com/unitaryfoundation/mitiq/issues/1387) and one for Identity insertion noise scaling [#335](https://github.com/unitaryfoundation/mitiq/issues/335) (not listed as PRs). It also includes bug fixes and minor dependency upgrades.
 
 ### All Changes
 
@@ -1124,7 +1574,7 @@ Along with the great contributions from hackers, this release focused on expandi
 ### Summary
 
 This release officially adds support for the digital dynamical decoupling (DDD) technique which is now [fully documented](https://mitiq.readthedocs.io/en/latest/guide/ddd.html) and so ready to be applied by Mitiq users. This is still very new technique and so, if you notice any bugs, please let us know by
-opening [issues](https://github.com/unitaryfund/mitiq/issues) on GihHub.
+opening [issues](https://github.com/unitaryfoundation/mitiq/issues) on GihHub.
 A further notable addition is the function [generate_quantum_volume_circuit()](https://mitiq.readthedocs.io/en/latest/apidoc.html#mitiq.benchmarks.quantum_volume_circuits.generate_quantum_volume_circuit) by @nickdgardner, extending the Mitiq benchmarking module with quantum volume
 circuits.
 
@@ -1240,7 +1690,7 @@ The HTML rendering of all PyQuil examples in our documentation is now fixed. Tha
 
 We also thank @Rahul-Mistri for adding GHZ circuits to our benchmarking module and for making Clifford circuits compatible with the Mitiq CDR technique (instead of raising an error as it happened before this release).
 
-We discussed and approved the design documents (RFC) for two new error-mitigation techniques: _learning-based PEC_ and _digital dynamical decoupling_. You can find them at [this link](https://github.com/unitaryfund/mitiq/projects/7). Special thanks go to @Misty-W and @Aaron-Robertson!
+We discussed and approved the design documents (RFC) for two new error-mitigation techniques: _learning-based PEC_ and _digital dynamical decoupling_. You can find them at [this link](https://github.com/unitaryfoundation/mitiq/projects/7). Special thanks go to @Misty-W and @Aaron-Robertson!
 
 ### All Changes
 
@@ -1845,5 +2295,5 @@ This marks the first public release of Mitiq on a stable version.
 
 - **Initial release (internal).**
 
-[Github]: https://github.com/unitaryfund/mitiq
+[Github]: https://github.com/unitaryfoundation/mitiq
 [PyPI]: https://pypi.org/project/mitiq/0.1a2/

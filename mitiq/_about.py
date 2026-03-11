@@ -1,4 +1,4 @@
-# Copyright (C) Unitary Fund
+# Copyright (C) Unitary Foundation
 #
 # This source code is licensed under the GPL license (v3) found in the
 # LICENSE file in the root directory of this source tree.
@@ -24,9 +24,7 @@ def about() -> None:
         pyquil_version = "Not installed"
 
     try:
-        from qiskit import __qiskit_version__
-
-        qiskit_version = __qiskit_version__["qiskit"]
+        from qiskit import __version__ as qiskit_version
     except ImportError:
         qiskit_version = "Not installed"
 
@@ -38,7 +36,7 @@ def about() -> None:
     about_str = f"""
 Mitiq: A Python toolkit for implementing error mitigation on quantum computers
 ==============================================================================
-Authored by: Mitiq team, 2020 & later (https://github.com/unitaryfund/mitiq)
+Authored by: Mitiq team, 2020 & later (https://github.com/unitaryfoundation/mitiq)
 
 Mitiq Version:\t{mitiq.__version__}
 

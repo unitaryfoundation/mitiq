@@ -1,4 +1,4 @@
-# Copyright (C) Unitary Fund
+# Copyright (C) Unitary Foundation
 #
 # This source code is licensed under the GPL license (v3) found in the
 # LICENSE file in the root directory of this source tree.
@@ -6,8 +6,9 @@
 """Tools for sampling from the noisy representations of ideal operations."""
 
 import warnings
+from collections.abc import Sequence
 from copy import deepcopy
-from typing import Any, Dict, List, Optional, Sequence, Tuple, Union
+from typing import Any
 
 import cirq
 import numpy as np
@@ -25,9 +26,9 @@ from mitiq.utils import _equal
 def sample_sequence(
     ideal_operation: QPROGRAM,
     representations: Sequence[OperationRepresentation],
-    random_state: Optional[Union[int, np.random.RandomState]] = None,
+    random_state: int | np.random.RandomState | None = None,
     num_samples: int = 1,
-) -> Tuple[List[QPROGRAM], List[int], float]:
+) -> tuple[list[QPROGRAM], list[int], float]:
     """Samples a list of implementable sequences from the quasi-probability
     representation of the input ideal operation.
     Returns the list of sequences, the corresponding list of signs and the
@@ -110,10 +111,10 @@ def sample_sequence(
 def _cirq_sample_circuit(
     ideal_circuit: cirq.Circuit,
     representations: Sequence[OperationRepresentation],
-    random_state: Optional[Union[int, np.random.RandomState]] = None,
+    random_state: int | np.random.RandomState | None = None,
     num_samples: int = 1,
-    extra_data: Dict[str, Any] = {},
-) -> List[cirq.Circuit]:
+    extra_data: dict[str, Any] | None = None,
+) -> list[cirq.Circuit]:
     """Cirq version of the more general "sample_circuit" function.
 
     Args:
@@ -136,6 +137,9 @@ def _cirq_sample_circuit(
         ValueError:
             If a representation is not found for an operation in the circuit.
     """
+    if extra_data is None:
+        extra_data = {}
+
     if isinstance(random_state, int):
         random_state = np.random.RandomState(random_state)
 
@@ -167,9 +171,9 @@ def _cirq_sample_circuit(
 def sample_circuit(
     ideal_circuit: QPROGRAM,
     representations: Sequence[OperationRepresentation],
-    random_state: Optional[Union[int, np.random.RandomState]] = None,
+    random_state: int | np.random.RandomState | None = None,
     num_samples: int = 1,
-) -> Tuple[List[QPROGRAM], List[int], float]:
+) -> tuple[list[QPROGRAM], list[int], float]:
     """Samples a list of implementable circuits from the quasi-probability
     representation of the input ideal circuit.
     Returns the list of circuits, the corresponding list of signs and the
@@ -198,11 +202,11 @@ def sample_circuit(
         _cirq_sample_circuit,
         one_to_many=True,
     )
-    extra_data: Dict[str, Any] = {}
+    extra_data: dict[str, Any] = {}
     sampled_qprograms = qprogram_sample_circuit(
         ideal_circuit, representations, random_state, num_samples, extra_data
     )
-    signs: List[int] = extra_data["signs"]
+    signs: list[int] = extra_data["signs"]
     norm: float = extra_data["norm"]
 
     return sampled_qprograms, signs, norm

@@ -192,7 +192,7 @@ This can occasionally happen when the random circuit contains gates that are har
 
 We can now repeat the above procedure with many random circuits to get a better understanding of how these two technologies interact in a more general setting.
 To do this we execute the above code many times, each iteration using a new random circuit on 4 qubits with depth 40.
-Because compiling many large circuits is computationally expensive, we leave the code our from this notebook, but it can be accessed in our [research repository](https://github.com/unitaryfund/research/blob/main/ieee-quantum-week/compilation-with-error-mitigation-tutorial/bqskit.ipynb).
+Because compiling many large circuits is computationally expensive, we leave the code our from this notebook, but it can be accessed in our [research repository](https://github.com/unitaryfoundation/research/blob/main/ieee-quantum-week/compilation-with-error-mitigation-tutorial/bqskit.ipynb).
 
 Once the errors are computed for each circuit we can collect the results in a histogram to get an idea of how compilation and mitigation affects accuracy more generally.
 
@@ -203,7 +203,7 @@ Once the errors are computed for each circuit we can collect the results in a hi
 ```
 
 These results show that using error mitigation improves the accuracy of both uncompiled, and compiled circuits.
-The [tutorial](https://github.com/unitaryfund/research/blob/main/ieee-quantum-week/compilation-with-error-mitigation-tutorial/bqskit.ipynb) in the research repository shows further that error mitigation both reduces the mean, and standard deviation of these distributions.
+The [tutorial](https://github.com/unitaryfoundation/research/blob/main/ieee-quantum-week/compilation-with-error-mitigation-tutorial/bqskit.ipynb) in the research repository shows further that error mitigation both reduces the mean, and standard deviation of these distributions.
 
 In this tutorial we've seen how one can use error mitigation in conjunction with circuit compilation.
 For more information check out the [BQSKit](https://bqskit.readthedocs.io/en/latest/) and [Mitiq](../index.md) documentation.

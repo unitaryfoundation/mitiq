@@ -1,4 +1,4 @@
-# Copyright (C) Unitary Fund
+# Copyright (C) Unitary Foundation
 #
 # This source code is licensed under the GPL license (v3) found in the
 # LICENSE file in the root directory of this source tree.
@@ -60,27 +60,24 @@ I 2
 X 0
 Y 1
 Z 2
-RX(pi/2) 0
-RY(pi/2) 1
-RZ(pi/2) 2
+RX(1.5707963267948966) 0
+RY(1.5707963267948966) 1
+RZ(1.5707963267948966) 2
 H 0
 CZ 0 1
 CNOT 1 2
-CPHASE(pi/2) 0 1
-CPHASE00(pi/2) 1 2
-CPHASE01(pi/2) 0 1
-CPHASE10(pi/2) 1 2
+CPHASE(1.5707963267948966) 0 1
 ISWAP 0 1
 SWAP 1 2
-XY(pi/2) 0 1
+XY(1.5707963267948966) 0 1
 CCNOT 0 1 2
 CSWAP 0 1 2
 """
 
 
 def test_to_pyquil_from_pyquil_almost_all_gates():
-    """PHASE, PSWAP, S, T, declaration, and measurement don't convert back
-    and forth perfectly (in terms of labels -- the program unitaries and
+    """PHASE, PSWAP, CHPASEij, S, T, declaration, and measurement don't convert
+    back and forth perfectly (in terms of labels -- the program unitaries and
     number of measurements are equivalent)."""
     p = Program(MEASURELESS_QUIL_PROGRAM)
     assert p.out() == to_pyquil(from_pyquil(p)).out()

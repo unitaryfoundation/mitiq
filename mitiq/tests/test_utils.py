@@ -1,4 +1,4 @@
-# Copyright (C) Unitary Fund
+# Copyright (C) Unitary Foundation
 #
 # This source code is licensed under the GPL license (v3) found in the
 # LICENSE file in the root directory of this source tree.
@@ -26,6 +26,8 @@ from cirq import (
     ops,
 )
 
+from mitiq import SUPPORTED_PROGRAM_TYPES
+from mitiq.interface import compare_cost, convert_from_mitiq
 from mitiq.utils import (
     _append_measurements,
     _are_close_dict,
@@ -444,3 +446,59 @@ def test_qem_methods_basic():
         prefix, suffix = module.split(".")
         assert prefix == "mitiq"
         assert len(suffix) <= 3
+
+
+@pytest.mark.parametrize("circuit_type", SUPPORTED_PROGRAM_TYPES.keys())
+def test_compare_cost_basic(circuit_type):
+    q0, q1 = cirq.LineQubit.range(2)
+    base = cirq.Circuit(
+        cirq.H(q0),
+        cirq.CNOT(q0, q1),
+        cirq.measure(q0, q1),
+    )
+    qem_circuits = [
+        cirq.Circuit(
+            cirq.H(q0),
+            cirq.CNOT(q0, q1),
+            cirq.measure(q0, q1),
+        ),
+        cirq.Circuit(
+            cirq.H(q0),
+            cirq.CNOT(q0, q1),
+            cirq.H(q1),
+            cirq.measure(q0, q1),
+        ),
+    ]
+    base_native = convert_from_mitiq(base, circuit_type)
+    qem_native = [convert_from_mitiq(c, circuit_type) for c in qem_circuits]
+    cost = compare_cost(base_native, qem_native)
+    assert cost["extra_circuits"] == 1
+    assert cost["gate_overhead"] == {"1q": 2, "2q": 1, "nq": 0}
+    assert "shots_per_circuit" not in cost
+
+
+@pytest.mark.parametrize("circuit_type", SUPPORTED_PROGRAM_TYPES.keys())
+def test_compare_cost_with_shots(circuit_type):
+    q0, q1 = cirq.LineQubit.range(2)
+    base = cirq.Circuit(
+        cirq.H(q0),
+        cirq.CNOT(q0, q1),
+        cirq.measure(q0, q1),
+    )
+    qem_circuits = [
+        cirq.Circuit(
+            cirq.H(q0),
+            cirq.CNOT(q0, q1),
+            cirq.measure(q0, q1),
+        ),
+        cirq.Circuit(
+            cirq.H(q0),
+            cirq.CNOT(q0, q1),
+            cirq.H(q1),
+            cirq.measure(q0, q1),
+        ),
+    ]
+    base_native = convert_from_mitiq(base, circuit_type)
+    qem_native = [convert_from_mitiq(c, circuit_type) for c in qem_circuits]
+    cost = compare_cost(base_native, qem_native, shots=100)
+    assert cost["shots_per_circuit"] == 50

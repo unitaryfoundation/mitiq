@@ -1,4 +1,4 @@
-# Copyright (C) Unitary Fund
+# Copyright (C) Unitary Foundation
 #
 # This source code is licensed under the GPL license (v3) found in the
 # LICENSE file in the root directory of this source tree.
@@ -6,8 +6,8 @@
 
 """High-level Quantum Susbapce Expansion tools."""
 
+from collections.abc import Callable, Sequence
 from functools import wraps
-from typing import Callable, Dict, List, Sequence, Union
 
 from mitiq import QPROGRAM, Executor, Observable, PauliString, QuantumResult
 from mitiq.qse.qse_utils import (
@@ -18,11 +18,12 @@ from mitiq.qse.qse_utils import (
 
 def execute_with_qse(
     circuit: QPROGRAM,
-    executor: Union[Executor, Callable[[QPROGRAM], QuantumResult]],
+    executor: Executor | Callable[[QPROGRAM], QuantumResult],
     check_operators: Sequence[PauliString],
     code_hamiltonian: Observable,
     observable: Observable,
-    pauli_string_to_expectation_cache: Dict[PauliString, complex] = {},
+    pauli_string_to_expectation_cache: dict[PauliString, complex]
+    | None = None,
 ) -> float:
     """Function for the calculation of an observable from some circuit of
     interest to be mitigated with quantum subspace expansion (QSE).
@@ -40,6 +41,9 @@ def execute_with_qse(
     Returns:
         The expectation value estimated with QSE.
     """
+    if pauli_string_to_expectation_cache is None:
+        pauli_string_to_expectation_cache = {}
+
     projector = get_projector(
         circuit,
         executor,
@@ -69,7 +73,8 @@ def mitigate_executor(
     check_operators: Sequence[PauliString],
     code_hamiltonian: Observable,
     observable: Observable,
-    pauli_string_to_expectation_cache: Dict[PauliString, complex] = {},
+    pauli_string_to_expectation_cache: dict[PauliString, complex]
+    | None = None,
 ) -> Callable[[QPROGRAM], float]:
     """Returns a modified version of the input 'executor' which is
     error-mitigated with quantum subspace expansion (QSE).
@@ -86,6 +91,9 @@ def mitigate_executor(
     Returns:
         The error-mitigated version of the input executor.
     """
+    if pauli_string_to_expectation_cache is None:
+        pauli_string_to_expectation_cache = {}
+
     executor_obj = Executor(executor)
     if not executor_obj.can_batch:
 
@@ -103,7 +111,7 @@ def mitigate_executor(
     else:
 
         @wraps(executor)
-        def new_executor(circuits: List[QPROGRAM]) -> List[float]:
+        def new_executor(circuits: list[QPROGRAM]) -> list[float]:
             return [
                 execute_with_qse(
                     circuit,
@@ -123,7 +131,8 @@ def qse_decorator(
     check_operators: Sequence[PauliString],
     code_hamiltonian: Observable,
     observable: Observable,
-    pauli_string_to_expectation_cache: Dict[PauliString, complex] = {},
+    pauli_string_to_expectation_cache: dict[PauliString, complex]
+    | None = None,
 ) -> Callable[
     [Callable[[QPROGRAM], QuantumResult]], Callable[[QPROGRAM], float]
 ]:
@@ -143,6 +152,9 @@ def qse_decorator(
     Returns:
         The error-mitigating decorator to be applied to an executor function.
     """
+
+    if pauli_string_to_expectation_cache is None:
+        pauli_string_to_expectation_cache = {}
 
     def decorator(
         executor: Callable[[QPROGRAM], QuantumResult],

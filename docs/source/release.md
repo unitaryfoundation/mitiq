@@ -34,8 +34,8 @@ This task has two parts:
     ```{tip}
     Alternatively, the list of released changes can be generated via [GitHub CLI](https://cli.github.com/) with the following commands:
         
-        LATEST_TAG=$(gh release list --repo unitaryfund/mitiq --limit 1 --json tagName --jq '.[0].tagName')
-        gh api repos/unitaryfund/mitiq/compare/$LATEST_TAG...main --paginate --jq '.commits | reverse | .[] | "- " + (.commit.message | split("\n")[0]) + " [@" + .author.login + "]"'
+        LATEST_TAG=$(gh release list --repo unitaryfoundation/mitiq --limit 1 --json tagName --jq '.[0].tagName')
+        gh api repos/unitaryfoundation/mitiq/compare/$LATEST_TAG...main --paginate --jq '.commits | reverse | .[] | "- " + (.commit.message | split("\n")[0]) + " [@" + .author.login + "]"'
     This method requires installing (and authenticating on) the Github CLI, but has the advantage that the output list comes already with Github handles, hence removing a tedious step for the release manager.    
     ``` 
 2.  The release manager should add a "Summary" section with a couple
@@ -85,8 +85,8 @@ new release.
 ```
 
 There should be a new draft release on GitHub created by the
-[gh-release](https://github.com/unitaryfund/mitiq/blob/main/.github/workflows/gh-release.yml) action, triggered by the tag you made in the
-previous step [here](https://github.com/unitaryfund/mitiq/releases). You
+[gh-release](https://github.com/unitaryfoundation/mitiq/blob/main/.github/workflows/gh-release.yml) action, triggered by the tag you made in the
+previous step [here](https://github.com/unitaryfoundation/mitiq/releases). You
 will need to review it and publish the release.
 
 - GitHub will create compressed files with the repository.
@@ -105,25 +105,24 @@ significant amount of time. You can check the build status
 ### Release the new version on PyPI
 
 Once the GitHub release is published, the release is also published on
-PyPI by the [publish-pypi](https://github.com/unitaryfund/mitiq/blob/main/.github/workflows/publish-pypi.yml) action. This may require a few
+PyPI by the [publish-pypi](https://github.com/unitaryfoundation/mitiq/blob/main/.github/workflows/publish-pypi.yml) action. This may require a few
 minutes. If it seems like it didn't push a new version to PyPI, you can
 trigger it manually. Go to
-<https://github.com/unitaryfund/mitiq/actions/workflows/publish-pypi.yml>
+<https://github.com/unitaryfoundation/mitiq/actions/workflows/publish-pypi.yml>
 and use the "Run Workflow" button to publish the new version on PyPI.
 
 In case the action for releasing on PyPI fails, the Python commands to
 release Mitiq are:
 
 ```bash
-python -m pip install --upgrade pip
-pip install build twine
-python -m build
-twine upload dist/*
+uv build
+uv publish
 ```
 
 ```{note}
 You need to be a registered maintainer of Mitiq project on PyPI to
-upload a new release on PyPI from your local machine.
+upload a new release on PyPI from your local machine as a token is 
+required for authentication.
 ```
 
 ## Update the new development version

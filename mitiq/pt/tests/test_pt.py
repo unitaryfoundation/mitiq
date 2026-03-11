@@ -1,4 +1,4 @@
-# Copyright (C) Unitary Fund
+# Copyright (C) Unitary Foundation
 #
 # This source code is licensed under the GPL license (v3) found in the
 # LICENSE file in the root directory of this source tree.
@@ -185,7 +185,7 @@ def test_noisy_pennylane(noise_name):
     for i, op in enumerate(twirled_circuit.operations):
         if op.name in noisy_gates:
             for j in range(1, len(op.wires) + 1):
-                assert (
-                    type(twirled_circuit.operations[i + j])
-                    == PENNYLANE_NOISE_OP[noise_name]
+                assert isinstance(
+                    twirled_circuit.operations[i + j],
+                    PENNYLANE_NOISE_OP[noise_name],
                 )

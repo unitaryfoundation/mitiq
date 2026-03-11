@@ -1,4 +1,4 @@
-# Copyright (C) Unitary Fund
+# Copyright (C) Unitary Foundation
 #
 # This source code is licensed under the GPL license (v3) found in the
 # LICENSE file in the root directory of this source tree.
@@ -9,14 +9,15 @@
 
 import warnings
 from itertools import product
-from typing import Any, Optional
+from typing import Any
 
 import numpy as np
+import numpy.typing as npt
 from cirq import Circuit
-from numpy.typing import NDArray
 
+from mitiq.interface import accept_any_qprogram_as_input
 from mitiq.lre.multivariate_scaling.layerwise_folding import (
-    _get_scale_factor_vectors,
+    get_scale_factor_vectors,
 )
 
 
@@ -51,12 +52,13 @@ def _full_monomial_basis_term_exponents(
     return sorted(exponents, key=lambda term: (sum(term), term[::-1]))
 
 
+@accept_any_qprogram_as_input
 def sample_matrix(
     input_circuit: Circuit,
     degree: int,
     fold_multiplier: int,
-    num_chunks: Optional[int] = None,
-) -> NDArray[Any]:
+    num_chunks: int | None = None,
+) -> npt.NDArray[Any]:
     r"""
     Defines the square sample matrix required for multivariate extrapolation as
     defined in :cite:`Russo_2024_LRE`.
@@ -66,12 +68,13 @@ def sample_matrix(
     and the scale factor vectors define the columns.
 
     Args:
-        input_circuit: Circuit to be scaled.
+        input_circuit: Quantum circuit to be scaled.
         degree: Degree of the multivariate polynomial.
         fold_multiplier: Scaling gap required by unitary folding.
-        num_chunks: Number of desired approximately equal chunks. When the
-            number of chunks is the same as the layers in the input circuit,
-            the input circuit is unchanged.
+        num_chunks: The number of equally-sized circuit chunks. Noise
+            scaling is applied to each chunk independently. Ranges from 1
+            (all gates in one chunk, similar to ZNE) to the
+            number of circuit layers (default, each layer is a separate chunk).
 
     Returns:
         Matrix of the evaluated monomial basis terms from the scale factor
@@ -93,7 +96,7 @@ def sample_matrix(
     if fold_multiplier < 1:
         raise ValueError("Fold multiplier must be greater than or equal to 1.")
 
-    scale_factor_vectors = _get_scale_factor_vectors(
+    scale_factor_vectors = get_scale_factor_vectors(
         input_circuit, degree, fold_multiplier, num_chunks
     )
     num_layers = len(scale_factor_vectors[0])
@@ -120,11 +123,12 @@ def sample_matrix(
     return sample_matrix
 
 
+@accept_any_qprogram_as_input
 def multivariate_richardson_coefficients(
     input_circuit: Circuit,
     degree: int,
     fold_multiplier: int,
-    num_chunks: Optional[int] = None,
+    num_chunks: int | None = None,
 ) -> list[float]:
     r"""
     Defines the function to find the linear combination coefficients from the
@@ -132,8 +136,9 @@ def multivariate_richardson_coefficients(
     :cite:`Russo_2024_LRE`).
 
     We use the sample matrix to find the constants of linear combination
-    $c = (c_1, c_2, c_3, …, c_M)$ associated with a known vector of noisy
-    expectation values $z = (<O(λ_1)>, <O(λ_2)>, <O(λ_3)>, ..., <O(λ_M)>)^T$.
+    $c = (c_1, c_2, …, c_M)$ associated with a known vector of noisy
+    expectation values :math:`z = (\langle O(λ_1)\rangle,
+    \langle O(λ_2)\rangle, ..., \langle O(λ_M)\rangle)^T`.
 
     The coefficients are found through the ratio of the determinants of $M_i$
     and the sample matrix. The new matrix $M_i$ is defined by replacing the ith
@@ -144,9 +149,10 @@ def multivariate_richardson_coefficients(
         input_circuit: Circuit to be scaled.
         degree: Degree of the multivariate polynomial.
         fold_multiplier: Scaling gap required by unitary folding.
-        num_chunks: Number of desired approximately equal chunks. When the
-            number of chunks is the same as the layers in the input circuit,
-            the input circuit is unchanged.
+        num_chunks: The number of equally-sized circuit chunks. Noise
+            scaling is applied to each chunk independently. Ranges from 1
+            (all gates in one chunk, similar to ZNE) to the number of circuit
+            layers (default, each layer is a separate chunk).
 
     Returns:
         List of the evaluated monomial basis terms using the scale factor
@@ -156,7 +162,7 @@ def multivariate_richardson_coefficients(
         input_circuit, degree, fold_multiplier, num_chunks
     )
     num_layers = len(
-        _get_scale_factor_vectors(
+        get_scale_factor_vectors(
             input_circuit, degree, fold_multiplier, num_chunks
         )
     )
@@ -169,9 +175,9 @@ def multivariate_richardson_coefficients(
             + "large sample matrix is calculated through "
             + "`np.linalg.slogdet`."
         )
-        sign, logdet = np.linalg.slogdet(  # pragma: no cover
+        sign, logdet = np.linalg.slogdet(
             input_sample_matrix
-        )
+        )  # pragma: no cover
         det = sign * np.exp(logdet)  # pragma: no cover
 
     if np.isinf(det):

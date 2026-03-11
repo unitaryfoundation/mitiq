@@ -1,4 +1,4 @@
-# Copyright (C) Unitary Fund
+# Copyright (C) Unitary Foundation
 #
 # This source code is licensed under the GPL license (v3) found in the
 # LICENSE file in the root directory of this source tree.
@@ -8,13 +8,18 @@ extrapolation as defined in :cite:`Russo_2024_LRE`.
 """
 
 import itertools
+from collections.abc import Callable
 from copy import deepcopy
-from typing import Any, Callable, List, Optional, Tuple
+from typing import Any
 
 import numpy as np
 from cirq import Circuit
 
 from mitiq import QPROGRAM
+from mitiq.interface import (
+    accept_any_qprogram_as_input,
+    accept_qprogram_and_validate,
+)
 from mitiq.utils import _append_measurements, _pop_measurements
 from mitiq.zne.scaling import fold_gates_at_random
 from mitiq.zne.scaling.folding import _check_foldable
@@ -40,32 +45,31 @@ def _get_num_layers_without_measurements(input_circuit: Circuit) -> int:
 
 
 def _get_chunks(
-    input_circuit: Circuit, num_chunks: Optional[int] = None
-) -> List[Circuit]:
+    input_circuit: Circuit, num_chunks: int | None = None
+) -> list[Circuit]:
     """Splits a circuit into approximately equal chunks.
 
     Adapted from:
     https://stackoverflow.com/questions/2130016/splitting-a-list-into-n-parts-of-approximately-equal-length
 
-        Args:
-            input_circuit: Circuit of interest.
-            num_chunks: Number of desired approximately equal chunks,
-                * when num_chunks == num_layers, the original circuit is
-                    returned.
-                * when num_chunks == 1, the entire circuit is chunked into 1
-                    layer.
-        Returns:
-            split_circuit: Circuit of interest split into approximately equal
-                chunks.
+    Args:
+        input_circuit: Circuit of interest.
+        num_chunks: The number of equally-sized circuit chunks. Noise
+            scaling is applied to each chunk independently. Ranges from 1
+            (all gates in one chunk, similar to ZNE) to the number of
+            circuit layers (default, each layer is a separate chunk).
 
-        Raises:
-            ValueError:
-                When the number of chunks for the input circuit is larger than
-                    the number of layers in the input circuit.
+    Returns:
+        split_circuit: Circuit of interest split into approximately equal
+            chunks.
 
-            ValueError:
-                When the number of chunks is less than 1.
+    Raises:
+        ValueError:
+            When the number of chunks for the input circuit is larger than
+            the number of layers in the input circuit.
 
+        ValueError:
+            When the number of chunks is less than 1.
     """
     num_layers = _get_num_layers_without_measurements(input_circuit)
     if num_chunks is None:
@@ -89,25 +93,29 @@ def _get_chunks(
     ]
 
 
-def _get_scale_factor_vectors(
+@accept_any_qprogram_as_input
+def get_scale_factor_vectors(
     input_circuit: Circuit,
     degree: int,
     fold_multiplier: int,
-    num_chunks: Optional[int] = None,
-) -> List[Tuple[Any, ...]]:
+    num_chunks: int | None = None,
+) -> list[tuple[Any, ...]]:
     """Returns the patterned scale factor vectors required for multivariate
     extrapolation.
 
-        Args:
-            input_circuit: Circuit to be scaled.
-            degree: Degree of the multivariate polynomial.
-            fold_multiplier: Scaling gap required by unitary folding.
-            num_chunks: Number of desired approximately equal chunks.
+    Args:
+        input_circuit: Quantum circuit to be scaled.
+        degree: Degree of the multivariate polynomial.
+        fold_multiplier: Scaling gap required by unitary folding.
+        num_chunks: The number of equally-sized circuit chunks. Noise
+            scaling is applied to each chunk independently. Ranges from 1
+            (all gates in one chunk, similar to ZNE) to the number of
+            circuit layers (default, each layer is a separate chunk).
 
-        Returns:
-            scale_factor_vectors: A vector of scale factors where each
-                component in the vector corresponds to the layer in the input
-                circuit.
+    Returns:
+        scale_factor_vectors: A vector of scale factors where each
+            component in the vector corresponds to the layer in the input
+            circuit.
     """
 
     circuit_chunks = _get_chunks(input_circuit, num_chunks)
@@ -134,15 +142,15 @@ def _get_scale_factor_vectors(
     ]
 
 
-def multivariate_layer_scaling(
+def _multivariate_layer_scaling(
     input_circuit: Circuit,
     degree: int,
     fold_multiplier: int,
-    num_chunks: Optional[int] = None,
+    num_chunks: int | None = None,
     folding_method: Callable[
         [QPROGRAM, float], QPROGRAM
     ] = fold_gates_at_random,
-) -> List[Circuit]:
+) -> list[Circuit]:
     r"""
     Defines the noise scaling function required for Layerwise Richardson
     Extrapolation as defined in :cite:`Russo_2024_LRE`.
@@ -161,9 +169,10 @@ def multivariate_layer_scaling(
         input_circuit: Circuit to be scaled.
         degree: Degree of the multivariate polynomial.
         fold_multiplier: Scaling gap required by unitary folding.
-        num_chunks: Number of desired approximately equal chunks. When the
-            number of chunks is the same as the layers in the input circuit,
-            the input circuit is unchanged.
+        num_chunks: The number of equally-sized circuit chunks. Noise
+            scaling is applied to each chunk independently. Ranges from 1
+            (all gates in one chunk, similar to ZNE) to the number of circuit
+            layers (default, each layer is a separate chunk).
         folding_method: Unitary folding method. Default is
             :func:`fold_gates_at_random`.
 
@@ -188,7 +197,7 @@ def multivariate_layer_scaling(
     circuit_copy = deepcopy(input_circuit)
     terminal_measurements = _pop_measurements(circuit_copy)
 
-    scaling_pattern = _get_scale_factor_vectors(
+    scaling_pattern = get_scale_factor_vectors(
         circuit_copy, degree, fold_multiplier, num_chunks
     )
 
@@ -208,3 +217,8 @@ def multivariate_layer_scaling(
         multiple_folded_circuits.append(folded_circuit)
 
     return multiple_folded_circuits
+
+
+multivariate_layer_scaling = accept_qprogram_and_validate(
+    _multivariate_layer_scaling, one_to_many=True
+)

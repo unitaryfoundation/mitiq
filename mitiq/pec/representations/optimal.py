@@ -1,4 +1,4 @@
-# Copyright (C) Unitary Fund
+# Copyright (C) Unitary Foundation
 #
 # This source code is licensed under the GPL license (v3) found in the
 # LICENSE file in the root directory of this source tree.
@@ -6,7 +6,7 @@
 """Functions for finding optimal representations given a noisy basis."""
 
 import functools
-from typing import List, Optional, cast
+from typing import cast
 
 import numpy as np
 import numpy.typing as npt
@@ -22,9 +22,9 @@ from mitiq.utils import matrix_to_vector
 
 def minimize_one_norm(
     ideal_matrix: npt.NDArray[np.complex64],
-    basis_matrices: List[npt.NDArray[np.complex64]],
+    basis_matrices: list[npt.NDArray[np.complex64]],
     tol: float = 1.0e-8,
-    initial_guess: Optional[npt.NDArray[np.float64]] = None,
+    initial_guess: npt.NDArray[np.float64] | None = None,
 ) -> npt.NDArray[np.float64]:
     r"""
     Returns the list of real coefficients :math:`[x_0, x_1, \dots]`,
@@ -64,10 +64,7 @@ def minimize_one_norm(
     # Express the representation constraint written in the docstring in the
     # form of a matrix multiplication applied to the x vector: A @ x == b.
     matrix_a = np.array(
-        [
-            matrix_to_vector(mat)  # type: ignore[arg-type]
-            for mat in basis_matrices_real
-        ]
+        [matrix_to_vector(mat) for mat in basis_matrices_real]  # type: ignore[arg-type]
     ).T
     array_b = matrix_to_vector(ideal_matrix_real)  # type: ignore[arg-type]
 
@@ -89,9 +86,9 @@ def minimize_one_norm(
 
 def find_optimal_representation(
     ideal_operation: QPROGRAM,
-    noisy_operations: List[NoisyOperation],
+    noisy_operations: list[NoisyOperation],
     tol: float = 1.0e-8,
-    initial_guess: Optional[npt.NDArray[np.float64]] = None,
+    initial_guess: npt.NDArray[np.float64] | None = None,
     is_qubit_dependent: bool = True,
 ) -> OperationRepresentation:
     r"""Returns the ``OperationRepresentation`` of the input ideal operation
@@ -128,7 +125,7 @@ def find_optimal_representation(
 
     ops = list(ideal_cirq_circuit.all_operations())
     super_ops = [
-        kraus_to_super(cast(List[npt.NDArray[np.complex64]], kraus(op)))
+        kraus_to_super(cast(list[npt.NDArray[np.complex64]], kraus(op)))
         for op in ops
     ]
 

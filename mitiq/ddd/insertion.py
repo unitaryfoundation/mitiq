@@ -1,11 +1,11 @@
-# Copyright (C) Unitary Fund
+# Copyright (C) Unitary Foundation
 #
 # This source code is licensed under the GPL license (v3) found in the
 # LICENSE file in the root directory of this source tree.
 
 """Tools to determine slack windows in circuits and to insert DDD sequences."""
 
-from typing import Callable
+from collections.abc import Callable
 
 import numpy as np
 import numpy.typing as npt
@@ -46,7 +46,7 @@ def _validate_integer_matrix(mask: npt.NDArray[np.int64]) -> None:
     """Ensures the input is a NumPy 2d array with integer elements."""
     if not isinstance(mask, np.ndarray):
         raise TypeError("The input matrix must be a numpy.ndarray object.")
-    if not np.issubdtype(mask.dtype.type, int):
+    if not np.issubdtype(mask.dtype, int):
         raise TypeError("The input matrix must have integer elements.")
     if len(mask.shape) != 2:
         raise ValueError("The input must be a 2-dimensional array.")

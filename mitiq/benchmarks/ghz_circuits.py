@@ -1,11 +1,9 @@
-# Copyright (C) Unitary Fund
+# Copyright (C) Unitary Foundation
 #
 # This source code is licensed under the GPL license (v3) found in the
 # LICENSE file in the root directory of this source tree.
 
 """Functions for creating GHZ circuits for benchmarking purposes."""
-
-from typing import Optional
 
 import cirq
 
@@ -15,7 +13,7 @@ from mitiq.interface import convert_from_mitiq
 
 def generate_ghz_circuit(
     n_qubits: int,
-    return_type: Optional[str] = None,
+    return_type: str | None = None,
 ) -> QPROGRAM:
     """Returns a GHZ circuit ie a circuit that prepares an ``n_qubits``
     GHZ state.

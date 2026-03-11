@@ -1,19 +1,19 @@
-# Copyright (C) Unitary Fund
+# Copyright (C) Unitary Foundation
 #
 # This source code is licensed under the GPL license (v3) found in the
 # LICENSE file in the root directory of this source tree.
 
 """Run experiments without error mitigation."""
 
-from typing import Callable, Optional, Union
+from collections.abc import Callable
 
 from mitiq import QPROGRAM, Executor, Observable, QuantumResult
 
 
 def execute(
     circuit: QPROGRAM,
-    executor: Union[Executor, Callable[[QPROGRAM], QuantumResult]],
-    observable: Optional[Observable] = None,
+    executor: Executor | Callable[[QPROGRAM], QuantumResult],
+    observable: Observable | None = None,
 ) -> float:
     """Evaluates the expectation value associated to the input circuit
     without using error mitigation.

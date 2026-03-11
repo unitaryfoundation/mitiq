@@ -1,11 +1,10 @@
-# Copyright (C) Unitary Fund
+# Copyright (C) Unitary Foundation
 #
 # This source code is licensed under the GPL license (v3) found in the
 # LICENSE file in the root directory of this source tree.
 
 """Tests for the Quantum Subspace Expansion top level API."""
 
-from typing import List
 from unittest.mock import patch
 
 import cirq
@@ -32,7 +31,7 @@ def execute_with_depolarized_noise(circuit: QPROGRAM) -> np.ndarray:
     )
 
 
-def batched_execute_with_depolarized_noise(circuits) -> List[np.ndarray]:
+def batched_execute_with_depolarized_noise(circuits) -> list[np.ndarray]:
     return [execute_with_depolarized_noise(circuit) for circuit in circuits]
 
 
@@ -254,7 +253,7 @@ def get_5_1_3_code_check_operators_and_code_hamiltonian() -> tuple:
 
 def prepare_logical_0_state_for_5_1_3_code():
     """
-    To simplify the testing logic. We hardcode the the logical 0 and logical 1
+    To simplify the testing logic. We hardcode the logical 0 and logical 1
     states of the [[5,1,3]] code, copied from:
     https://en.wikipedia.org/wiki/Five-qubit_error_correcting_code
     We then use Gram-Schmidt orthogonalization to fill up the rest of the
@@ -263,7 +262,7 @@ def prepare_logical_0_state_for_5_1_3_code():
     """
 
     def gram_schmidt(
-        orthogonal_vecs: List[np.ndarray],
+        orthogonal_vecs: list[np.ndarray],
     ) -> np.ndarray:
         orthonormalVecs = [
             vec / np.sqrt(np.vdot(vec, vec)) for vec in orthogonal_vecs

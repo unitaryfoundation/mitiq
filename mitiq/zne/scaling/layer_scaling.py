@@ -1,12 +1,12 @@
-# Copyright (C) Unitary Fund
+# Copyright (C) Unitary Foundation
 #
 # This source code is licensed under the GPL license (v3) found in the
 # LICENSE file in the root directory of this source tree.
 
 """Functions for layer-wise unitary folding on supported circuits."""
 
+from collections.abc import Callable
 from copy import deepcopy
-from typing import Callable, List
 
 import cirq
 import numpy as np
@@ -20,7 +20,7 @@ from mitiq.zne.scaling.folding import _check_foldable
 
 @accept_qprogram_and_validate
 def layer_folding(
-    circuit: cirq.Circuit, layers_to_fold: List[int]
+    circuit: cirq.Circuit, layers_to_fold: list[int]
 ) -> cirq.Circuit:
     """Applies a variable amount of folding to select layers of a circuit.
 

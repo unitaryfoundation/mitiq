@@ -47,9 +47,7 @@ Given a graph $(V, E)$, the **MaxCut problem** is to divide the nodes $V$ into t
 $V_A$ and $V_B$, such that the number of cuts (edges with one vertex in $V_A$ and one vertex in $V_B$) is maximized.
 
 ```{code-cell} ipython3
-from typing import List, Tuple
-
-def count_cuts(graph: List[Tuple[int]], set_a: set, set_b: set):
+def count_cuts(graph: list[tuple[int]], set_a: set[int], set_b: set[int]):
     """Counts the number of cuts of a graph bipartition."""
     num_cuts = 0
     for edge in graph:
@@ -101,7 +99,7 @@ The corresponding function to count the number of graph cuts can be written in t
 similar to the quantum cost function that we will define in the next section.
 
 ```{code-cell} ipython3
-def count_cuts_from_string(graph: List[Tuple[int]], bitstring: str):
+def count_cuts_from_string(graph: list[tuple[int]], bitstring: str):
     """Counts the number of cuts of a graph bipartition represented as a (big-endian) bitstring.
     """
     cost = 0
@@ -166,7 +164,7 @@ and the maximum number of cuts is equal to minus the ground state energy.
 from cirq import NamedQubit, Circuit, identity_each, ZZ
 import numpy as np
 
-def qaoa_hamiltonian(graph: List[Tuple[float]]) -> np.ndarray:
+def qaoa_hamiltonian(graph: list[tuple[float]]) -> np.ndarray:
     """Returns the cost Hamiltonian associated to the input graph.
     """
     # Get all the nodes of the graph
@@ -251,9 +249,8 @@ $|s_1 \rangle |s_2 \rangle \cdots |s_n\rangle$ representing optimal bipartitions
 
 ```{code-cell} ipython3
 from cirq import H, X
-from typing import List, Tuple
 
-def qaoa_ansatz(graph: List[Tuple[float]], params: List[float]) -> Circuit:
+def qaoa_ansatz(graph: list[tuple[float]], params: list[float]) -> Circuit:
     """Generates a QAOA circuit associated to the input graph, for
     a specific choice of variational parameters.
 
@@ -337,14 +334,14 @@ executor(circuit, obs=hamiltonian, noise=0)
 Let us define a function which can be used for running the QAOA optimization.
 
 ```{code-cell} ipython3
-from typing import Callable
+from collections.abc import Callable
 from scipy.optimize import minimize
 
 
 def minimize_cost(
     cost_function: Callable[[np.array], float],
     init_params: np.array,
-) -> Tuple[float, np.ndarray, List[float]]:
+) -> tuple[float, np.ndarray, list[float]]:
     """Minimizes a cost function which depends on an array variational parameters.
 
     Args:

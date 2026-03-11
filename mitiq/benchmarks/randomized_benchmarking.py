@@ -1,4 +1,4 @@
-# Copyright (C) Unitary Fund
+# Copyright (C) Unitary Foundation
 # Portions of this code have been adapted from Cirq's qubit characterizations
 # module.
 # Original authors: Cirq developers: Xiao Mi, Dave Bacon, Craig Gidney,
@@ -9,8 +9,6 @@
 # LICENSE file in the root directory of this source tree.
 
 """Functions for generating randomized benchmarking circuits."""
-
-from typing import List, Optional
 
 import cirq
 import numpy as np
@@ -30,9 +28,9 @@ def generate_rb_circuits(
     n_qubits: int,
     num_cliffords: int,
     trials: int = 1,
-    return_type: Optional[str] = None,
-    seed: Optional[int] = None,
-) -> List[QPROGRAM]:
+    return_type: str | None = None,
+    seed: int | None = None,
+) -> list[QPROGRAM]:
     """Returns a list of randomized benchmarking circuits, i.e. circuits that
     are equivalent to the identity.
 
@@ -52,8 +50,7 @@ def generate_rb_circuits(
     """
     if n_qubits not in (1, 2):
         raise ValueError(
-            "Only generates RB circuits on one or two "
-            f"qubits not {n_qubits}."
+            f"Only generates RB circuits on one or two qubits not {n_qubits}."
         )
     qubits = cirq.LineQubit.range(n_qubits)
     cliffords = _single_qubit_cliffords()

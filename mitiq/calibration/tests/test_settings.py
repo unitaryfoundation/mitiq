@@ -1,4 +1,4 @@
-# Copyright (C) Unitary Fund
+# Copyright (C) Unitary Foundation
 #
 # This source code is licensed under the GPL license (v3) found in the
 # LICENSE file in the root directory of this source tree.
@@ -401,3 +401,33 @@ def test_num_circuits_required_raw_execution():
         technique_params={},
     )
     assert undefine_strategy.num_circuits_required() == 1
+
+
+def test_custom_circuit_problem():
+    q0, q1 = cirq.LineQubit.range(2)
+    circ = cirq.Circuit(cirq.H(q0), cirq.CNOT(q0, q1))
+    ideal = {"00": 0.5, "11": 0.5}
+
+    settings = Settings(
+        benchmarks=[
+            {
+                "circuit_type": "custom",
+                "circuit": circ,
+                "ideal_distribution": ideal,
+            }
+        ],
+        strategies=[
+            {
+                "technique": "zne",
+                "scale_noise": fold_global,
+                "factory": LinearFactory([1.0, 2.0]),
+            }
+        ],
+    )
+
+    problems = settings.make_problems()
+    assert len(problems) == 1
+    problem = problems[0]
+    assert problem.type == "custom"
+    assert problem.circuit == circ
+    assert problem.ideal_distribution == ideal

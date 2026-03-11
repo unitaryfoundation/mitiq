@@ -12,6 +12,12 @@ kernelspec:
 ---
 
 # How do I use DDD?
+DDD works in two main stages: generate noise-scaled circuits by inserting DDD sequences, and combining the resulting measurements post-execution.
+
+The section [Apply DDD](#apply-ddd) applies the protocol in a single step, and then in the section [Step by step application of DDD](#step-by-step-application-of-ddd), we’ll show how you can apply the technique stepwise.
+
+This workflow can be executed by a single call to {func}`.execute_with_ddd`.
+If more control is needed over the protocol, Mitiq provides {func}`.ddd.construct_circuits` and {func}`.ddd.combine_results` to handle the first and second steps respectively.
 
 As with all techniques, DDD is compatible with any frontend supported by Mitiq:
 
@@ -109,6 +115,38 @@ non-trivial effect on the final error, but it is not always a positive effect.
 For example, one can check that by changing the parameters of the input circuit,
 the error with DDD is sometimes larger than the unmitigated error.
 ```
+
+## Step by step application of DDD
+
+In this section we demonstrate the use of {func}`.ddd.construct_circuits` for those who might want to generate circuits with DDD sequences inserted, and have more control over the protocol.
+
+### Generating circuits with DDD sequences
+
+Here we will generate a list of circuits with DDD sequences inserted, which will later be passed to the executor. The number of circuits generated can be checked using the `len` function.
+
+```{code-cell} ipython3
+circuits_with_ddd = ddd.construct_circuits(circuit=circuit, rule=rule, num_trials=10)
+
+print(f"Number of sample circuits:    {len(circuits_with_ddd)}")
+print(circuits_with_ddd[0])
+```
+
+Now that we have many circuits, we can inspect them (or even change them if desired).
+We can then execute the circuits and store the results in a list, which can be used by the {func}`.ddd.combine_results` to get a combined result.
+
+### Combine the results
+
+We will now get the combined result of the list of circuits generated.
+
+```{code-cell} ipython3
+results = [execute(circuit) for circuit in circuits_with_ddd]
+combined_result = ddd.combine_results(results)
+
+print(f"Error with single-step DDD: {abs(ideal_value - mitigated_result) :.5f}")
+print(f"Error with multi-step DDD:  {abs(ideal_value - combined_result) :.5f}")
+```
+
+As you can see above, the multi-step DDD gives the same the error as the single step DDD error using the function {func}`.execute_with_ddd`.
 
 +++
 

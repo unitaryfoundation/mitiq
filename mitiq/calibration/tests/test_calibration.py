@@ -1,4 +1,4 @@
-# Copyright (C) Unitary Fund
+# Copyright (C) Unitary Foundation
 #
 # This source code is licensed under the GPL license (v3) found in the
 # LICENSE file in the root directory of this source tree.
@@ -496,3 +496,29 @@ def test_ExperimentResults_ensure_full():
     er = ExperimentResults(strategies, problems)
     with pytest.raises(MissingResultsError):
         er.ensure_full()
+
+
+def test_calibrator_custom_ideal_distribution():
+    q = cirq.LineQubit(0)
+    circ = cirq.Circuit(cirq.X(q))
+
+    settings = Settings(
+        benchmarks=[{"circuit_type": "custom", "circuit": circ}],
+        strategies=[
+            {
+                "technique": "zne",
+                "scale_noise": fold_global,
+                "factory": LinearFactory([1.0, 2.0]),
+            }
+        ],
+    )
+
+    ideal_exec = Executor(partial(damping_execute, noise_level=0))
+    cal = Calibrator(
+        damping_execute,
+        frontend="cirq",
+        settings=settings,
+        ideal_executor=ideal_exec,
+    )
+    problem = cal.problems[0]
+    assert problem.ideal_distribution == {"1": 1.0}
