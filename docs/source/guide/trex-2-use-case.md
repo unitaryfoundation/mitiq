@@ -60,3 +60,6 @@ kernelspec:
 | Model-free | Yes | No |
 | Additional circuits needed | Yes (calibration + twirling) | No |
 | Scaling | Linear in randomizations | Depends on matrix inversion |
+
+For more information on TREX and other error mitigation techniques, see
+the [QEM Zoo](https://qem-zoo.github.io/).

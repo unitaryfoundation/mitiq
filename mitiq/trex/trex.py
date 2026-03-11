@@ -24,7 +24,7 @@ import numpy.typing as npt
 
 from mitiq import QPROGRAM, MeasurementResult
 from mitiq.executor.executor import Executor
-from mitiq.interface.conversions import convert_to_mitiq
+from mitiq.interface.conversions import convert_from_mitiq, convert_to_mitiq
 from mitiq.observable.observable import Observable
 from mitiq.trex.trex_utils import (
     create_calibration_circuit,
@@ -116,7 +116,7 @@ def construct_circuits(
     num_randomizations: int = 32,
     random_state: int | np.random.RandomState | None = None,
 ) -> tuple[
-    list[cirq.Circuit], list[cirq.Circuit], list[npt.NDArray[np.int64]]
+    list[QPROGRAM], list[QPROGRAM], list[npt.NDArray[np.int64]]
 ]:
     """Generate twirled measurement circuits and calibration circuits for TREX.
 
@@ -135,11 +135,11 @@ def construct_circuits(
         A tuple ``(twirled_circuits, calibration_circuits,
         randomization_strings)`` where:
 
-        - ``twirled_circuits``: List of circuits with readout twirling
-          applied. Ordered as [group0_rand0, group0_rand1, ...,
-          group1_rand0, ...].
-        - ``calibration_circuits``: List of calibration circuits (one per
-          randomization, shared across groups).
+        - ``twirled_circuits``: List of circuits (in the same format as the
+          input ``circuit``) with readout twirling applied. Ordered as
+          [group0_rand0, group0_rand1, ..., group1_rand0, ...].
+        - ``calibration_circuits``: List of calibration circuits in the same
+          format as the input (one per randomization, shared across groups).
         - ``randomization_strings``: List of random bitstrings used for
           twirling (one per randomization).
     """
@@ -149,7 +149,7 @@ def construct_circuits(
         rng = random_state
 
     # Convert circuit to Cirq for internal processing.
-    cirq_circuit, _ = convert_to_mitiq(circuit)
+    cirq_circuit, input_type = convert_to_mitiq(circuit)
     all_qubits = sorted(cirq_circuit.all_qubits())
     n_qubits = len(all_qubits)
 
@@ -189,7 +189,14 @@ def construct_circuits(
         calib = create_calibration_circuit(all_qubits, s)
         calibration_circuits.append(calib)
 
-    return twirled_circuits, calibration_circuits, randomization_strings
+    # Convert circuits back to the user's input type.
+    twirled_out = [
+        convert_from_mitiq(c, input_type) for c in twirled_circuits
+    ]
+    calibration_out = [
+        convert_from_mitiq(c, input_type) for c in calibration_circuits
+    ]
+    return twirled_out, calibration_out, randomization_strings
 
 
 def combine_results(
@@ -266,8 +273,8 @@ def combine_results(
             if corrected_values:
                 corrected_exp = float(np.mean(corrected_values))
             else:
+                # Can only happen if randomization_strings is empty.
                 corrected_exp = 0.0
-
             total += pauli.coeff * corrected_exp
 
     return float(np.real(total))

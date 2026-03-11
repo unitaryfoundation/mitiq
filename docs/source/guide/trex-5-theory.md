@@ -48,6 +48,12 @@ $$
 A_\star = \frac{1}{2^n} \sum_{\mathbf{s}} X^{\mathbf{s}} A X^{\mathbf{s}}
 $$
 
+Note that the sum is over all $2^n$ possible bitstrings, but this is a
+*mathematical* description of the twirled channel. In practice, we do
+**not** need to enumerate all $2^n$ strings. Instead, we sample a small
+number $N$ of random strings (the ``num_randomizations`` parameter) and
+average the corrected estimates, which converges to the correct value.
+
 The mathematical key insight is that this twirling transforms the
 noise channel so that the computational basis states are eigenvectors
 of $A_\star$, effectively *diagonalizing* the readout error channel.
@@ -61,6 +67,10 @@ eigenvalue:
 $$
 \lambda_{\mathbf{w}} = \frac{1}{2^n} \sum_{\mathbf{a}, \mathbf{b}} (-1)^{\langle \mathbf{w}, \mathbf{a} + \mathbf{b} \rangle} A_{\mathbf{a}, \mathbf{b}}
 $$
+
+where $A_{\mathbf{a}, \mathbf{b}}$ is the entry of the readout error
+matrix giving the probability of observing outcome $\mathbf{a}$ when
+the true state is $\mathbf{b}$.
 
 The true (noiseless) expectation value of $P$ can be recovered by
 dividing the noisy (twirled) expectation by this eigenvalue:

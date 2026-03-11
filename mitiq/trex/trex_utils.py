@@ -19,10 +19,13 @@ def insert_x_before_measurements(
     bitstring: npt.NDArray[np.int64],
     qubits: Sequence[cirq.Qid],
 ) -> cirq.Circuit:
-    """Insert X gates before measurement gates based on a random bitstring.
+    """Insert X gates before the first measurement moment based on a
+    random bitstring.
 
     For each qubit where ``bitstring[i] == 1``, an X gate is inserted
-    immediately before the measurement gate on that qubit.
+    immediately before the first moment containing a measurement gate.
+    This is designed for circuits with a single terminal measurement
+    (as produced by ``PauliStringCollection.measure_in``).
 
     Args:
         circuit: A Cirq circuit containing measurement gates.
@@ -59,7 +62,6 @@ def insert_x_before_measurements(
         new_moments.append(moment)
 
     if not x_inserted:
-        # No measurement found; append X gates at the end.
         new_moments.append(cirq.Moment(x_ops))
 
     return cirq.Circuit(new_moments)
