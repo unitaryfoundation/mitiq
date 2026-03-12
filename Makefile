@@ -44,7 +44,7 @@ docs-clean:
 
 .PHONY: docs-lite
 docs-lite:
-	uv run env DOCS_LITE=1 make -C docs html
+	uv run env DOCS_LITE=1 sphinx-build -b html docs/source docs/build/html-lite
 
 .PHONY: linkcheck
 linkcheck:
