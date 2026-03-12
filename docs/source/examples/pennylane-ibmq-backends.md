@@ -32,7 +32,7 @@ def circuit():
     return qml.expval(qml.PauliZ(0))
 ```
 
-In this example, we will use the the expectation value of the the Pauli $Z$ operator our observable to mitigate, the expectation value of which **should evaluate to one in the noiseless setting**.
+In this example, we will use the expectation value of the the Pauli $Z$ operator as our observable to mitigate, the expectation value of which **should evaluate to one in the noiseless setting**.
 
 ## High-level usage
 
