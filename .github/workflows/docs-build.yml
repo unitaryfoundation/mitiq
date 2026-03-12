@@ -12,11 +12,19 @@ on:
   push:
     branches:
       - main
+  workflow_dispatch:
+  schedule:
+    - cron: "0 4 * * *"
+
+concurrency:
+  group: docs-build-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
 
 permissions: {}
 
 jobs:
   docs:
+    if: github.event_name != 'pull_request' || !github.event.pull_request.draft
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -36,24 +44,31 @@ jobs:
       - name: Install Python dependencies
         run: make install
 
+      - name: Build fast Sphinx docs for PRs
+        if: github.event_name == 'pull_request'
+        run: make docs-lite
+
       # - name: Run the quilc & qvm Docker images
       #   run: |
       #     docker run --rm -idt -p 5000:5000 rigetti/qvm -S
       #     docker run --rm -idt -p 5555:5555 rigetti/quilc -R
 
       - name: Generate hash from all files excluding example notebooks
+        if: github.event_name != 'pull_request'
         id: gen_hash
         run: |
           HASH=$(find . -type f -not -path './docs/source/examples/*' | sort | xargs cat | sha256sum | awk '{print $1}')
           echo "hash=$HASH" >> $GITHUB_OUTPUT
 
       - name: Fetch Jupyter cache
+        if: github.event_name != 'pull_request'
         uses: actions/cache@v5
         with:
           path: ./docs/build/.jupyter_cache
           key: jupyter-cache-${{ steps.gen_hash.outputs.hash }}
 
-      - name: Build and test Sphinx docs
+      - name: Build and test full Sphinx docs
+        if: github.event_name != 'pull_request'
         run: |
           sudo apt update
           sudo apt install ocl-icd-opencl-dev
