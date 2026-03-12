@@ -134,6 +134,18 @@ no_implicit_optional = true
 warn_redundant_casts = true
 warn_unused_configs = true
 
+[tool.coverage.run]
+omit = [
+    "*/tests/*",
+    "mitiq/_about.py",
+]
+
+[tool.coverage.report]
+exclude_lines = [
+    "pragma: no cover",
+    "raise NotImplementedError",
+]
+
 [tool.setuptools.packages.find]
 where = ["."]
 
