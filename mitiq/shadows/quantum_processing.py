@@ -18,9 +18,7 @@ except ImportError:
 from mitiq import MeasurementResult
 
 
-def generate_random_pauli_strings(
-    num_qubits: int, num_strings: int
-) -> list[str]:
+def sample_random_pauli_bases(num_qubits: int, num_strings: int) -> list[str]:
     """Generate a list of random Pauli strings.
 
     Args:
@@ -32,9 +30,9 @@ def generate_random_pauli_strings(
     """
 
     # Sample random Pauli operators uniformly from ("X", "Y", "Z")
-    unitary_ensemble = ["X", "Y", "Z"]
-    paulis = np.random.choice(unitary_ensemble, (num_strings, num_qubits))
-    return ["".join(pauli) for pauli in paulis]
+    pauli_bases = ("X", "Y", "Z")
+    paulis = np.random.choice(pauli_bases, (num_strings, num_qubits))
+    return ["".join(row) for row in paulis]
 
 
 def get_rotated_circuits(
@@ -81,7 +79,7 @@ def get_rotated_circuits(
 
 def random_pauli_measurement(
     circuit: cirq.Circuit,
-    n_total_measurements: int,
+    num_measurements: int,
     executor: Callable[[cirq.Circuit], MeasurementResult],
     qubits: list[cirq.Qid] | None = None,
 ) -> tuple[list[str], list[str]]:
@@ -111,9 +109,7 @@ def random_pauli_measurement(
 
     qubits = sorted(list(circuit.all_qubits())) if qubits is None else qubits
     num_qubits = len(qubits)
-    pauli_strings = generate_random_pauli_strings(
-        num_qubits, n_total_measurements
-    )
+    pauli_strings = sample_random_pauli_bases(num_qubits, num_measurements)
 
     # Rotate and attach measurement gates to the circuit
     rotated_circuits = get_rotated_circuits(

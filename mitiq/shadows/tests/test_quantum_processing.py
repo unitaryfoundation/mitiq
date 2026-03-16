@@ -23,9 +23,9 @@ from mitiq.interface.mitiq_qiskit.qiskit_utils import (
     sample_bitstrings as qiskit_sample_bitstrings,
 )
 from mitiq.shadows.quantum_processing import (
-    generate_random_pauli_strings,
     get_rotated_circuits,
     random_pauli_measurement,
+    sample_random_pauli_bases,
 )
 
 
@@ -49,13 +49,13 @@ def test_tqdm_import_not_available():
     importlib.reload(mitiq.shadows.quantum_processing)
 
 
-def test_generate_random_pauli_strings():
+def test_sample_random_pauli_bases():
     """Tests that the function generates random Pauli strings."""
     num_qubits = 5
     num_strings = 10
 
     # Generate random pauli strings
-    result = generate_random_pauli_strings(num_qubits, num_strings)
+    result = sample_random_pauli_bases(num_qubits, num_strings)
 
     # Check that the result is a list
     assert isinstance(result, list)
@@ -74,10 +74,10 @@ def test_generate_random_pauli_strings():
     # Check that the function raises an exception for negative num_qubits
     # or num_strings
     with pytest.raises(ValueError):
-        generate_random_pauli_strings(-1, num_strings)
+        sample_random_pauli_bases(-1, num_strings)
 
     with pytest.raises(ValueError):
-        generate_random_pauli_strings(num_qubits, -1)
+        sample_random_pauli_bases(num_qubits, -1)
 
 
 def cirq_executor(circuit: cirq.Circuit) -> MeasurementResult:
