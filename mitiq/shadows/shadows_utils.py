@@ -44,18 +44,19 @@ def create_string(str_len: int, loc_list: list[int]) -> str:
 def valid_bitstrings(
     num_qubits: int, max_hamming_weight: int | None = None
 ) -> set[str]:
-    """
-    Description.
+    """Return all bitstrings on ``num_qubits`` bits up to a Hamming weight.
 
     Args:
-        num_qubits:
-        max_hamming_weight:
+        num_qubits: The number of bits in each bitstring.
+        max_hamming_weight: If provided, only bitstrings whose Hamming weight
+            (number of 1s) is at most this value are returned. Must be >= 1.
 
     Returns:
-        The set of all valid bitstrings on ``num_qubits`` bits, with a maximum
-        hamming weight.
+        The set of all valid bitstrings on ``num_qubits`` bits, optionally
+        filtered to a maximum Hamming weight.
+
     Raises:
-        Value error when ``max_hamming_weight`` is not greater than 0.
+        ValueError: If ``max_hamming_weight`` is provided and less than 1.
     """
     if max_hamming_weight and max_hamming_weight < 1:
         raise ValueError(
@@ -100,19 +101,23 @@ def fidelity(
 def batch_calibration_data(
     data: tuple[list[str], list[str]], num_batches: int
 ) -> Generator[tuple[list[str], list[str]], None, None]:
-    """Batch calibration into chunks of size batch_size.
+    """Split calibration data into ``num_batches`` equal-sized chunks.
 
     Args:
         data: The random Pauli measurement outcomes.
-        batch_size: Size of each batch that will be processed.
+        num_batches: Number of batches to split the data into.
 
     Yields:
         Tuples of bit strings and pauli strings.
     """
     bits, paulis = data
     batch_size = len(bits) // num_batches
-    for i in range(0, len(bits), batch_size):
-        yield bits[i : i + batch_size], paulis[i : i + batch_size]
+    for i in range(num_batches):
+        start = i * batch_size
+        yield (
+            bits[start : start + batch_size],
+            paulis[start : start + batch_size],
+        )
 
 
 def n_measurements_tomography_bound(epsilon: float, num_qubits: int) -> int:
@@ -137,7 +142,8 @@ def local_clifford_shadow_norm(obs: mitiq.PauliString) -> float:
     Clifford group.
 
     Args:
-        obs: A self-adjoint operator, i.e. mitiq.PauliString with real coffe.
+        obs: A self-adjoint operator, i.e. mitiq.PauliString with real
+            coefficient.
     Returns:
         Shadow norm when unitary ensemble is local Clifford group.
     """
