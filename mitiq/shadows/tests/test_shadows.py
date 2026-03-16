@@ -77,9 +77,9 @@ def test_shadow_quantum_processing():
     assert isinstance(result, tuple), f"Expected a tuple, got {type(result)}"
 
     # Check that the tuple contains two lists
-    assert (
-        len(result) == 2
-    ), f"Expected two lists in the tuple, got {len(result)}"
+    assert len(result) == 2, (
+        f"Expected two lists in the tuple, got {len(result)}"
+    )
     assert isinstance(result[0], list)
     assert isinstance(result[1], list)
 
@@ -97,9 +97,9 @@ def test_classical_post_processing():
     )
 
     # Check that the result is a dictionary
-    assert isinstance(
-        result, dict
-    ), f"Expected a dictionary, got {type(result)}"
+    assert isinstance(result, dict), (
+        f"Expected a dictionary, got {type(result)}"
+    )
 
     # Check that the dictionary contains the expected keys
     assert "reconstructed_state" in result
