@@ -171,12 +171,12 @@ Equation {eq}`eq-label` comes from equation S13 in the paper {cite}`huang2020pre
 ```{code-cell} ipython3
 # error rate of state reconstruction epsilon < 1.
 epsilon = 1
-# number of total measurements should perform for error rate epsilon
-n_total_measurements = n_measurements_tomography_bound(epsilon, num_qubits)
+# minimum number of measurements required for error rate epsilon
+num_measurements = n_measurements_tomography_bound(epsilon, num_qubits)
 
-print("n_total_measurements = {}".format(n_total_measurements))
-shadow_outcomes = shadow_quantum_processing(
-    test_circuits, cirq_executor, n_total_measurements
+print(f"required measurements: {num_measurements}")
+bitstrings, bases = shadow_quantum_processing(
+    test_circuit, cirq_executor, num_measurements
 )
 ```                                                                      
 
@@ -265,9 +265,9 @@ b_strings, u_strings = shadow_outcomes
 b_lists = np.array(b_strings)
 u_lists = np.array(u_strings)
 n_measurement_list = np.arange(
-    int(n_total_measurements / 100),
-    n_total_measurements,
-    int(n_total_measurements / 10),
+    num_measurements // 100,
+    num_measurements,
+    num_measurements // 20,
 )
 # repeat the experiment 3 times
 n_runs = 3

@@ -18,9 +18,7 @@ except ImportError:
 from mitiq import MeasurementResult
 
 
-def generate_random_pauli_strings(
-    num_qubits: int, num_strings: int
-) -> list[str]:
+def sample_random_pauli_bases(num_qubits: int, num_strings: int) -> list[str]:
     """Generate a list of random Pauli strings.
 
     Args:
@@ -32,9 +30,9 @@ def generate_random_pauli_strings(
     """
 
     # Sample random Pauli operators uniformly from ("X", "Y", "Z")
-    unitary_ensemble = ["X", "Y", "Z"]
-    paulis = np.random.choice(unitary_ensemble, (num_strings, num_qubits))
-    return ["".join(pauli) for pauli in paulis]
+    pauli_bases = ("X", "Y", "Z")
+    paulis = np.random.choice(pauli_bases, (num_strings, num_qubits))
+    return ["".join(row) for row in paulis]
 
 
 def get_rotated_circuits(
@@ -81,7 +79,7 @@ def get_rotated_circuits(
 
 def random_pauli_measurement(
     circuit: cirq.Circuit,
-    n_total_measurements: int,
+    num_measurements: int,
     executor: Callable[[cirq.Circuit], MeasurementResult],
     qubits: list[cirq.Qid] | None = None,
 ) -> tuple[list[str], list[str]]:
@@ -91,7 +89,7 @@ def random_pauli_measurement(
 
     Args:
         circuit: A Cirq circuit.
-        n_total_measurements: The number of snapshots.
+        num_measurements: The number of snapshots.
         executor: A callable that runs a circuit and returns a single
             bitstring.
         qubits: The qubits in the circuit to be measured. If None,
@@ -103,7 +101,7 @@ def random_pauli_measurement(
 
     Returns:
         Tuple containing two lists of strings, each of length equal to
-        ``n_total_measurements``. Strings in the first list are sequences of
+        ``num_measurements``. Strings in the first list are sequences of
         0's and 1's, which represent qubit measurements outcomes in the
         computational basis (e.g. "01001"). Strings in the second list are
         sequences of Pauli-measurement performed on each qubit (e.g. "XZZYY").
@@ -111,9 +109,7 @@ def random_pauli_measurement(
 
     qubits = sorted(list(circuit.all_qubits())) if qubits is None else qubits
     num_qubits = len(qubits)
-    pauli_strings = generate_random_pauli_strings(
-        num_qubits, n_total_measurements
-    )
+    pauli_strings = sample_random_pauli_bases(num_qubits, num_measurements)
 
     # Rotate and attach measurement gates to the circuit
     rotated_circuits = get_rotated_circuits(
