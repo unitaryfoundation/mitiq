@@ -127,30 +127,19 @@ def shadow_quantum_processing(
         qubits: The qubits to measure.
 
     Returns:
-        A dictionary containing the bit strings, the Pauli strings
-        `bit_strings`: Circuit qubits computational basis
-        e.g. "01..":math:`:=|0\rangle|1\rangle..`.
-        `pauli_strings`: The local Pauli measurement performed on each
-        qubit. e.g."XY.." means perform local X-basis measurement on the
-        1st qubit, local Y-basis measurement the 2ed qubit in the circuit, etc.
+        A tuple of two lists of strings, each of length
+        ``num_total_measurements_shadow``. The first list contains bitstrings
+        of computational basis measurement outcomes (e.g. ``"01"``); the
+        second contains the corresponding Pauli bases (e.g. ``"XY"``).
     """
     if random_seed is not None:
         np.random.seed(random_seed)
-    r"""
-    Additional information:
-    Shadow stage 1: Sample random unitary form
-    :math:`\mathcal{g}\subset \mathrm{U}(2^n)` and perform computational
-    basis measurement. In the current state, we have implemented
-    local Pauli measurement, i.e. :math:`\mathcal{g} = \mathrm{Cl}_2^n`.
-    """
-    # random Pauli measurement on the circuit
-    output = random_pauli_measurement(
+    return random_pauli_measurement(
         circuit,
         n_total_measurements=num_total_measurements_shadow,
         executor=executor,
         qubits=qubits,
     )
-    return output
 
 
 def classical_post_processing(
@@ -176,18 +165,12 @@ def classical_post_processing(
             the expectation value of the observables.
 
     Returns:
-        TODO: rewrite this.
-        If `state_reconstruction` is True: state tomography matrix in
-        :math:`\mathbb{M}_{2^n}(\mathbb{C})` if use_calibration is False,
-        otherwise state tomography vector in :math:`\mathbb{C}^{4^d}`.
-        If observables is given: estimated expectation values of
-        observables.
-    """
+        A dictionary with one of two forms depending on the arguments:
 
-    """
-    Additional information:
-    Shadow stage 2: Estimate the expectation value of the observables OR
-    reconstruct the state
+        - If ``state_reconstruction`` is ``True``: ``{"reconstructed_state":
+          ndarray}`` where the array is the reconstructed density matrix.
+        - If ``observables`` is provided: a mapping from each observable's
+          string representation to its estimated expectation value.
     """
     output: dict[str, float | npt.NDArray[Any]] = {}
     if state_reconstruction:

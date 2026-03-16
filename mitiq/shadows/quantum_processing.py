@@ -64,15 +64,15 @@ def get_rotated_circuits(
             # Pauli X measurement is equivalent to H plus a Z measurement
             if pauli == "X":
                 rotated_circuit.append(cirq.H(qubit))
-            # Pauli X measurement is equivalent to S^-1*H plus a Z measurement
+            # Pauli Y measurement is equivalent to S^-1*H plus a Z measurement
             elif pauli == "Y":
                 rotated_circuit.append(cirq.S(qubit) ** -1)
                 rotated_circuit.append(cirq.H(qubit))
             # Pauli Z measurement
-            else:
-                assert (
-                    pauli == "Z"
-                ), f"Pauli must be X, Y, Z. Got {pauli} instead."
+            elif pauli != "Z":
+                raise ValueError(
+                    f"Pauli must be X, Y, or Z. Got {pauli!r} instead."
+                )
         if add_measurements:
             rotated_circuit.append(cirq.measure(*qubits))
         rotated_circuits.append(rotated_circuit)
