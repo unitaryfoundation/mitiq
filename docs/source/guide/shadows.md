@@ -11,25 +11,19 @@ kernelspec:
   name: python3
 ---
 
-```{admonition} Note:
-The documentation for Classical Shadows in Mitiq is still under construction. This users guide will change in the future.
-```
-
 # Classical Shadows
 
-Classical shadows protocol {cite}`huang2020predicting` aims to create an approximate classical representation
-of a quantum state using minimal measurements. The protocol is based on the idea of shadow tomography,
-which is a technique for reconstructing a quantum state from a small number of measurements.
-This approach not only characterizes and mitigates noise effectively but also retains
-sample efficiency and demonstrates noise resilience {cite}`chen2021robust`. For more details, see the section
-[Classical Shadow Protocol and its Robust Estimation](shadows-5-theory.md).
+Classical shadows {cite}`huang2020predicting` create an approximate classical representation of a quantum state using minimal measurements.
+The protocol is based on shadow tomography, a technique for reconstructing properties of a quantum state from a small number of measurements.
+This approach not only characterizes and mitigates noise effectively but also retains sample efficiency and demonstrates noise resilience {cite}`chen2021robust`.
+For more details, see [](./shadows-5-theory.md).
 
- 
 ```{figure} ../img/classicalshadow_workflow.png
 ---
 width: 700px
 name: shadows-workflow-overview
 ---
+Workflow of the classical shadow estimation protocol in Mitiq.
 ```
 
 ```{figure} ../img/rshadows_workflow.png
@@ -37,7 +31,7 @@ name: shadows-workflow-overview
 width: 700px
 name: rshadows-workflow-overview
 ---
-Workflow of the robust shadow estimation (RSE) in Mitiq.
+Workflow of the robust shadow estimation (RSE) protocol in Mitiq.
 ```
 
 You can get started with shadows in Mitiq with the following sections of the user guide:
@@ -47,6 +41,9 @@ You can get started with shadows in Mitiq with the following sections of the use
 maxdepth: 1
 ---
 shadows-1-intro.md
+shadows-2-use-case.md
+shadows-3-options.md
+shadows-4-low-level.md
 shadows-5-theory.md
 ```
 
@@ -54,4 +51,3 @@ Here are some examples on how to use shadows in Mitiq:
 
 - [Classical Shadows Protocol with Cirq](../examples/shadows_tutorial.md)
 - [Robust Shadows Estimation with Cirq](../examples/rshadows_tutorial.md)
-
