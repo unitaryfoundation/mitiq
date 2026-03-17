@@ -89,7 +89,7 @@ def random_pauli_measurement(
 
     Args:
         circuit: A Cirq circuit.
-        n_total_measurements: The number of snapshots.
+        num_measurements: The number of snapshots.
         executor: A callable that runs a circuit and returns a single
             bitstring.
         qubits: The qubits in the circuit to be measured. If None,
@@ -101,7 +101,7 @@ def random_pauli_measurement(
 
     Returns:
         Tuple containing two lists of strings, each of length equal to
-        ``n_total_measurements``. Strings in the first list are sequences of
+        ``num_measurements``. Strings in the first list are sequences of
         0's and 1's, which represent qubit measurements outcomes in the
         computational basis (e.g. "01001"). Strings in the second list are
         sequences of Pauli-measurement performed on each qubit (e.g. "XZZYY").

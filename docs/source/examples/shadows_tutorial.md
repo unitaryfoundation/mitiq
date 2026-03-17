@@ -176,11 +176,11 @@ In `classical_post_processing`, we pass `state_reconstruction=True` to apply the
 # error rate of state reconstruction epsilon < 1
 epsilon = 1
 # minimum number of measurements required for error rate epsilon
-n_total_measurements = n_measurements_tomography_bound(epsilon, num_qubits)
+num_measurements = n_measurements_tomography_bound(epsilon, num_qubits)
 
-print(f"n_total_measurements: {n_total_measurements}")
+print(f"required measurements: {num_measurements}")
 bitstrings, bases = shadow_quantum_processing(
-    test_circuit, cirq_executor, n_total_measurements
+    test_circuit, cirq_executor, num_measurements
 )
 ```
 
@@ -242,9 +242,9 @@ b_lists = np.array(bitstrings)
 u_lists = np.array(bases)
 
 n_measurement_list = np.arange(
-    n_total_measurements // 100,
-    n_total_measurements,
-    n_total_measurements // 20,
+    num_measurements // 100,
+    num_measurements,
+    num_measurements // 20,
 )
 n_runs = 3
 

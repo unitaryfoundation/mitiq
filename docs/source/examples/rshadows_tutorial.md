@@ -199,13 +199,13 @@ For noisy channels, the inverse channel $\widehat{\mathcal{M}}^{-1}$ can be deri
 ```{code-cell} ipython3
 from functools import partial
 
-n_total_measurements_calibration = 20000
+num_measurements_calibration = 20000
 if run_quantum_processing:
     noisy_executor = partial(cirq_executor, noise_level=(0.1,))
     zero_state_shadow_output = shadow_quantum_processing(
         # zero circuit of 8 qubits
         circuit=cirq.Circuit(),
-        num_total_measurements_shadow=n_total_measurements_calibration,
+        num_total_measurements_shadow=num_measurements_calibration,
         executor=noisy_executor,
         qubits=qubits,
     )

@@ -144,9 +144,7 @@ def test_random_pauli_measurement_no_errors(n_qubits, executor):
     """Test that random_pauli_measurement runs without errors."""
     qubits = cirq.LineQubit.range(n_qubits)
     circuit = simple_test_circuit(qubits)
-    random_pauli_measurement(
-        circuit, n_total_measurements=10, executor=executor
-    )
+    random_pauli_measurement(circuit, num_measurements=10, executor=executor)
 
 
 @pytest.mark.parametrize("n_qubits", [1, 2, 5])
@@ -158,19 +156,19 @@ def test_random_pauli_measurement_output_dimensions(
     dimensions."""
     qubits = cirq.LineQubit.range(n_qubits)
     circuit = simple_test_circuit(qubits)
-    n_total_measurements = 10
+    num_measurements = 10
     shadow_outcomes, pauli_strings = random_pauli_measurement(
-        circuit, n_total_measurements, executor=executor
+        circuit, num_measurements, executor=executor
     )
     shadow_outcomes_shape = len(shadow_outcomes), len(shadow_outcomes[0])
     pauli_strings_shape = len(pauli_strings), len(pauli_strings[0])
-    assert shadow_outcomes_shape == (n_total_measurements, n_qubits), (
+    assert shadow_outcomes_shape == (num_measurements, n_qubits), (
         f"Shadow outcomes have incorrect shape, expected "
-        f"{(n_total_measurements, n_qubits)}, got {shadow_outcomes_shape}"
+        f"{(num_measurements, n_qubits)}, got {shadow_outcomes_shape}"
     )
-    assert pauli_strings_shape == (n_total_measurements, n_qubits), (
+    assert pauli_strings_shape == (num_measurements, n_qubits), (
         f"Pauli strings have incorrect shape, expected "
-        f"{(n_total_measurements, n_qubits)}, got {pauli_strings_shape}"
+        f"{(num_measurements, n_qubits)}, got {pauli_strings_shape}"
     )
 
 
@@ -183,7 +181,7 @@ def test_random_pauli_measurement_output_types(
     qubits = cirq.LineQubit.range(n_qubits)
     circuit = simple_test_circuit(qubits)
     shadow_outcomes, pauli_strings = random_pauli_measurement(
-        circuit, n_total_measurements=10, executor=executor
+        circuit, num_measurements=10, executor=executor
     )
     assert isinstance(shadow_outcomes[0], str)
     assert isinstance(pauli_strings[0], str)
