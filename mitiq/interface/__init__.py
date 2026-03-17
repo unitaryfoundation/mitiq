@@ -34,6 +34,12 @@ _SUBMODULES = {
 }
 
 
+# Lazy-loading via PEP 562 package-level __getattr__.
+#
+# Interface submodules (e.g. mitiq_qiskit, mitiq_pennylane) depend on
+# optional third-party packages that users may not have installed. Importing
+# them eagerly at package load time would force every user to have every
+# optional dependency installed, even if they only ever use one frontend.
 def __getattr__(name: str) -> ModuleType:
     if name in _SUBMODULES:
         module = importlib.import_module(f"mitiq.interface.{name}")
