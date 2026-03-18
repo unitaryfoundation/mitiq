@@ -280,7 +280,7 @@ def depolarizing_noise_loss_function(
             ]
         )
 
-    return np.mean((mitigated_values - ideal_values) ** 2)
+    return float(np.mean((mitigated_values - ideal_values) ** 2))
 
 
 def biased_noise_loss_function(
@@ -350,7 +350,7 @@ def biased_noise_loss_function(
             ]
         )
 
-    return np.mean((mitigated_values - ideal_values) ** 2)
+    return float(np.mean((mitigated_values - ideal_values) ** 2))
 
 
 def _parse_learning_kwargs(

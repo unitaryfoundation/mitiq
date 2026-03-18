@@ -12,8 +12,8 @@ from itertools import product
 from typing import Any
 
 import numpy as np
+import numpy.typing as npt
 from cirq import Circuit
-from numpy.typing import NDArray
 
 from mitiq.interface import accept_any_qprogram_as_input
 from mitiq.lre.multivariate_scaling.layerwise_folding import (
@@ -58,7 +58,7 @@ def sample_matrix(
     degree: int,
     fold_multiplier: int,
     num_chunks: int | None = None,
-) -> NDArray[Any]:
+) -> npt.NDArray[Any]:
     r"""
     Defines the square sample matrix required for multivariate extrapolation as
     defined in :cite:`Russo_2024_LRE`.

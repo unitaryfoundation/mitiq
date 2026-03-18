@@ -5,6 +5,8 @@
 
 """Functions for mapping circuits to (near) Clifford circuits."""
 
+from typing import Iterable
+
 import cirq
 import numpy as np
 import numpy.typing as npt
@@ -13,7 +15,7 @@ from cirq.circuits import Circuit
 from mitiq.interface import accept_any_qprogram_as_input
 
 # Z gates with these angles/exponents are Clifford gates.
-_CLIFFORD_EXPONENTS = np.array([0.0, 0.5, 1.0, 1.5])
+_CLIFFORD_EXPONENTS = [0, 1 / 2, 1, 3 / 2]
 _CLIFFORD_ANGLES = [exponent * np.pi for exponent in _CLIFFORD_EXPONENTS]
 
 
@@ -96,7 +98,6 @@ def is_clifford_angle(
     return False
 
 
-@np.vectorize
 def angle_to_proximities(angle: float, sigma: float) -> list[float]:
     """Returns probability distribution based on distance from angles to
     Clifford gates.
@@ -111,31 +112,34 @@ def angle_to_proximities(angle: float, sigma: float) -> list[float]:
     """
     s_matrix = cirq.unitary(cirq.S)
     rz_matrix = cirq.unitary(cirq.rz(angle % (2 * np.pi)))
-    # TODO: Update loop / if.
+
     dists = []
-    for exponent in range(4):
-        if exponent == 0:
-            exponent = 4
+    for exponent in (4, 1, 2, 3):  # NOTE: ordering matches _CLIFFORD_EXPONENTS
         diff = np.linalg.norm(rz_matrix - s_matrix**exponent)
         dists.append(np.exp(-((diff / sigma) ** 2)))
+
     return dists
 
 
-@np.vectorize
-def angle_to_proximity(angle: float, sigma: float) -> float:
-    """Returns probability distribution based on distance from angles to
+def angles_to_proximities(
+    angles: Iterable[float], sigma: float
+) -> list[float]:
+    """Returns distance measures based on distance from angles to
     Clifford gates.
 
     Args:
-        angle: angle to form probability distribution.
+        angles: angles of incoming gates.
+        sigma: Controls how quickly the proximity decreases as a gate gets
+            further away from Clifford. Smaller values mean only gates very
+            close to Clifford are considered similar; larger values allow gates
+            that are farther away to still have non-negligible proximity.
 
     Returns:
-        discrete value of probability distribution calculated from
-        exp(-(dist/sigma)^2) where dist = sum(dists) is the
-        sum of distances from each Clifford gate.
+        list of discrete value of probability distributions calculated from
+        exp(-(diff/sigma)^2) where diff is the distance from each angle to
+        Clifford gates.
     """
-    dists = angle_to_proximities(angle, sigma)
-    return np.max(dists)
+    return [np.max(angle_to_proximities(angle, sigma)) for angle in angles]
 
 
 @np.vectorize
@@ -146,7 +150,7 @@ def probabilistic_angle_to_clifford(
 ) -> npt.NDArray[np.float64]:
     """Returns a Clifford angle sampled from the distribution
 
-                        prob = exp(-(dist/sigma)^2)
+        prob = exp(-(dist/sigma)^2)
 
     where dist is the Frobenius norm from the 4 clifford angles and the gate
     of interest.
@@ -157,8 +161,9 @@ def probabilistic_angle_to_clifford(
     """
 
     dists = angle_to_proximities(angles, sigma)
+    normalized = dists / np.sum(dists)
 
     cliff_ang = random_state.choice(
-        _CLIFFORD_ANGLES, 1, replace=False, p=np.array(dists) / np.sum(dists)
+        _CLIFFORD_ANGLES, 1, replace=False, p=normalized
     )
     return cliff_ang

@@ -10,6 +10,7 @@ from typing import Any, Callable, Optional, Protocol, Sequence, cast
 
 import matplotlib.pyplot as plt
 import numpy as np
+import numpy.typing as npt
 from matplotlib.figure import Figure
 
 from mitiq.zne.inference import (
@@ -129,7 +130,7 @@ def visualize_fits(
                     float,
                     Optional[float],
                     list[float],
-                    Optional[np.ndarray[Any, np.dtype[Any]]],
+                    npt.NDArray[Any] | None,
                     Callable[[float], float],
                 ],
                 factory.extrapolate(

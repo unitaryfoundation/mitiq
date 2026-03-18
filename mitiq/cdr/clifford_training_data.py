@@ -13,7 +13,7 @@ import numpy as np
 from cirq.circuits import Circuit
 
 from mitiq.cdr.clifford_utils import (
-    angle_to_proximity,
+    angles_to_proximities,
     closest_clifford,
     probabilistic_angle_to_clifford,
     random_clifford,
@@ -166,10 +166,10 @@ def _select(
         non_clifford_ops: Sequence of non-Clifford operations.
         fraction_non_clifford: fraction of non-Clifford gates to change.
         method: {'uniform', 'gaussian'} method to use to select Clifford gates
-                to replace.
+            to replace.
         sigma: width of probability distribution used in selection
-                      of non-Clifford gates to replace, only has effect if
-                      method_select = 'gaussian'.
+            of non-Clifford gates to replace, only has effect if
+            method_select = 'gaussian'.
         random_state: Random state for sampling.
     """
     if random_state is None:
@@ -185,8 +185,8 @@ def _select(
         non_clifford_angles = np.array(
             [op.gate.exponent * np.pi for op in non_clifford_ops]  # type: ignore
         )
-        probabilities = angle_to_proximity(non_clifford_angles, sigma)
-        distribution = probabilities / sum(probabilities)
+        proximities = angles_to_proximities(non_clifford_angles, sigma)
+        distribution = np.array(proximities) / sum(proximities)
     else:
         raise ValueError(
             f"Arg `method_select` must be 'uniform' or 'gaussian' but was "
@@ -216,15 +216,15 @@ def _replace(
     Args:
         non_clifford_ops: array of non-Clifford angles.
         method: {'uniform', 'gaussian', 'closest'} method to use
-                        to replace selected non-Clifford gates.
+            to replace selected non-Clifford gates.
         sigma: width of probability distribution used in replacement
-                       of selected non-Clifford gates, only has effect if
-                       method_replace = 'gaussian'.
+            of selected non-Clifford gates, only has effect if
+            method_replace = 'gaussian'.
         random_state: Seed for sampling.
 
     Returns:
-        rz_non_clifford_replaced: the selected non-Clifford gates replaced by a
-                               Clifford according to some method.
+        The selected non-Clifford gates replaced by a Clifford according to
+        some method.
 
     Raises:
         Exception: If argument 'method_replace' is not either 'closest',

@@ -15,6 +15,7 @@ from mitiq.typing import (
 # Utils
 from mitiq.interface import compare_cost
 from mitiq.utils import qem_methods
+from mitiq import benchmarks
 
 # Executors and observables.
 from mitiq.executor import Executor
@@ -23,6 +24,9 @@ from mitiq.observable import PauliString, Observable
 # About and version.
 from mitiq._about import about
 from mitiq._version import __version__
+
+# QEM techniques.
+from mitiq import cdr, ddd, lre, pea, pec, pt, qse, raw, rem, shadows, vd, zne
 
 # Calibration
 from mitiq.calibration import (

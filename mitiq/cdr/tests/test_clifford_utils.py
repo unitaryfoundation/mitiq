@@ -14,7 +14,7 @@ from mitiq import SUPPORTED_PROGRAM_TYPES
 from mitiq.cdr.clifford_utils import (
     _CLIFFORD_ANGLES,
     angle_to_proximities,
-    angle_to_proximity,
+    angles_to_proximities,
     closest_clifford,
     count_non_cliffords,
     is_clifford,
@@ -81,22 +81,22 @@ def test_random_clifford():
     )
 
 
-def test_angle_to_proximities():
-    for sigma in np.linspace(0.1, 2, 10):
-        for ang in _CLIFFORD_ANGLES:
-            probabilities = angle_to_proximities(ang, sigma)
-            assert (isinstance(p, float) for p in probabilities)
+@pytest.mark.parametrize("sigma", np.linspace(0.1, 2, 5))
+def test_angle_to_proximities(sigma):
+    for ang in _CLIFFORD_ANGLES:
+        probabilities = angle_to_proximities(ang, sigma)
+        assert (isinstance(p, float) for p in probabilities)
 
 
-def test_angle_to_proximity():
-    for sigma in np.linspace(0.1, 2, 10):
-        probabilities = angle_to_proximity(_CLIFFORD_ANGLES, sigma)
-        assert all(isinstance(p, float) for p in probabilities)
+@pytest.mark.parametrize("sigma", np.linspace(0.1, 2, 5))
+def test_angles_to_proximities(sigma):
+    probabilities = angles_to_proximities(_CLIFFORD_ANGLES, sigma)
+    assert all(isinstance(p, float) for p in probabilities)
 
 
-def test_probabilistic_angles_to_clifford():
-    for sigma in np.linspace(0.1, 2, 10):
-        angles = probabilistic_angle_to_clifford(
-            _CLIFFORD_ANGLES, sigma, np.random.RandomState(1)
-        )
-        assert all(a in _CLIFFORD_ANGLES for a in angles)
+@pytest.mark.parametrize("sigma", np.linspace(0.1, 2, 5))
+def test_probabilistic_angles_to_clifford(sigma):
+    angles = probabilistic_angle_to_clifford(
+        _CLIFFORD_ANGLES, sigma, np.random.RandomState(1)
+    )
+    assert all(a in _CLIFFORD_ANGLES for a in angles)

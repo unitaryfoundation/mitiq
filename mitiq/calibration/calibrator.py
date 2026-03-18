@@ -178,7 +178,7 @@ class ExperimentResults:
     def is_missing_data(self) -> bool:
         """Method to check if there is any missing data that was expected from
         the calibration experiments."""
-        return np.isnan(self.mitigated + self.noisy + self.ideal).any()
+        return bool(np.isnan(self.mitigated + self.noisy + self.ideal).any())
 
     def ensure_full(self) -> None:
         """Check to ensure all expected data is collected. All mitigated, noisy

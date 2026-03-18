@@ -120,6 +120,20 @@ See Ref. {cite}`Czarnik_2021_Quantum` for more details on these methods.
    :members:
 ```
 
+#### Noise Amplification Utilities
+
+```{eval-rst}
+.. automodule:: mitiq.pea.scale_amplifications
+   :members:
+```
+
+#### Depolarizing Amplifications
+
+```{eval-rst}
+.. automodule:: mitiq.pea.amplifications.amplify_depolarizing
+   :members:
+```
+
 ### Probabilistic Error Cancellation
 
 #### Probabilistic Error Cancellation (High-Level Tools)

@@ -16,7 +16,7 @@ import numpy as np
 import numpy.typing as npt
 from cirq import Circuit
 from matplotlib.figure import Figure
-from numpy.lib.polynomial import RankWarning
+from numpy.exceptions import RankWarning
 from scipy.optimize import OptimizeWarning, curve_fit
 
 from mitiq import QPROGRAM, QuantumResult
@@ -142,7 +142,7 @@ def mitiq_polyfit(
     scale_factors: Sequence[float],
     exp_values: Sequence[float],
     deg: int,
-    weights: Sequence[float] | None = None,
+    weights: npt.ArrayLike | None = None,
 ) -> tuple[list[float], npt.NDArray[np.float64] | None]:
     """Fits the ansatz to the (scale factor, expectation value) data using
     ``numpy.polyfit``, returning the optimal parameters and covariance matrix
@@ -164,13 +164,15 @@ def mitiq_polyfit(
         ExtrapolationWarning: If the extrapolation fit is ill-conditioned.
     """
 
+    w = None if weights is None else np.asarray(weights, dtype=float)
+
     with warnings.catch_warnings(record=True) as warn_list:
         try:
             opt_params, params_cov = np.polyfit(
-                scale_factors, exp_values, deg, w=weights, cov=True
+                scale_factors, exp_values, deg, w=w, cov=True
             )
         except (ValueError, np.linalg.LinAlgError):
-            opt_params = np.polyfit(scale_factors, exp_values, deg, w=weights)
+            opt_params = np.polyfit(scale_factors, exp_values, deg, w=w)
             params_cov = None
 
     for warn in warn_list:
@@ -1351,13 +1353,25 @@ class PolyExpFactory(BatchedFactory):
             """Ansatz of generic order with unknown asymptote."""
             # Coefficients of the polynomial to be exponentiated
             z_coeffs = coeffs[2:][::-1]
-            return coeffs[0] + coeffs[1] * np.exp(x * np.polyval(z_coeffs, x))
+            return cast(
+                float,
+                coeffs[0] + coeffs[1] * np.exp(x * np.polyval(z_coeffs, x)),
+            )
 
         def _ansatz_known(x: float, *coeffs: float) -> float:
             """Ansatz of generic order with known asymptote."""
             # Coefficients of the polynomial to be exponentiated
             z_coeffs = coeffs[1:][::-1]
-            return asymptote + coeffs[0] * np.exp(x * np.polyval(z_coeffs, x))
+
+            # Assertion for passing mypy type checking
+            # In reality, this assertion is not necessary since the case with
+            # asymptote being None is handled in a different branch of the code
+            assert asymptote is not None
+
+            return cast(
+                float,
+                asymptote + coeffs[0] * np.exp(x * np.polyval(z_coeffs, x)),
+            )
 
         # CASE 1: asymptote is None.
         if asymptote is None:
@@ -1432,7 +1446,7 @@ class PolyExpFactory(BatchedFactory):
         # Note: coefficients are ordered from high powers to powers of x
         # Weights "w" are used to compensate for error propagation
         # after the log transformation y --> z
-        z_coefficients, param_cov = mitiq_polyfit(
+        z_coefficients, params_cov = mitiq_polyfit(
             scale_factors,
             zstack,
             deg=order,
@@ -1450,7 +1464,7 @@ class PolyExpFactory(BatchedFactory):
         if params_cov is not None:
             if params_cov.shape == (order + 1, order + 1):
                 zne_error = np.exp(z_coefficients[-1]) * np.sqrt(
-                    params_cov[order + 1, order + 1]
+                    params_cov[order, order]
                 )
 
         # Parameters from low order to high order

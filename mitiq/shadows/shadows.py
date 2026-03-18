@@ -9,7 +9,7 @@ from typing import Any
 
 import cirq
 import numpy as np
-from numpy.typing import NDArray
+import numpy.typing as npt
 
 import mitiq
 from mitiq import MeasurementResult
@@ -35,9 +35,9 @@ def pauli_twirling_calibrate(
     The number of :math:`f_b` is :math:`2^n`, or :math:`\sum_{i=1}^d C_n^i` if
     the locality :math:`d` is given.
 
-    In the notation of :cite:`chen2021robust`, this function estimates the
-    coefficient :math:`f_b`, which are expansion coefficients of the twirled
-    channel :math:`\mathcal{M}=\sum_b f_b\Pi_b`.
+    In the notation of :cite:`chen2021robust`, this function estimates
+    the coefficient :math:`f_b`, which are expansion coefficients of the
+    twirled channel :math:`\mathcal{M}=\sum_b f_b\Pi_b`.
 
     In practice, the output of this function can be used as calibration data
     for performing the classical shadows protocol in a way which is more
@@ -53,13 +53,13 @@ def pauli_twirling_calibrate(
         zero_state_shadow_outcomes: The output of function
             :func:`shadow_quantum_processing` of zero calibrate state.
         qubits: The qubits to measure, needs to specify when the
-            `zero_state_shadow_outcomes` is None.
+            ``zero_state_shadow_outcomes`` is None.
         executor: The function to use to do quantum measurement, must be same
-            as executor in `shadow_quantum_processing`. Needs to specify when
-            the `zero_state_shadow_outcomes` is None.
+            as executor in :func:`shadow_quantum_processing`. Needs to specify
+            when the ``zero_state_shadow_outcomes`` is None.
         num_total_measurements_calibration: Number of shots per group of
             "median of means" used for calibration. Needs to specify when
-            the `zero_state_shadow_outcomes` is None.
+            the ``zero_state_shadow_outcomes`` is None.
 
     Returns:
         A dictionary containing the calibration outcomes.
@@ -120,7 +120,7 @@ def shadow_quantum_processing(
     Args:
         circuit: The circuit to execute.
         executor: The function to use to do quantum measurement,
-            must be same as executor in `pauli_twirling_calibrate`.
+            must be same as executor in :func:`pauli_twirling_calibrate`.
         num_total_measurements_shadow: Total number of shots for shadow
             estimation.
         random_seed: The random seed to use for the shadow measurements.
@@ -159,14 +159,16 @@ def classical_post_processing(
     observables: list[mitiq.PauliString] | None = None,
     k_shadows: int | None = None,
     state_reconstruction: bool = False,
-) -> Mapping[str, float | NDArray[Any]]:
+) -> Mapping[str, float | npt.NDArray[Any]]:
     r"""
     Executes a circuit with classical shadows. This function can be used for
     state reconstruction or expectation value estimation of observables.
 
     Args:
-        shadow_outcomes: The output of function `shadow_quantum_processing`.
-        calibration_results: The output of function `pauli_twirling_calibrate`.
+        shadow_outcomes: The output of function
+            :func:`shadow_quantum_processing`.
+        calibration_results: The output of function
+            :func:`pauli_twirling_calibrate`.
         observables: The set of observables to measure.
         k_shadows: Number of groups of "median of means" used for shadow
             estimation of expectation values.
@@ -187,7 +189,7 @@ def classical_post_processing(
     Shadow stage 2: Estimate the expectation value of the observables OR
     reconstruct the state
     """
-    output: dict[str, float | NDArray[Any]] = {}
+    output: dict[str, float | npt.NDArray[Any]] = {}
     if state_reconstruction:
         reconstructed_state = shadow_state_reconstruction(
             shadow_outcomes, fidelities=calibration_results

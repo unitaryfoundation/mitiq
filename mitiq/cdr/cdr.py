@@ -33,7 +33,7 @@ def execute_with_cdr(
     fit_function: Callable[..., float] = linear_fit_function,
     num_fit_parameters: int | None = None,
     scale_factors: Sequence[float] = (1,),
-    scale_noise: Callable[[QPROGRAM, float], QPROGRAM] = fold_gates_at_random,
+    scale_noise: Callable[[QPROGRAM, float], QPROGRAM] = fold_gates_at_random,  # type: ignore
     **kwargs: Any,
 ) -> float:
     """Function for the calculation of an observable from some circuit of
@@ -176,7 +176,7 @@ def mitigate_executor(
     fit_function: Callable[..., float] = linear_fit_function,
     num_fit_parameters: int | None = None,
     scale_factors: Sequence[float] = (1,),
-    scale_noise: Callable[[QPROGRAM, float], QPROGRAM] = fold_gates_at_random,
+    scale_noise: Callable[[QPROGRAM, float], QPROGRAM] = fold_gates_at_random,  # type: ignore
     **kwargs: Any,
 ) -> Callable[[QPROGRAM], float]:
     """Returns a clifford data regression (CDR) mitigated version of
@@ -287,7 +287,7 @@ def cdr_decorator(
     fit_function: Callable[..., float] = linear_fit_function,
     num_fit_parameters: int | None = None,
     scale_factors: Sequence[float] = (1,),
-    scale_noise: Callable[[QPROGRAM, float], QPROGRAM] = fold_gates_at_random,
+    scale_noise: Callable[[QPROGRAM, float], QPROGRAM] = fold_gates_at_random,  # type: ignore
     **kwargs: Any,
 ) -> Callable[
     [Callable[[QPROGRAM | Any], QuantumResult]],

@@ -5,6 +5,7 @@
 
 """Utility functions."""
 
+from collections.abc import Sequence
 from copy import deepcopy
 from itertools import product
 from typing import Any
@@ -26,7 +27,6 @@ from cirq import (
     ops,
 )
 from cirq.ops.measurement_gate import MeasurementGate
-from numpy.typing import NDArray
 
 
 def _simplify_gate_exponent(gate: EigenGate) -> EigenGate:
@@ -234,7 +234,9 @@ def _circuit_to_choi(circuit: Circuit) -> npt.NDArray[np.complex64]:
     return simulator.simulate(full_circ).final_density_matrix
 
 
-def _operation_to_choi(operation_tree: OP_TREE) -> npt.NDArray[np.complex64]:
+def _operation_to_choi(
+    operation_tree: OP_TREE,
+) -> npt.NDArray[np.complex64]:
     """Returns the density matrix of the Choi state associated to the
     input operation tree (e.g. a single operation or a sequence of operations).
 
@@ -324,7 +326,9 @@ PAULIS = [
 ]
 
 
-def matrix_kronecker_product(matrices: list[NDArray[Any]]) -> NDArray[Any]:
+def matrix_kronecker_product(
+    matrices: Sequence[npt.NDArray[Any]],
+) -> npt.NDArray[Any]:
     """
     Returns the Kronecker product of a list of matrices.
     Args:
@@ -338,7 +342,9 @@ def matrix_kronecker_product(matrices: list[NDArray[Any]]) -> NDArray[Any]:
     return result
 
 
-def operator_ptm_vector_rep(opt: NDArray[Any]) -> NDArray[Any]:
+def operator_ptm_vector_rep(
+    opt: npt.NDArray[np.complex64],
+) -> npt.NDArray[np.complex64]:
     r"""
     Returns the PTM vector representation of an operator.
     :math:`\mathcal{L}(\mathcal{H}_{2^n})\ni \mathtt{opt}\rightarrow

@@ -1,21 +1,25 @@
 name: docs-build
 
 on:
-  pull_request:
-    types:
-      - opened
-      - reopened
-      - synchronize
-      - ready_for_review
-    branches:
-      - main
   push:
     branches:
       - main
+  workflow_dispatch:
+  schedule:
+    - cron: "0 4 * * *"
+
+concurrency:
+  group: docs-build-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions: {}
 
 jobs:
   docs:
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      actions: write
     steps:
       - name: Check out mitiq
         uses: actions/checkout@v6
@@ -48,19 +52,13 @@ jobs:
           path: ./docs/build/.jupyter_cache
           key: jupyter-cache-${{ steps.gen_hash.outputs.hash }}
 
-      - name: Build and test Sphinx docs
+      - name: Build and test full Sphinx docs
         run: |
           sudo apt update
           sudo apt install ocl-icd-opencl-dev
-          export BQSKIT_DOC_CHECK_OVERRIDE=1
-          export PYDEVD_DISABLE_FILE_VALIDATION=1
           export SKIP_PYQUIL=1
           make docs
 
-      - name: Run linkcheck on 'release' PRs
-        if: github.event_name == 'pull_request'
-        run: |
-          pr_title_lower=$(echo "${{ github.event.pull_request.title }}" | tr '[:upper:]' '[:lower:]')
-          if [[ "$pr_title_lower" == *"release"* ]]; then
-            make linkcheck
-          fi
+      - name: Run nightly linkcheck
+        if: github.event_name == 'schedule'
+        run: make linkcheck

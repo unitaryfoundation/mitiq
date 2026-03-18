@@ -37,7 +37,7 @@ import collections
 
 import os
 import warnings
-warnings.simplefilter("ignore", np.ComplexWarning)
+warnings.simplefilter("ignore", np.exceptions.ComplexWarning)
 
 from pyqrack import QrackSimulator, QrackCircuit
 os.environ["QRACK_MAX_CPU_QB"]="-1"

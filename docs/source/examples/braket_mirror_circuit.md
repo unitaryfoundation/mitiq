@@ -27,10 +27,7 @@ This requires an AWS account.
 ## Setup
 
 ```{code-cell} ipython3
-try:
-    import mitiq
-except ImportError:
-    !pip install git+https://github.com/unitaryfoundation/mitiq --quiet
+import mitiq
 ```
 
 ```{code-cell} ipython3

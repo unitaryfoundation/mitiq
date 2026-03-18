@@ -16,19 +16,10 @@ kernelspec:
 
 # Error mitigation with Pennylane on IBMQ backends
 
-In this tutorial we will cover how to use Mitiq in conjunction with [PennyLane](https://pennylane.ai/), and further how to run error-mitigated circuits on IBMQ backends.
+In this tutorial we will cover how to use Mitiq with [PennyLane](https://pennylane.ai/), and further how to run error-mitigated circuits on IBMQ backends.
 
-- [Error mitigation with Pennylane on IBMQ backends](#error-mitigation-with-pennylane-on-ibmq-backends)
-  - [Setup: Defining a circuit](#setup-defining-a-circuit)
-  - [High-level usage](#high-level-usage)
-  - [Options](#options)
-  - [Decorator usage](#decorator-usage)
-
-+++
 
 ## Setup: Defining a circuit
-
-+++
 
 For simplicity, we'll use a single-qubit circuit with ten Pauli $X$ gates that compiles to the identity, defined below.
 
@@ -41,37 +32,23 @@ def circuit():
     return qml.expval(qml.PauliZ(0))
 ```
 
-In this example, we will use the probability of the ground state as our observable to mitigate, the expectation value of which should evaluate to one in the noiseless setting.
+In this example, we will use the expectation value of the the Pauli $Z$ operator as our observable to mitigate, the expectation value of which **should evaluate to one in the noiseless setting**.
 
 ## High-level usage
 
-As of version `0.19` of PennyLane, and `0.11` of Mitiq, PennyLane comes with out of the box support for error mitigation.
+PennyLane comes with out of the box support for error mitigation via the `pennylane.mitigate_with_zne` function.
 This makes it very easy to use zero-noise extrapolation when working with PennyLane, regardless of where the circuit is being executed.
 
 We define the executor function in the following code block.
 As we are using IBMQ backends, we first load our account.
 
-```{note}
-Using an IBM quantum computer requires a valid IBMQ account.
-See <https://quantum-computing.ibm.com/> for instructions to create an account, save credentials, and get access to online quantum computers.
-```
-
 First, we get our devices set up depending on whether we would like to use real hardware, or a simulator.
 
-```{warning}
-This notebook may not run when `USE_REAL_HARDWARE = True` due to recent changes in Qiskit and Pennylane.
-We are working on monitoring and updating this in https://github.com/unitaryfoundation/mitiq/issues/2659.
-```
-
 ```{code-cell} ipython3
-import qiskit
 from qiskit_ibm_runtime import QiskitRuntimeService, SamplerV2 as Sampler
 
 USE_REAL_HARDWARE = False
 
-# TODO: Remove the below comment when PennyLane supports Qiskit 1.3
-# As of May 19, 2025, PennyLane is not compatible with Qiskit 1.3,
-# but PennyLane plans to support the upgrade, soon
 if QiskitRuntimeService.saved_accounts() and USE_REAL_HARDWARE:
     service = QiskitRuntimeService()
     backend = Sampler(service.least_busy(operational=True, simulator=False))
@@ -83,7 +60,7 @@ if QiskitRuntimeService.saved_accounts() and USE_REAL_HARDWARE:
 else:
     noise_strength = 0.05
     dev_noise_free = qml.device("default.mixed", wires=1)
-    dev = qml.transforms.insert(
+    dev = qml.noise.insert(
         dev_noise_free,
         qml.AmplitudeDamping,
         noise_strength,
@@ -100,7 +77,7 @@ scale_factors = [1, 2, 3]
 noise_scale_method = fold_global
 
 device_circuit = qml.QNode(circuit, dev)
-error_mitigated_device_circuit = qml.transforms.mitigate_with_zne(
+error_mitigated_device_circuit = qml.mitigate_with_zne(
     device_circuit,
     scale_factors,
     noise_scale_method,
@@ -117,7 +94,7 @@ print(f"Unmitigated result {unmitigated:.3f}")
 print(f"Mitigated result   {mitigated:.3f}")
 ```
 
-As the ideal, desired result is `1.000`, the mitigated result performs much better than unmitigated.
+As the ideal, desired result is `1.0`, the mitigated result performs much better than unmitigated.
 
 ## Options
 
@@ -130,7 +107,7 @@ from mitiq.zne.inference import LinearFactory
 
 scale_factors = [1.0, 1.5, 2.0, 2.5, 3.0]
 noise_scale_method = fold_global
-mitigated = qml.transforms.mitigate_with_zne(
+mitigated = qml.mitigate_with_zne(
     device_circuit,
     scale_factors,
     noise_scale_method,
@@ -149,7 +126,7 @@ from mitiq.zne.scaling import fold_gates_at_random
 
 scale_factors = [1.0, 1.5, 2.0, 2.5, 3.0]
 noise_scale_method = fold_gates_at_random
-mitigated = qml.transforms.mitigate_with_zne(
+mitigated = qml.mitigate_with_zne(
     device_circuit,
     scale_factors,
     noise_scale_method,
@@ -167,16 +144,13 @@ Finally, it is perhaps more common to define a circuit using a decorator when yo
 For this our circuit will be defined as above, but we will use decorators to indicate which device we would like to run it on, and that we would like to error-mitigate it.
 
 ```{code-cell} ipython3
-from mitiq.zne.scaling import fold_gates_at_random
-
-
 @qml.qnode(dev)
 def circuit():
     for _ in range(10):
         qml.PauliX(wires=0)
     return qml.expval(qml.PauliZ(0))
 
-circuit = qml.transforms.mitigate_with_zne(
+circuit = qml.mitigate_with_zne(
     circuit,
     [1, 2, 3],
     fold_gates_at_random,
@@ -186,4 +160,4 @@ circuit = qml.transforms.mitigate_with_zne(
 print(f"Zero-noise extrapolated value: {circuit():.3f}")
 ```
 
-Finally, more information about using PennyLane together with Mitiq can be found in PennyLane's [tutorial](https://pennylane.ai/qml/demos/tutorial_error_mitigation) on error mitigation.
+More information about using PennyLane together with Mitiq can be found in PennyLane's [tutorial](https://pennylane.ai/qml/demos/tutorial_error_mitigation) on error mitigation.

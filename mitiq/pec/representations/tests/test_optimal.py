@@ -95,28 +95,28 @@ def test_minimize_one_norm_with_depolarized_superoperators():
         assert np.isclose(np.linalg.norm(optimal_coeffs, 1), expected)
 
 
-def test_minimize_one_norm_with_amp_damp_choi():
-    for noise_level in [0.01, 0.02, 0.03]:
-        q = LineQubit(0)
-        ideal_matrix = _operation_to_choi(H(q))
-        basis_matrices = [
-            _operation_to_choi(
-                [H(q), gate(q), AmplitudeDampingChannel(noise_level)(q)]
-            )
-            for gate in [I, Z]
-        ]
-        # Append reset channel
-        reset_kraus = kraus(ResetChannel())
-        basis_matrices.append(kraus_to_choi(reset_kraus))
-        optimal_coeffs = minimize_one_norm(ideal_matrix, basis_matrices)
-        represented_mat = sum(
-            [eta * mat for eta, mat in zip(optimal_coeffs, basis_matrices)]
+@mark.parametrize("noise_level", [0.01, 0.02, 0.03])
+def test_minimize_one_norm_with_amp_damp_choi(noise_level):
+    q = LineQubit(0)
+    ideal_matrix = _operation_to_choi(H(q))
+    basis_matrices = [
+        _operation_to_choi(
+            [H(q), gate(q), AmplitudeDampingChannel(noise_level)(q)]
         )
-        assert np.allclose(ideal_matrix, represented_mat)
+        for gate in [I, Z]
+    ]
+    # Append reset channel
+    reset_kraus = kraus(ResetChannel())
+    basis_matrices.append(kraus_to_choi(reset_kraus))
+    optimal_coeffs = minimize_one_norm(ideal_matrix, basis_matrices, tol=1e-7)
+    represented_mat = sum(
+        [eta * mat for eta, mat in zip(optimal_coeffs, basis_matrices)]
+    )
+    assert np.allclose(ideal_matrix, represented_mat)
 
-        # Optimal analytic result by Takagi (arXiv:2006.12509)
-        expected = (1.0 + noise_level) / (1.0 - noise_level)
-        assert np.isclose(np.linalg.norm(optimal_coeffs, 1), expected)
+    # Optimal analytic result by Takagi (arXiv:2006.12509)
+    expected = (1.0 + noise_level) / (1.0 - noise_level)
+    assert np.isclose(np.linalg.norm(optimal_coeffs, 1), expected)
 
 
 def test_minimize_one_norm_with_amp_damp_superoperators():

@@ -24,7 +24,7 @@ classifiers = [
     "Typing :: Typed",
 ]
 dependencies = [
-    "numpy>=1.25.2,<2.0.0",
+    "numpy>=2.0.0,<2.3.0",
     "scipy>=1.10.1,<=1.17.1",
     "cirq-core>=1.6.0,<1.7.0",
     "tabulate",
@@ -33,8 +33,10 @@ dependencies = [
 
 [project.optional-dependencies]
 braket = [
-    "amazon-braket-sdk>=1.97,<1.113",
+    "amazon-braket-sdk>=1.97,<1.114",
     "cirq-ionq>=1.6.0,<1.7.0",
+    "llvmlite==0.46.0",
+    "numba==0.64.0",
 ]
 pennylane = [
     "pennylane-qiskit~=0.43.0",
@@ -45,7 +47,7 @@ pyquil = [
     "qbraid>=0.10,<0.12",
 ]
 qibo = [
-    "qibo~=0.2.16",
+    "qibo>=0.2.16,<0.4.0",
 ]
 qiskit = [
     "qiskit>=2.0.0,<3.0.0",
@@ -131,6 +133,18 @@ disallow_untyped_defs = true
 no_implicit_optional = true
 warn_redundant_casts = true
 warn_unused_configs = true
+
+[tool.coverage.run]
+omit = [
+    "*/tests/*",
+    "mitiq/_about.py",
+]
+
+[tool.coverage.report]
+exclude_lines = [
+    "pragma: no cover",
+    "raise NotImplementedError",
+]
 
 [tool.setuptools.packages.find]
 where = ["."]

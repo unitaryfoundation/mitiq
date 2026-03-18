@@ -420,7 +420,10 @@ def test_exp_factory_with_asympt(
     fac.run_classical(seeded_f)
     assert not fac._opt_params
     zne_value = fac.reduce()
+    zne_error = fac.get_zero_noise_limit_error()
     assert np.isclose(zne_value, seeded_f(0, err=0), atol=CLOSE_TOL)
+    assert np.isfinite(zne_error)
+    assert zne_error > 0
     # There are three parameters in the exponential ansatz
     assert len(fac._opt_params) == 3
     exp_vals = fac.get_expectation_values()
