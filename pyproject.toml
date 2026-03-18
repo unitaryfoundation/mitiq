@@ -118,6 +118,9 @@ filterwarnings = [
     # TODO: these are probably too restrictive
     'ignore::UserWarning',
     'ignore::DeprecationWarning',
+    # Experimental modules emit FutureWarning by design; suppress in test suite
+    # since the warning behavior is covered by mitiq/tests/test_experimental.py
+    'ignore:mitiq\.\w+ is experimental:FutureWarning',
 ]
 
 [tool.mypy]
