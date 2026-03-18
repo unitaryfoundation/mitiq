@@ -148,7 +148,12 @@ By setting the total calibration rounds $R$ = `num_total_measurements_calibratio
 ```{code-cell} ipython3
 import sys
 sys.modules["tqdm"] = None # disable tqdm for cleaner notebook rendering
-from mitiq.shadows import *
+from mitiq.experimental import shadows
+from mitiq.shadows.shadows import (
+    pauli_twirling_calibrate,
+    shadow_quantum_processing,
+    classical_post_processing,
+)
 from mitiq.interface.mitiq_cirq.cirq_utils import (
     sample_bitstrings as cirq_sample_bitstrings,
 )

@@ -50,7 +50,8 @@ Currently, VD only supports $M=2$ copies and measurements of the Pauli-Z observa
 Below we provide an example of applying VD:
 
 ```{code-cell} ipython3
-from mitiq import vd, MeasurementResult
+from mitiq import MeasurementResult
+from mitiq.experimental import vd
 
 import cirq
 import numpy as np

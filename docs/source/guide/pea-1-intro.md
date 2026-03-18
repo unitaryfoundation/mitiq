@@ -82,7 +82,7 @@ PEA can be implemented with a single call to
 {func}`.execute_with_pea`.
 
 ```{code-cell} ipython3
-from mitiq import pea
+from mitiq.experimental import pea
 from mitiq.zne.inference import LinearFactory
 
 scale_factors = [1.0, 1.6, 2.4]
@@ -113,7 +113,8 @@ If you want more control over the process, you can split PEA into two stages:
 2. Combine the results and extrapolate to the zero-noise limit.
 
 ```{code-cell} ipython3
-from mitiq import Executor, pea
+from mitiq import Executor
+from mitiq.experimental import pea
 from mitiq.zne.inference import LinearFactory
 
 scale_factors = [1.0, 1.6, 2.4]

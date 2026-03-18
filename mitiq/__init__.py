@@ -26,7 +26,7 @@ from mitiq._about import about
 from mitiq._version import __version__
 
 # QEM techniques.
-from mitiq import cdr, ddd, lre, pea, pec, pt, qse, raw, rem, shadows, vd, zne
+from mitiq import cdr, ddd, lre, pec, pt, qse, raw, rem, zne
 
 # Calibration
 from mitiq.calibration import (

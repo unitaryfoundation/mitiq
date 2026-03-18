@@ -65,7 +65,7 @@ def execute(circuit, noise_level=0.005):
 ### Sample noise-amplified circuits
 
 ```{code-cell} ipython3
-from mitiq import pea
+from mitiq.experimental import pea
 
 scale_factors = [1, 1.2, 1.6]
 scaled_circuits, scaled_signs, scaled_norms = pea.construct_circuits(
