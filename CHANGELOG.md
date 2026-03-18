@@ -1,5 +1,28 @@
 # Changelog
 
+## Version 1.0.0 (unreleased)
+
+### Breaking Changes
+
+- `mitiq.pea`, `mitiq.shadows`, and `mitiq.vd` are no longer accessible from
+  the top-level `mitiq` namespace. Code using `from mitiq import pea` (or
+  `shadows`/`vd`) will raise an `ImportError` and must be updated.
+
+  Migrate by importing from the submodule directly or via `mitiq.experimental`:
+
+  ```python
+  # before
+  from mitiq import pea
+
+  # after (either works)
+  import mitiq.pea as pea
+  from mitiq.experimental import pea
+  ```
+
+  These techniques are now part of `mitiq.experimental`, which signals that
+  their APIs may change without notice and are not covered by mitiq's semantic
+  versioning guarantees. A `FutureWarning` is emitted on import.
+
 ## Version 0.49.0 (March 8, 2026)
 
 ([Full Changelog](https://github.com/unitaryfoundation/mitiq/compare/v0.48.1...v0.49.0))
