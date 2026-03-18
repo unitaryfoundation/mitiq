@@ -41,6 +41,7 @@ braket = [
 pennylane = [
     "pennylane-qiskit~=0.43.0",
     "pennylane~=0.43.1",
+    "diastatic-malt==2.15.2",
 ]
 pyquil = [
     "pyquil~=4.17.0",
