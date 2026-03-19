@@ -14,6 +14,7 @@ true expectation value is recovered by dividing by these eigenvalues.
 See :cite:`vandenBerg_2022_NatPhys` for more details.
 """
 
+import warnings
 from collections.abc import Callable, Sequence
 from functools import update_wrapper
 from typing import Any, cast
@@ -27,8 +28,8 @@ from mitiq.executor.executor import Executor
 from mitiq.interface.conversions import convert_from_mitiq, convert_to_mitiq
 from mitiq.observable.observable import Observable
 from mitiq.trex.trex_utils import (
-    create_calibration_circuit,
-    insert_x_before_measurements,
+    create_calibration_circuits,
+    insert_x_before_first_measurement,
     xor_bitstrings,
 )
 
@@ -115,7 +116,7 @@ def construct_circuits(
     observable: Observable,
     num_randomizations: int = 32,
     random_state: int | np.random.RandomState | None = None,
-) -> tuple[list[QPROGRAM], list[QPROGRAM], list[npt.NDArray[np.int64]]]:
+) -> tuple[list[QPROGRAM], list[QPROGRAM], npt.NDArray[np.int64]]:
     """Generate twirled measurement circuits and calibration circuits for TREX.
 
     For each randomization pattern and each commuting group in the
@@ -138,8 +139,9 @@ def construct_circuits(
           [group0_rand0, group0_rand1, ..., group1_rand0, ...].
         - ``calibration_circuits``: List of calibration circuits in the same
           format as the input (one per randomization, shared across groups).
-        - ``randomization_strings``: List of random bitstrings used for
-          twirling (one per randomization).
+        - ``randomization_strings``: 2D array of shape
+          ``(num_randomizations, n_qubits)`` with random bitstrings used
+          for twirling.
     """
     if isinstance(random_state, int) or random_state is None:
         rng = np.random.RandomState(random_state)
@@ -152,10 +154,9 @@ def construct_circuits(
     n_qubits = len(all_qubits)
 
     # Generate random twirling patterns.
-    randomization_strings = [
-        rng.randint(0, 2, size=n_qubits).astype(np.int64)
-        for _ in range(num_randomizations)
-    ]
+    randomization_strings = rng.randint(
+        0, 2, size=(num_randomizations, n_qubits), dtype=np.int64
+    )
 
     # Get measurement circuits for each commuting group.
     measurement_circuits = []
@@ -176,16 +177,15 @@ def construct_circuits(
             s_group = np.array(
                 [s[qubit_to_idx[q]] for q in meas_qubits], dtype=np.int64
             )
-            twirled = insert_x_before_measurements(
+            twirled = insert_x_before_first_measurement(
                 meas_circuit, s_group, meas_qubits
             )
             twirled_circuits.append(twirled)
 
     # Build calibration circuits (shared across groups, measure all qubits).
-    calibration_circuits: list[cirq.Circuit] = []
-    for s in randomization_strings:
-        calib = create_calibration_circuit(all_qubits, s)
-        calibration_circuits.append(calib)
+    calibration_circuits = create_calibration_circuits(
+        all_qubits, randomization_strings
+    )
 
     # Convert circuits back to the user's input type.
     twirled_out = [convert_from_mitiq(c, input_type) for c in twirled_circuits]
@@ -220,6 +220,10 @@ def combine_results(
         The TREX-corrected expectation value.
     """
     num_randomizations = len(randomization_strings)
+    if num_randomizations == 0:
+        raise ValueError(
+            "At least one randomization string is required for TREX."
+        )
     all_qubits = sorted(observable._qubits())
     qubit_to_idx = {q: i for i, q in enumerate(all_qubits)}
 
@@ -263,14 +267,16 @@ def combine_results(
                 if abs(calib_factor) > 1e-10:
                     corrected_values.append(noisy_exp / calib_factor)
                 else:
-                    # Calibration factor too small; skip this randomization.
+                    warnings.warn(
+                        "Calibration factor near zero for "
+                        f"randomization {rand_idx}. This may "
+                        "indicate very large readout errors. "
+                        "Using uncorrected value as fallback.",
+                        stacklevel=2,
+                    )
                     corrected_values.append(noisy_exp)
 
-            if corrected_values:
-                corrected_exp = float(np.mean(corrected_values))
-            else:
-                # Can only happen if randomization_strings is empty.
-                corrected_exp = 0.0
+            corrected_exp = float(np.mean(corrected_values))
             total += pauli.coeff * corrected_exp
 
     return float(np.real(total))

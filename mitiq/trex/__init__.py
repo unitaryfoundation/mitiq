@@ -12,8 +12,3 @@ from mitiq.trex.trex import (
     mitigate_executor,
     trex_decorator,
 )
-from mitiq.trex.trex_utils import (
-    create_calibration_circuit,
-    insert_x_before_measurements,
-    xor_bitstrings,
-)

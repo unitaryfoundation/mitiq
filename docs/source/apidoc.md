@@ -166,13 +166,6 @@ See Ref. {cite}`Czarnik_2021_Quantum` for more details on these methods.
    :members:
 ```
 
-#### TREX Utilities
-
-```{eval-rst}
-.. automodule:: mitiq.trex.trex_utils
-   :members:
-```
-
 ### Zero Noise Extrapolation
 
 #### Zero Noise Extrapolation (High-Level Tools)

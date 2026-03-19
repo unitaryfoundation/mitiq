@@ -368,9 +368,9 @@ def test_mitigate_executor_batch():
 
 
 def test_combine_results_empty_randomizations():
-    """combine_results with no randomizations returns 0."""
-    value = combine_results([], [], [], observable)
-    assert value == 0.0
+    """combine_results with no randomizations raises ValueError."""
+    with pytest.raises(ValueError, match="At least one randomization"):
+        combine_results([], [], [], observable)
 
 
 def test_combine_results_small_calibration_factor():

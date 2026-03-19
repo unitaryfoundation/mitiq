@@ -110,13 +110,5 @@ print(f"Error with mitigation (TREX): {error:.3}")
 Here we observe that the application of TREX reduces the readout error when
 compared to the unmitigated result.
 
-```{note}
-TREX is model-free: it does not require knowledge of the readout error
-probabilities or a confusion matrix. The readout error correction is
-estimated automatically from calibration circuits.
-```
-
-+++
-
 The section [What additional options are available when using TREX?](trex-3-options.md) contains more information on
 configuring TREX parameters.

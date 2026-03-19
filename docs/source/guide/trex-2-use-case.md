@@ -30,7 +30,7 @@ kernelspec:
   [PT](pt.md) for gate errors, [ZNE](zne.md) for noise extrapolation).
 
 - **Mathematically rigorous**: TREX provides provable error bounds on
-  the corrected expectation values.
+  the corrected expectation values when the measurement errors are small.
 
 ## Disadvantages
 
@@ -57,9 +57,16 @@ kernelspec:
 |---------|------|-----|
 | Requires confusion matrix | No | Yes |
 | Handles correlated errors | Yes | Only with full confusion matrix |
-| Model-free | Yes | No |
 | Additional circuits needed | Yes (calibration + twirling) | No |
 | Scaling | Linear in randomizations | Depends on matrix inversion |
 
-For more information on TREX and other error mitigation techniques, see
-the [QEM Zoo](https://qem-zoo.github.io/).
+## Asymmetric readout errors
+
+TREX handles asymmetric readout errors (where $\mathrm{Pr}(0 \to 1)
+\neq \mathrm{Pr}(1 \to 0)$) naturally. The readout twirling procedure
+symmetrizes the noise channel by averaging over random $X$ flips,
+effectively converting any asymmetric readout noise into a symmetric
+(diagonal) form. The calibration circuits then estimate the resulting
+eigenvalues, so no explicit knowledge of the asymmetry is required.
+
+Find more information on TREX on the [QEM Zoo](https://qemzoo.com/technique.html?id=trex).

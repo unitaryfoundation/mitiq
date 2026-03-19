@@ -12,11 +12,11 @@ import pytest
 from mitiq import MeasurementResult
 from mitiq.trex.trex_utils import (
     create_calibration_circuit,
-    insert_x_before_measurements,
+    insert_x_before_first_measurement,
     xor_bitstrings,
 )
 
-# --- Tests for insert_x_before_measurements ---
+# --- Tests for insert_x_before_first_measurement ---
 
 
 def test_insert_x_no_flips():
@@ -28,7 +28,7 @@ def test_insert_x_no_flips():
         cirq.measure(*qubits),
     )
     bitstring = np.array([0, 0], dtype=np.int64)
-    result = insert_x_before_measurements(circuit, bitstring, qubits)
+    result = insert_x_before_first_measurement(circuit, bitstring, qubits)
 
     assert result == circuit
     assert result is not circuit  # Should be a copy
@@ -42,7 +42,7 @@ def test_insert_x_single_qubit():
         cirq.measure(*qubits),
     )
     bitstring = np.array([1, 0], dtype=np.int64)
-    result = insert_x_before_measurements(circuit, bitstring, qubits)
+    result = insert_x_before_first_measurement(circuit, bitstring, qubits)
 
     # Should have one more moment (the X gate moment before measurement)
     assert len(result) == len(circuit) + 1
@@ -59,7 +59,7 @@ def test_insert_x_all_qubits():
     qubits = cirq.LineQubit.range(3)
     circuit = cirq.Circuit(cirq.measure(*qubits))
     bitstring = np.array([1, 1, 1], dtype=np.int64)
-    result = insert_x_before_measurements(circuit, bitstring, qubits)
+    result = insert_x_before_first_measurement(circuit, bitstring, qubits)
 
     # Should have original moment + X moment
     assert len(result) == 2
@@ -75,7 +75,7 @@ def test_insert_x_length_mismatch():
     bitstring = np.array([1, 0, 1], dtype=np.int64)  # Length 3, qubits is 2
 
     with pytest.raises(ValueError, match="Length of bitstring"):
-        insert_x_before_measurements(circuit, bitstring, qubits)
+        insert_x_before_first_measurement(circuit, bitstring, qubits)
 
 
 def test_insert_x_preserves_unitary_with_flip():
@@ -89,7 +89,7 @@ def test_insert_x_preserves_unitary_with_flip():
         cirq.measure(*qubits),
     )
     bitstring = np.array([1, 1], dtype=np.int64)
-    twirled = insert_x_before_measurements(circuit, bitstring, qubits)
+    twirled = insert_x_before_first_measurement(circuit, bitstring, qubits)
 
     # Simulate the twirled circuit
     sim = cirq.DensityMatrixSimulator()
@@ -215,7 +215,7 @@ def test_insert_x_no_measurement():
     qubits = cirq.LineQubit.range(2)
     circuit = cirq.Circuit(cirq.H(qubits[0]))
     bitstring = np.array([1, 0], dtype=np.int64)
-    result = insert_x_before_measurements(circuit, bitstring, qubits)
+    result = insert_x_before_first_measurement(circuit, bitstring, qubits)
 
     # X gate should be appended at the end
     x_ops = [op for op in result.all_operations() if op.gate == cirq.X]

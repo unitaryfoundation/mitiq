@@ -63,18 +63,35 @@ for num_rand in [4, 8, 16, 32, 64]:
     print(f"num_randomizations={num_rand:3d}: result={result:.4f}, error={error:.4f}")
 ```
 
+```{note}
+On small circuits like this 2-qubit example, the improvement from
+additional randomizations may not be monotonic due to finite sampling
+noise. The benefits of more randomizations become clearer on larger
+circuits with more qubits.
+```
+
 ## Random state for reproducibility
 
 The ``random_state`` parameter accepts an integer seed or a
 ``np.random.RandomState`` object, allowing reproducible results.
+Note that ``random_state`` controls the TREX twirling patterns;
+for full reproducibility the executor must also be deterministic
+(e.g., a noiseless simulator).
 
 ```{code-cell} ipython3
+def deterministic_executor(circuit, shots=8192) -> MeasurementResult:
+    """Noiseless executor for reproducibility demonstration."""
+    simulator = NoisySingleQubitReadoutSampler(0, 0)
+    result = simulator.run(circuit, repetitions=shots)
+    bitstrings = np.column_stack(list(result.measurements.values()))
+    return MeasurementResult(bitstrings, qubit_indices=(0, 1))
+
 result1 = execute_with_trex(
-    circuit, noisy_executor, observable,
+    circuit, deterministic_executor, observable,
     num_randomizations=16, random_state=123,
 )
 result2 = execute_with_trex(
-    circuit, noisy_executor, observable,
+    circuit, deterministic_executor, observable,
     num_randomizations=16, random_state=123,
 )
 print(f"Result 1: {result1:.6f}")
@@ -96,7 +113,10 @@ result, data = execute_with_trex(
 )
 
 print(f"TREX value: {result:.4f}")
-print(f"Number of twirled circuits: {len(data['twirled_circuits'])}")
-print(f"Number of calibration circuits: {len(data['calibration_circuits'])}")
-print(f"Number of randomization strings: {len(data['randomization_strings'])}")
+print(f"Keys: {list(data.keys())}")
+for key, value in data.items():
+    if isinstance(value, list):
+        print(f"  {key}: list of {len(value)} items")
+    else:
+        print(f"  {key}: {value}")
 ```

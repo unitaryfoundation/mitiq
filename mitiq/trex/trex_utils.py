@@ -14,7 +14,7 @@ import numpy.typing as npt
 from mitiq import MeasurementResult
 
 
-def insert_x_before_measurements(
+def insert_x_before_first_measurement(
     circuit: cirq.Circuit,
     bitstring: npt.NDArray[np.int64],
     qubits: Sequence[cirq.Qid],
@@ -65,6 +65,26 @@ def insert_x_before_measurements(
         new_moments.append(cirq.Moment(x_ops))
 
     return cirq.Circuit(new_moments)
+
+
+def create_calibration_circuits(
+    qubits: Sequence[cirq.Qid],
+    randomization_strings: npt.NDArray[np.int64],
+) -> list[cirq.Circuit]:
+    """Create calibration circuits for all randomization strings.
+
+    Args:
+        qubits: The qubits to include in the calibration circuits.
+        randomization_strings: 2D array of shape
+            ``(num_randomizations, n_qubits)``.
+
+    Returns:
+        A list of calibration circuits, one per randomization string.
+    """
+    return [
+        create_calibration_circuit(qubits, s)
+        for s in randomization_strings
+    ]
 
 
 def create_calibration_circuit(

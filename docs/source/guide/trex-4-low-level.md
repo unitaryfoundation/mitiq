@@ -99,10 +99,10 @@ corrected_value = combine_results(
     randomization_strings, observable,
 )
 print(f"TREX-corrected expectation value: {corrected_value:.4f}")
-print(f"Ideal value: -2.0")
+print("Ideal value: -2.0")
 ```
 
-## Using mitigate_executor and trex_decorator
+## Using `mitigate_executor` and `trex_decorator`
 
 TREX can also be applied using the executor wrapper pattern:
 

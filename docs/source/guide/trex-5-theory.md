@@ -22,7 +22,7 @@ post-processing.
 ## Readout error model
 
 When measuring $n$ qubits, readout errors are characterized by a
-left-stochastic matrix $A$ where entry $A_{i,j}$ represents the
+[left-stochastic matrix](https://en.wikipedia.org/wiki/Stochastic_matrix) $A$ where entry $A_{i,j}$ represents the
 probability of measuring state $|i\rangle$ when the true state is
 $|j\rangle$. This transforms the ideal probability distribution
 $\mathbf{p}$ into a noisy one:
@@ -54,7 +54,7 @@ Note that the sum is over all $2^n$ possible bitstrings, but this is a
 number $N$ of random strings (the ``num_randomizations`` parameter) and
 average the corrected estimates, which converges to the correct value.
 
-The mathematical key insight is that this twirling transforms the
+The key insight is that this twirling transforms the
 noise channel so that the computational basis states are eigenvectors
 of $A_\star$, effectively *diagonalizing* the readout error channel.
 
