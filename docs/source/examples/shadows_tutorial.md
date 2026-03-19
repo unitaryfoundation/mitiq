@@ -93,7 +93,7 @@ For each shot we store a *classical snapshot*
     U^\dagger |b\rangle\langle b| U,
 \end{equation}
 
-which represents the measurement outcome rotated back into the original basis and forms the basic data structure used to reconstruct observables..
+which represents the measurement outcome rotated back into the original basis and forms the basic data structure used to reconstruct observables.
 
 If the ensemble $\mathcal{U}$ is chosen to be the local Clifford group $\mathcal{C}_1^{\otimes n}$, this procedure is equivalent to performing a random Pauli measurement on each qubit: we randomly choose one of the three Pauli bases $\{X, Y, Z\}$ per qubit.
 
