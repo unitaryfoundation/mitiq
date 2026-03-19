@@ -295,7 +295,6 @@ Averaging over $N$ independent shadows gives an estimator:
 \end{equation}
 
 In other words, the classical shadow reproduces the expectation values of any linear function of the state in expectation.
-Here we consider nearest-neighbor two-body Pauli observables on a 1D lattice: $O_i = P_i P_{i+1}$ with $P \in {X,Y,Z}$.
 
 As an example, we take our observables to be nearest-neighbor two-body interactions on a 1D lattice: $O_i=P_i P_{i+1}$, where $P_i$ is a Pauli operator on the $i$-th qubit.
 
