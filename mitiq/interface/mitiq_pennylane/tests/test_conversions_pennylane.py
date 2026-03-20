@@ -28,6 +28,35 @@ def test_from_pennylane():
     assert _equal(circuit, correct, require_qubit_equality=False)
 
 
+def test_from_pennylane_strips_gphase():
+    """Regression test: gphase gates emitted by PennyLane >= 0.44 should be
+    stripped before passing QASM to Cirq, which doesn't support them."""
+
+    # SX decomposition includes gphase
+    with qml.tape.QuantumTape() as tape:
+        qml.SX(wires=0)
+
+    # Confirm the QASM contains gphase before conversion.
+    expanded = tape.expand()
+    qasm = qml.to_openqasm(
+        expanded,
+        rotations=False,
+        wires=sorted(expanded.wires),
+        measure_all=False,
+    )
+    assert "gphase" in qasm
+
+    # Confirm from_pennylane succeeds and the resulting circuit has no gphase.
+    circuit = from_pennylane(tape)
+    q = cirq.NamedQubit("q_0")
+    expected = cirq.Circuit(
+        cirq.rz(np.pi / 2)(q),
+        cirq.ry(np.pi / 2)(q),
+        cirq.rz(-np.pi / 2)(q),
+    )
+    assert circuit == expected
+
+
 def test_from_pennylane_unsupported_tapes():
     with qml.tape.QuantumTape() as tape:
         qml.CZ(wires=[0, "a"])

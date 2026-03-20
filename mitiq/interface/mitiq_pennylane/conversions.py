@@ -64,6 +64,13 @@ def from_pennylane(tape: QuantumTape) -> Circuit:
         measure_all=False,
     )
 
+    # Strip global phase gates (gphase) — they are unobservable and not
+    # supported by cirq's QASM parser.
+    # TODO: remove this once gphase is supported by cirq
+    qasm = "\n".join(
+        line for line in qasm.splitlines() if not line.startswith("gphase")
+    )
+
     return cirq_from_qasm(qasm)
 
 
