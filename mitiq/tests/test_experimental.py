@@ -9,21 +9,21 @@ import importlib
 
 import pytest
 
-import mitiq.pea
-import mitiq.shadows
-import mitiq.vd
+import mitiq.experimental.pea
+import mitiq.experimental.shadows
+import mitiq.experimental.vd
 
 
 def test_pea_import_warns():
-    with pytest.warns(FutureWarning, match="mitiq.pea is experimental"):
-        importlib.reload(mitiq.pea)
+    with pytest.warns(FutureWarning, match="pea is experimental"):
+        importlib.reload(mitiq.experimental.pea)
 
 
 def test_shadows_import_warns():
-    with pytest.warns(FutureWarning, match="mitiq.shadows is experimental"):
-        importlib.reload(mitiq.shadows)
+    with pytest.warns(FutureWarning, match="shadows is experimental"):
+        importlib.reload(mitiq.experimental.shadows)
 
 
 def test_vd_import_warns():
-    with pytest.warns(FutureWarning, match="mitiq.vd is experimental"):
-        importlib.reload(mitiq.vd)
+    with pytest.warns(FutureWarning, match="vd is experimental"):
+        importlib.reload(mitiq.experimental.vd)

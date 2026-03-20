@@ -8,7 +8,7 @@
 import numpy as np
 
 import mitiq
-from mitiq.shadows.classical_postprocessing import (
+from mitiq.experimental.shadows.classical_postprocessing import (
     classical_snapshot,
     expectation_estimation_shadow,
     get_pauli_fidelities,

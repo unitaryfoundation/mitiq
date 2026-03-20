@@ -13,12 +13,14 @@ import numpy.typing as npt
 
 import mitiq
 from mitiq import MeasurementResult
-from mitiq.shadows.classical_postprocessing import (
+from mitiq.experimental.shadows.classical_postprocessing import (
     expectation_estimation_shadow,
     get_pauli_fidelities,
     shadow_state_reconstruction,
 )
-from mitiq.shadows.quantum_processing import random_pauli_measurement
+from mitiq.experimental.shadows.quantum_processing import (
+    random_pauli_measurement,
+)
 
 
 def pauli_twirling_calibrate(

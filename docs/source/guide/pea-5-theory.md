@@ -35,7 +35,7 @@ $$
 E^{(s)} = \gamma^{(s)}\, \mathbb E\left[\sigma_{\vec{\alpha}}\, \langle A \rangle_{\vec{\alpha}}\right].
 $$
 
-This is exactly what is computed when running {func}`mitiq.pea.pea.combine_results`.
+This is exactly what is computed when running {func}`mitiq.experimental.pea.pea.combine_results`.
 
 ## Extrapolation to the zero-noise limit
 

@@ -11,13 +11,13 @@ import cirq
 
 import mitiq
 from mitiq import MeasurementResult
-from mitiq.interface.mitiq_cirq.cirq_utils import (
-    sample_bitstrings as cirq_sample_bitstrings,
-)
-from mitiq.shadows.shadows import (
+from mitiq.experimental.shadows.shadows import (
     classical_post_processing,
     pauli_twirling_calibrate,
     shadow_quantum_processing,
+)
+from mitiq.interface.mitiq_cirq.cirq_utils import (
+    sample_bitstrings as cirq_sample_bitstrings,
 )
 
 # define a fully entangled state

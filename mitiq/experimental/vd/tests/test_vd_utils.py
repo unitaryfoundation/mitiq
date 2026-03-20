@@ -7,7 +7,7 @@ import cirq
 import numpy as np
 import pytest
 
-from mitiq.vd.vd_utils import (
+from mitiq.experimental.vd.vd_utils import (
     _apply_cyclic_system_permutation,
     _apply_diagonalizing_gate,
     _apply_symmetric_observable,

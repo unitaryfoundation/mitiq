@@ -11,7 +11,7 @@ from collections.abc import Sequence
 
 from cirq import Circuit
 
-from mitiq.pea.amplifications.amplify_depolarizing import (
+from mitiq.experimental.pea.amplifications.amplify_depolarizing import (
     amplify_noisy_ops_in_circuit_with_global_depolarizing_noise,
     amplify_noisy_ops_in_circuit_with_local_depolarizing_noise,
 )

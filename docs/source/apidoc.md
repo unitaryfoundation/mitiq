@@ -211,28 +211,28 @@ guarantees. Access them via `mitiq.experimental`.
 #### Classical Shadows (High-Level Tools)
 
 ```{eval-rst}
-.. automodule:: mitiq.shadows.shadows
+.. automodule:: mitiq.experimental.shadows.shadows
    :members:
 ```
 
 #### Quantum Processing
 
 ```{eval-rst}
-.. automodule:: mitiq.shadows.quantum_processing
+.. automodule:: mitiq.experimental.shadows.quantum_processing
    :members:
 ```
 
 #### Classical Post-Processing
 
 ```{eval-rst}
-.. automodule:: mitiq.shadows.classical_postprocessing
+.. automodule:: mitiq.experimental.shadows.classical_postprocessing
    :members:
 ```
 
 #### Utility Functions
 
 ```{eval-rst}
-.. automodule:: mitiq.shadows.shadows_utils
+.. automodule:: mitiq.experimental.shadows.shadows_utils
    :members:
 ```
 
@@ -241,28 +241,28 @@ guarantees. Access them via `mitiq.experimental`.
 #### Probabilistic Error Amplification (High-Level Tools)
 
 ```{eval-rst}
-.. automodule:: mitiq.pea.pea
+.. automodule:: mitiq.experimental.pea.pea
    :members:
 ```
 
 #### Noise Amplification Utilities
 
 ```{eval-rst}
-.. automodule:: mitiq.pea.scale_amplifications
+.. automodule:: mitiq.experimental.pea.scale_amplifications
    :members:
 ```
 
 #### Depolarizing Amplifications
 
 ```{eval-rst}
-.. automodule:: mitiq.pea.amplifications.amplify_depolarizing
+.. automodule:: mitiq.experimental.pea.amplifications.amplify_depolarizing
    :members:
 ```
 
 ### Virtual Distillation
 
 ```{eval-rst}
-.. automodule:: mitiq.vd.vd
+.. automodule:: mitiq.experimental.vd.vd
    :members:
 ```
 

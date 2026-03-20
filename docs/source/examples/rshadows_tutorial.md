@@ -32,7 +32,7 @@ tqdm.tqdm.__init__ = partialmethod(tqdm.tqdm.__init__, disable=True)
 import cirq
 import numpy as np
 from mitiq import MeasurementResult
-from mitiq.shadows import (
+from mitiq.experimental.shadows import (
     classical_post_processing,
     pauli_twirling_calibrate,
     shadow_quantum_processing,

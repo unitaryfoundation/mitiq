@@ -10,7 +10,11 @@ from unittest.mock import MagicMock
 import cirq
 
 from mitiq import MeasurementResult
-from mitiq.vd import combine_results, construct_circuits, execute_with_vd
+from mitiq.experimental.vd import (
+    combine_results,
+    construct_circuits,
+    execute_with_vd,
+)
 
 
 def test_construct_circuits_adds_intended_qubits_and_measurements():

@@ -96,15 +96,14 @@ mitiq.qem_methods()
 | Quantum Subspace Expansion                  | [QSE](https://mitiq.readthedocs.io/en/stable/guide/qse.html) | [`mitiq.qse`](https://github.com/unitaryfoundation/mitiq/tree/main/mitiq/qse) | [1903.05786](https://arxiv.org/abs/1903.05786)|
 | Layerwise Richardson Extrapolation  | [LRE](https://mitiq.readthedocs.io/en/stable/guide/lre.html) |  [`mitiq.lre`](https://github.com/unitaryfoundation/mitiq/tree/main/mitiq/lre) | [2402.04000](https://arxiv.org/abs/2402.04000) |
 
-> The following techniques are experimental (`from mitiq import experimental`) and may have unstable APIs:
+The following techniques are experimental (`from mitiq import experimental`) and may have unstable APIs:
 
 | Technique                                 | Documentation                                                | Mitiq module                                                              | Paper Reference(s)                                                                                                                                 |
 | ----------------------------------------- | ------------------------------------------------------------ | ------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Robust Shadow Estimation            | [RSE](https://mitiq.readthedocs.io/en/stable/guide/shadows.html)| [`mitiq.experimental.shadows`](https://github.com/unitaryfoundation/mitiq/tree/main/mitiq/shadows) | [2011.09636](https://arxiv.org/abs/2011.09636) <br> [2002.08953](https://arxiv.org/abs/2002.08953)|
-| Probabilistic Error Amplification  | [PEA](https://mitiq.readthedocs.io/en/stable/guide/pea.html) |  [`mitiq.experimental.pea`](https://github.com/unitaryfoundation/mitiq/tree/main/mitiq/pea) | [Nature](https://www.nature.com/articles/s41586-023-06096-3) |
-| Virtual Distillation  | [VD](https://mitiq.readthedocs.io/en/stable/guide/vd.html) |  [`mitiq.experimental.vd`](https://github.com/unitaryfoundation/mitiq/tree/main/mitiq/vd) | [APS](https://journals.aps.org/prx/abstract/10.1103/PhysRevX.11.041036) |
+| Robust Shadow Estimation            | [RSE](https://mitiq.readthedocs.io/en/stable/guide/shadows.html)| [`mitiq.experimental.shadows`](https://github.com/unitaryfoundation/mitiq/tree/main/mitiq/experimental/shadows) | [2011.09636](https://arxiv.org/abs/2011.09636) <br> [2002.08953](https://arxiv.org/abs/2002.08953)|
+| Probabilistic Error Amplification  | [PEA](https://mitiq.readthedocs.io/en/stable/guide/pea.html) |  [`mitiq.experimental.pea`](https://github.com/unitaryfoundation/mitiq/tree/main/mitiq/experimental/pea) | [Nature](https://www.nature.com/articles/s41586-023-06096-3) |
+| Virtual Distillation  | [VD](https://mitiq.readthedocs.io/en/stable/guide/vd.html) |  [`mitiq.experimental.vd`](https://github.com/unitaryfoundation/mitiq/tree/main/mitiq/experimental/vd) | [APS](https://journals.aps.org/prx/abstract/10.1103/PhysRevX.11.041036) |
 
-> 🚧: Technique is currently a work in progress or is untested and may have some rough edges. If you try any of these techniques and have suggestions, please open an issue!
 
 In addition, we also have Pauli Twirling which is a noise tailoring technique:
 

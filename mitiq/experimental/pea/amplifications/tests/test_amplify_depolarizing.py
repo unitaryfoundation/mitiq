@@ -3,7 +3,7 @@
 # This source code is licensed under the GPL license (v3) found in the
 # LICENSE file in the root directory of this source tree.
 
-"""Tests for mitiq.pea.amplify_depolarizing functions."""
+"""Tests for mitiq.experimental.pea.amplify_depolarizing functions."""
 
 import pytest
 from cirq import (
@@ -17,13 +17,13 @@ from cirq import (
     Y,
 )
 
-from mitiq.interface import convert_from_mitiq, convert_to_mitiq
-from mitiq.pea.amplifications.amplify_depolarizing import (
+from mitiq.experimental.pea.amplifications.amplify_depolarizing import (
     amplify_noisy_op_with_global_depolarizing_noise,
     amplify_noisy_op_with_local_depolarizing_noise,
     amplify_noisy_ops_in_circuit_with_global_depolarizing_noise,
     amplify_noisy_ops_in_circuit_with_local_depolarizing_noise,
 )
+from mitiq.interface import convert_from_mitiq, convert_to_mitiq
 from mitiq.typing import SUPPORTED_PROGRAM_TYPES
 from mitiq.utils import _equal
 

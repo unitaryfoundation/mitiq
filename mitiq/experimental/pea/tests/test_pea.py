@@ -9,12 +9,16 @@ import cirq
 import numpy as np
 import pytest
 
-from mitiq.interface import convert_from_mitiq, convert_to_mitiq
-from mitiq.interface.mitiq_cirq import compute_density_matrix
-from mitiq.pea import combine_results, construct_circuits, execute_with_pea
-from mitiq.pea.amplifications.amplify_depolarizing import (
+from mitiq.experimental.pea import (
+    combine_results,
+    construct_circuits,
+    execute_with_pea,
+)
+from mitiq.experimental.pea.amplifications.amplify_depolarizing import (
     amplify_noisy_ops_in_circuit_with_local_depolarizing_noise,
 )
+from mitiq.interface import convert_from_mitiq, convert_to_mitiq
+from mitiq.interface.mitiq_cirq import compute_density_matrix
 from mitiq.pec import (
     OperationRepresentation,
 )

@@ -6,14 +6,10 @@
 import warnings
 
 warnings.warn(
-    "mitiq.shadows is experimental and its API may change without notice in "
+    "mitiq.experimental.vd is experimental and its API may change without notice in "
     "future releases. It is not covered by mitiq's semantic versioning guarantees.",
     FutureWarning,
     stacklevel=2,
 )
 
-from mitiq.shadows.shadows import (
-    pauli_twirling_calibrate,
-    shadow_quantum_processing,
-    classical_post_processing,
-)
+from mitiq.experimental.vd.vd import execute_with_vd, construct_circuits, combine_results

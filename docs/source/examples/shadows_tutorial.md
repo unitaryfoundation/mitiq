@@ -33,11 +33,11 @@ tqdm.tqdm.__init__ = partialmethod(tqdm.tqdm.__init__, disable=True)
 ```{code-cell} ipython3
 import cirq
 import numpy as np
-from mitiq.shadows.shadows import (
+from mitiq.experimental.shadows.shadows import (
     classical_post_processing,
     shadow_quantum_processing,
 )
-from mitiq.shadows.shadows_utils import (
+from mitiq.experimental.shadows.shadows_utils import (
     fidelity,
     n_measurements_opts_expectation_bound,
     n_measurements_tomography_bound,

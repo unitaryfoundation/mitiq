@@ -8,7 +8,7 @@ import math
 import numpy as np
 
 import mitiq
-from mitiq.shadows.shadows_utils import (
+from mitiq.experimental.shadows.shadows_utils import (
     batch_calibration_data,
     create_string,
     fidelity,

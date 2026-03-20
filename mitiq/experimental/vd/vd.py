@@ -10,7 +10,10 @@ import numpy as np
 import numpy.typing as npt
 
 from mitiq import MeasurementResult
-from mitiq.vd.vd_utils import _apply_diagonalizing_gate, _copy_circuit_parallel
+from mitiq.experimental.vd.vd_utils import (
+    _apply_diagonalizing_gate,
+    _copy_circuit_parallel,
+)
 
 
 def construct_circuits(

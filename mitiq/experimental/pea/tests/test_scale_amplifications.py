@@ -3,7 +3,7 @@
 # This source code is licensed under the GPL license (v3) found in the
 # LICENSE file in the root directory of this source tree.
 
-"""Tests for mitiq.pea.scale_amplifications functions."""
+"""Tests for mitiq.experimental.pea.scale_amplifications functions."""
 
 import pytest
 from cirq import (
@@ -14,11 +14,11 @@ from cirq import (
     Y,
 )
 
-from mitiq.pea.amplifications.amplify_depolarizing import (
+from mitiq.experimental.pea.amplifications.amplify_depolarizing import (
     amplify_noisy_ops_in_circuit_with_global_depolarizing_noise,
     amplify_noisy_ops_in_circuit_with_local_depolarizing_noise,
 )
-from mitiq.pea.scale_amplifications import (
+from mitiq.experimental.pea.scale_amplifications import (
     scale_circuit_amplifications,
 )
 

@@ -20,7 +20,7 @@ import numpy as np
 import numpy.typing as npt
 
 import mitiq
-from mitiq.shadows.shadows_utils import (
+from mitiq.experimental.shadows.shadows_utils import (
     batch_calibration_data,
     create_string,
     valid_bitstrings,

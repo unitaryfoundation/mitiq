@@ -15,7 +15,7 @@ kernelspec:
 
 Probabilistic error amplification (PEA) estimates expectation values by probabilistically sampling noise-amplified circuits at several noise levels and extrapolating back to the zero-noise limit.
 
-In Mitiq, this can be executed in a single call to {func}`.execute_with_pea` or step-by-step using {func}`mitiq.pea.pea.construct_circuits` and {func}`mitiq.pea.pea.combine_results`.
+In Mitiq, this can be executed in a single call to {func}`.execute_with_pea` or step-by-step using {func}`mitiq.experimental.pea.pea.construct_circuits` and {func}`mitiq.experimental.pea.pea.combine_results`.
 
 As with all techniques, PEA is compatible with any frontend supported by Mitiq:
 

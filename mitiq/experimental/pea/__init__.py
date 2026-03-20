@@ -6,10 +6,10 @@
 import warnings
 
 warnings.warn(
-    "mitiq.pea is experimental and its API may change without notice in "
+    "mitiq.experimental.pea is experimental and its API may change without notice in "
     "future releases. It is not covered by mitiq's semantic versioning guarantees.",
     FutureWarning,
     stacklevel=2,
 )
 
-from mitiq.pea.pea import combine_results, construct_circuits, execute_with_pea
+from mitiq.experimental.pea.pea import combine_results, construct_circuits, execute_with_pea

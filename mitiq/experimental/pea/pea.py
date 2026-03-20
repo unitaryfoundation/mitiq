@@ -13,7 +13,9 @@ import numpy as np
 from cirq import Circuit
 
 from mitiq import QPROGRAM, Executor, Observable, QuantumResult
-from mitiq.pea.scale_amplifications import scale_circuit_amplifications
+from mitiq.experimental.pea.scale_amplifications import (
+    scale_circuit_amplifications,
+)
 from mitiq.pec.pec import (
     _LARGE_SAMPLE_WARN,
     LargeSampleWarning,

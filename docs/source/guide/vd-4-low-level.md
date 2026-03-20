@@ -13,7 +13,7 @@ kernelspec:
 
 # What happens when I use VD?
 
-When you call {func}`mitiq.vd.vd.execute_with_vd`, the following steps occur automatically in the backend.
+When you call {func}`mitiq.experimental.vd.vd.execute_with_vd`, the following steps occur automatically in the backend.
 
 1. Two identical noisy copies of the quantum state of interest are prepared (e.g. $C\otimes C |0^{2n}\rangle$ where $C$ is the circuit of interest)
 2. The two states are then entangled using the $B_i$ gate defined below. The correlations created by the entanglement allow the post-processing algorithm to extract information about the "virtually distilled" pure state $\frac{\rho^2}{\text{Tr}(\rho^2)}$, which has suppressed contributions from non-dominant eigenvectors compared to the original noisy state $\rho$.

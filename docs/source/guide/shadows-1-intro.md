@@ -17,7 +17,7 @@ The documentation for Classical Shadows in Mitiq is still under construction. Th
 
 # How Do I Use Classical Shadows Estimation?
 
-The `mitiq.shadows` module facilitates the application of the classical shadows protocol on quantum circuits, designed for tasks like quantum state tomography or expectation value estimation. In addition this module integrates a robust shadow estimation protocol that's tailored to counteract noise. The primary objective of the classical shadow protocol is to extract information from a quantum state using repeated measurements.
+The `mitiq.experimental.shadows` module facilitates the application of the classical shadows protocol on quantum circuits, designed for tasks like quantum state tomography or expectation value estimation. In addition this module integrates a robust shadow estimation protocol that's tailored to counteract noise. The primary objective of the classical shadow protocol is to extract information from a quantum state using repeated measurements.
 
 The procedure can be broken down as follows:
 
@@ -54,7 +54,7 @@ Notes:
 
 The classical shadow protocol aims to create an approximate classical representation of a quantum state using minimal measurements. This approach not only characterizes and mitigates noise effectively but also retains sample efficiency and demonstrates noise resilience. For more details, see the section ([What is the theory behind Classical Shadow Estimation?](shadows-5-theory.md)).
 
-One can use the `mitiq.shadows' module as follows.
+One can use the `mitiq.experimental.shadows' module as follows.
 
 ### User-defined inputs
 
@@ -149,7 +149,7 @@ By setting the total calibration rounds $R$ = `num_total_measurements_calibratio
 import sys
 sys.modules["tqdm"] = None # disable tqdm for cleaner notebook rendering
 from mitiq.experimental import shadows
-from mitiq.shadows.shadows import (
+from mitiq.experimental.shadows.shadows import (
     pauli_twirling_calibrate,
     shadow_quantum_processing,
     classical_post_processing,
@@ -350,7 +350,7 @@ ptm_ghz_state = operator_ptm_vector_rep(ghz_true)
 ```
 
 ```{code-cell} ipython3
-from mitiq.shadows.shadows_utils import fidelity
+from mitiq.experimental.shadows.shadows_utils import fidelity
 
 fidelity_shadow = fidelity(ghz_true, est_corrs["reconstructed_state"])
 fidelity_shadow_calibrated = fidelity(
