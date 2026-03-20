@@ -47,13 +47,16 @@ pyquil = [
     "qbraid>=0.10,<0.12",
 ]
 qibo = [
-    "qibo>=0.2.16,<0.4.0",
+    "qibo==0.2.4",
 ]
 qiskit = [
     "qiskit>=2.0.0,<3.0.0",
     "qiskit-aer~=0.17.0",
     "qiskit-ibm-runtime~=0.41.1",
     "ply==3.11",
+]
+qrisp = [
+    "qrisp==0.8.2"
 ]
 
 [dependency-groups]

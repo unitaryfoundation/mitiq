@@ -98,21 +98,31 @@ def convert_to_mitiq(circuit: QPROGRAM) -> tuple[cirq.Circuit, str]:
 
         input_circuit_type = "qiskit"
         conversion_function = from_qiskit
+
+    elif "qrisp" in package:
+        from mitiq.interface.mitiq_qrisp.conversions import from_qrisp
+
+        input_circuit_type = "qrisp"
+        conversion_function = from_qrisp
+
     elif "pyquil" in package:
         from mitiq.interface.mitiq_pyquil.conversions import from_pyquil
 
         input_circuit_type = "pyquil"
         conversion_function = from_pyquil
+
     elif "braket" in package:
         from mitiq.interface.mitiq_braket.conversions import from_braket
 
         input_circuit_type = "braket"
         conversion_function = from_braket
+
     elif "pennylane" in package:
         from mitiq.interface.mitiq_pennylane.conversions import from_pennylane
 
         input_circuit_type = "pennylane"
         conversion_function = from_pennylane
+
     elif "qibo" in package:
         from mitiq.interface.mitiq_qibo.conversions import from_qibo
 
@@ -171,26 +181,37 @@ def convert_from_mitiq(
     """
     conversion_type = conversion_type.lower()
     conversion_function: Callable[[cirq.Circuit], QPROGRAM]
+
     if conversion_type == "qiskit":
         from mitiq.interface.mitiq_qiskit.conversions import to_qiskit
 
         conversion_function = to_qiskit
+
+    elif conversion_type == "qrisp":
+        from mitiq.interface.mitiq_qrisp.conversions import to_qrisp
+
+        conversion_function = to_qrisp
+
     elif conversion_type == "pyquil":
         from mitiq.interface.mitiq_pyquil.conversions import to_pyquil
 
         conversion_function = to_pyquil
+
     elif conversion_type == "braket":
         from mitiq.interface.mitiq_braket.conversions import to_braket
 
         conversion_function = to_braket
+
     elif conversion_type == "pennylane":
         from mitiq.interface.mitiq_pennylane.conversions import to_pennylane
 
         conversion_function = to_pennylane
+
     elif conversion_type == "qibo":
         from mitiq.interface.mitiq_qibo.conversions import to_qibo
 
         conversion_function = to_qibo
+
     elif conversion_type in FROM_MITIQ_DICT:
         conversion_function = FROM_MITIQ_DICT[conversion_type]
 

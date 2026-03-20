@@ -447,3 +447,10 @@ See Ref. {cite}`Czarnik_2021_Quantum` for more details on these methods.
 .. automodule:: mitiq.interface.mitiq_openqasm.conversions
    :members:
 ```
+
+#### Qrisp Conversions
+
+```{eval-rst}
+.. automodule:: mitiq.interface.mitiq_openqasm.conversions
+   :members:
+```

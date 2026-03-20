@@ -51,6 +51,11 @@ except ImportError:  # pragma: no cover
     _QuantumCircuit = _Circuit
 
 try:
+    from qrisp import QuantumCircuit as _QrispCircuit
+except ImportError:  # pragma: no cover
+    _QrispCircuit = _Circuit
+
+try:
     from braket.circuits import Circuit as _BKCircuit
 except ImportError:  # pragma: no cover
     _BKCircuit = _Circuit
@@ -83,6 +88,7 @@ QPROGRAM = Union[
     _Circuit,
     _Program,
     _QuantumCircuit,
+    _QrispCircuit,
     _BKCircuit,
     _QuantumTape,
     _QiboCircuit,
@@ -98,6 +104,7 @@ class SUPPORTED_PROGRAM_TYPES(EnhancedEnum):
     PYQUIL = _Program
     QIBO = _QiboCircuit
     QISKIT = _QuantumCircuit
+    QRISP = _QrispCircuit
     OPENQASM = _OpenQASMCircuit
 
 

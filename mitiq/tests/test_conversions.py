@@ -15,6 +15,7 @@ from braket.circuits import Circuit as BKCircuit
 from braket.circuits import Instruction
 from braket.circuits import gates as braket_gates
 from pyquil import Program, gates
+from qrisp import QuantumCircuit as QrispCircuit
 
 from mitiq import SUPPORTED_PROGRAM_TYPES
 from mitiq.interface import (
@@ -59,6 +60,7 @@ braket_circuit = BKCircuit(
 circuit_types = {
     "cirq": cirq.Circuit,
     "qiskit": qiskit.QuantumCircuit,
+    "qrisp": QrispCircuit,
     "pyquil": Program,
     "braket": BKCircuit,
     "pennylane": qml.tape.QuantumTape,
