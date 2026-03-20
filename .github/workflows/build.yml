@@ -83,9 +83,9 @@ jobs:
     steps:
       - name: Check out mitiq
         uses: actions/checkout@v6
-        # Increase fetch depth to work around Codecov issue (https://github.com/codecov/codecov-action/issues/190).
         with:
-          fetch-depth: 2
+          # Fetch full history so Codecov can resolve commit ancestry reliably.
+          fetch-depth: 0
 
       - name: Install uv
         uses: astral-sh/setup-uv@v7
@@ -107,8 +107,9 @@ jobs:
         run: ${{ matrix.os == 'ubuntu-latest' && 'make test-all' || 'make test' }}
 
       - name: Submit coverage report to Codecov
-        # Only submit to Codecov once.
-        if: ${{ matrix.python-version == '3.12' && matrix.os == 'ubuntu-latest' && github.event.pull_request.head.repo.full_name == github.repository }}
+        # Upload once per workflow on same-repo PRs and on pushes to main so
+        # PR comparisons always have a recent base report on the default branch.
+        if: ${{ matrix.python-version == '3.12' && matrix.os == 'ubuntu-latest' && (github.event_name == 'push' || github.event.pull_request.head.repo.full_name == github.repository) }}
         uses: codecov/codecov-action@v5
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
