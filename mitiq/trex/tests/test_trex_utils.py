@@ -169,7 +169,7 @@ def test_xor_all_zeros():
     bitstring = np.array([0, 0], dtype=np.int64)
     result = xor_bitstrings(mr, bitstring)
 
-    assert np.array_equal(result._bitstrings, mr._bitstrings)
+    assert np.array_equal(result.asarray, mr.asarray)
 
 
 def test_xor_all_ones():
@@ -179,7 +179,7 @@ def test_xor_all_ones():
     result = xor_bitstrings(mr, bitstring)
 
     expected = np.array([[1, 1], [1, 0], [0, 1], [0, 0]])
-    assert np.array_equal(result._bitstrings, expected)
+    assert np.array_equal(result.asarray, expected)
 
 
 def test_xor_partial():
@@ -189,7 +189,7 @@ def test_xor_partial():
     result = xor_bitstrings(mr, bitstring)
 
     expected = np.array([[1, 0, 1], [0, 1, 0]])
-    assert np.array_equal(result._bitstrings, expected)
+    assert np.array_equal(result.asarray, expected)
 
 
 def test_xor_preserves_qubit_indices():
@@ -229,4 +229,4 @@ def test_xor_double_application_is_identity():
     bitstring = np.array([1, 1], dtype=np.int64)
 
     result = xor_bitstrings(xor_bitstrings(mr, bitstring), bitstring)
-    assert np.array_equal(result._bitstrings, mr._bitstrings)
+    assert np.array_equal(result.asarray, mr.asarray)

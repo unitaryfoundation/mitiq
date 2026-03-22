@@ -111,12 +111,17 @@ def create_calibration_circuit(
             f"number of qubits ({len(qubits)})."
         )
 
-    ops = [cirq.X(qubit) for qubit, bit in zip(qubits, bitstring) if bit == 1]
+    sorted_qubits = sorted(qubits)
+    ops = [
+        cirq.X(qubit)
+        for qubit, bit in zip(sorted_qubits, bitstring)
+        if bit == 1
+    ]
 
     circuit = cirq.Circuit()
     if ops:
         circuit.append(cirq.Moment(ops))
-    circuit.append(cirq.measure(*sorted(qubits)))
+    circuit.append(cirq.measure(*sorted_qubits))
     return circuit
 
 
@@ -143,7 +148,7 @@ def xor_bitstrings(
             f"number of qubits ({result.nqubits})."
         )
 
-    flipped = result._bitstrings ^ bitstring
+    flipped = result.asarray ^ bitstring
     return MeasurementResult(
         result=flipped.tolist(),
         qubit_indices=result.qubit_indices,
