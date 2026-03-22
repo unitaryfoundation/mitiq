@@ -198,7 +198,8 @@ def construct_circuits(
 def combine_results(
     twirled_results: Sequence[MeasurementResult],
     calibration_results: Sequence[MeasurementResult],
-    randomization_strings: Sequence[npt.NDArray[np.int64]],
+    randomization_strings: Sequence[npt.NDArray[np.int64]]
+    | npt.NDArray[np.int64],
     observable: Observable,
 ) -> float:
     """Compute the TREX-corrected expectation value.
@@ -214,6 +215,8 @@ def combine_results(
         calibration_results: Measurement results from calibration circuits
             (one per randomization).
         randomization_strings: Random bitstrings used for twirling.
+            Can be a list of 1D arrays or a 2D array of shape
+            ``(num_randomizations, n_qubits)``.
         observable: The observable being estimated.
 
     Returns:

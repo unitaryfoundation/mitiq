@@ -107,6 +107,15 @@ The complete TREX protocol for estimating $\langle P \rangle$:
 2. Final estimate:
    $\langle P \rangle_{\text{TREX}} = \frac{1}{N} \sum_{j=1}^N \hat{P}_j$.
 
+## Asymmetric readout errors
+
+TREX handles asymmetric readout errors (where $\mathrm{Pr}(0 \to 1)
+\neq \mathrm{Pr}(1 \to 0)$) naturally. The readout twirling procedure
+symmetrizes the noise channel by averaging over random $X$ flips,
+effectively converting any asymmetric readout noise into a symmetric
+(diagonal) form. The calibration circuits then estimate the resulting
+eigenvalues, so no explicit knowledge of the asymmetry is required.
+
 ## References
 
 The TREX technique is described in detail in:
