@@ -82,8 +82,7 @@ def create_calibration_circuits(
         A list of calibration circuits, one per randomization string.
     """
     return [
-        create_calibration_circuit(qubits, s)
-        for s in randomization_strings
+        create_calibration_circuit(qubits, s) for s in randomization_strings
     ]
 
 
