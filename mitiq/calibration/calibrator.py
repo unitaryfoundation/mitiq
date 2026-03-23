@@ -225,7 +225,8 @@ class Calibrator:
         frontend: The executor frontend as a string. For a list of supported
             frontends see ``mitiq.SUPPORTED_PROGRAM_TYPES.keys()``,
         ideal_executor: An optional simulated executor returning the ideal
-            :class:`.MeasurementResult` without noise.
+            :class:`.MeasurementResult` without noise. Required when using
+            custom benchmark circuits without a pre-set ideal distribution.
     """
 
     def __init__(
@@ -331,7 +332,11 @@ class Calibrator:
         )
 
         noisy = num_circuits * (num_options + 1)
-        ideal = 0  # TODO: ideal executor is currently unused
+        ideal = (
+            sum(1 for p in self.problems if p.type == "custom")
+            if self.ideal_executor is not None
+            else 0
+        )
         return {
             "noisy_executions": noisy,
             "ideal_executions": ideal,

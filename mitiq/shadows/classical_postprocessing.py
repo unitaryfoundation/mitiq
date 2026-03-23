@@ -54,11 +54,11 @@ def get_single_shot_pauli_fidelity(
     :math:`\Lambda \equiv \bigotimes_i^n\Lambda_i`.
 
     Args:
-        bit_string: The bitstring corresponding to a computational basis state.
+        bitstring: The bitstring corresponding to a computational basis state.
             E.g., '01...0':math:`:=|0\rangle|1\rangle...|0\rangle`.
-        pauli_string: The local Pauli measurement performed on each qubit.
+        paulistring: The local Pauli measurement performed on each qubit.
             e.g.'XY...Z' means perform local X-basis measurement on the
-            1st qubit, local Y-basis measurement the 2ed qubit, local Z-basis
+            1st qubit, local Y-basis measurement the 2nd qubit, local Z-basis
             measurement the last qubit in the circuit.
         locality: The locality of the operator, whose expectation value is
             going to be estimated by the classical shadow. E.g., if the
@@ -98,8 +98,8 @@ def get_pauli_fidelities(
     :math:`\mathcal{M}=\sum_b f_b \Pi_b`.
 
     Args:
-        calibration_measurement_outcomes: The `random_Pauli_measurement`
-            outcomes for the state :math:`|0\rangle^{\otimes n}`}` .
+        calibration_outcomes: The `random_pauli_measurement` outcomes for
+            the state :math:`|0^n\rangle`.
         num_batches: The number of batches in the median of means estimator.
         locality: The locality of the operator, whose expectation value is
             going to be estimated by the classical shadow. E.g., if the
@@ -123,7 +123,7 @@ def get_pauli_fidelities(
                 all_fidelities[b].append(f)
 
         for bitstring, fids in all_fidelities.items():
-            means[bitstring].append(sum(fids) / num_batches)
+            means[bitstring].append(sum(fids) / len(fids))
 
     return {
         bitstring: median(averages) for bitstring, averages in means.items()
@@ -140,9 +140,9 @@ def classical_snapshot(
     with calibration of the noisy quantum channel.
 
     Args:
-        bitstring: A bitstring corresponding to the outcome ... TODO
+        bitstring: The bitstring corresponding to the measurement outcome.
         paulistring: String of the applied Pauli measurement on each qubit.
-        f_est: The estimated Pauli fidelities to use for calibration if
+        fidelities: The estimated Pauli fidelities to use for calibration if
             available.
 
     Returns:
@@ -197,7 +197,7 @@ def shadow_state_reconstruction(
         shadow_measurement_outcomes: Measurement result and the basis
             performing the measurement obtained from `random_pauli_measurement`
             for classical shadow protocol.
-        f_est: The estimated Pauli fidelities to use for calibration if
+        fidelities: The estimated Pauli fidelities to use for calibration if
             available.
     Returns:
         The state reconstructed from classical shadow protocol
@@ -224,11 +224,10 @@ def expectation_estimation_shadow(
 
     Args:
         measurement_outcomes: A shadow tuple obtained from
-            `z_basis_measurement`.
-        pauli_str: Single mitiq observable consisting of
-            Pauli operators.
+            `random_pauli_measurement`.
+        pauli: Single mitiq observable consisting of Pauli operators.
         num_batches: Number of batches to process measurement outcomes in.
-        f_est: The estimated Pauli fidelities to use for calibration if
+        fidelities: The estimated Pauli fidelities to use for calibration if
             available.
 
     Returns:

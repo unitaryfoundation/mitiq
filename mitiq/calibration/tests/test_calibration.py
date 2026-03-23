@@ -522,3 +522,4 @@ def test_calibrator_custom_ideal_distribution():
     )
     problem = cal.problems[0]
     assert problem.ideal_distribution == {"1": 1.0}
+    assert cal.get_cost() == {"noisy_executions": 3, "ideal_executions": 1}

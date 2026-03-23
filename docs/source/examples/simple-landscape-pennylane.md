@@ -40,8 +40,12 @@ noise_strength = 0.04
 
 # Ideal device
 dev = qml.device("default.mixed", wires=2)
+
 # noisy device
-dev_noisy = qml.transforms.insert(dev, qml.DepolarizingChannel, noise_strength)
+noise_model = qml.NoiseModel(
+    {qml.noise.op_in([qml.RX, qml.CNOT]): qml.noise.partial_wires(qml.DepolarizingChannel, noise_strength)}
+)
+dev_noisy = qml.add_noise(dev, noise_model)
 ```
 
 ```{code-cell} ipython3
@@ -175,7 +179,7 @@ def circuit(gamma: float):
     variational_circuit(gamma)
     return qml.expval(qml.PauliZ(0) @ qml.PauliZ(1))
 
-circuit = qml.transforms.mitigate_with_zne(circuit, scale_factors, folding, extrapolate)
+circuit = qml.mitigate_with_zne(circuit, scale_factors, folding, extrapolate)
 ```
 
 We then run the same code above to compute the energy landscape, but this time use the mitigated executor.

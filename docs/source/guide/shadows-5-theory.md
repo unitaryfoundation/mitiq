@@ -161,6 +161,19 @@ When the noisy channel $\widehat{\mathcal{M}}$ is considered, the inverse of the
 After the above steps, we can preform robust shadow calibration as we did in the standard classical shadow protocol. The only difference is we perform the inverse channel replaced by the calibrated version $\widehat{\mathcal{M}}^{-1}$. One can see that the inverse of the noisy channel $\mathrm{Tr}(\mathcal{M}_z \Pi_b)$ is different from the one used in the classical shadow protocol by their difference on the Pauli fidelity $\hat{f}_b^{-1}$.
 The set of noise parameters $\{f_\lambda\}_{\lambda}$ corresponds to the number of irreducible representations of $\mathcal{G}$, called Pauli fidelity. When the unitaries are sampled from local Clifford group, the Pauli fidelities can be computed with the following formula:
 
+\begin{equation}
+\hat{f}_{b}^{(r)} =
+\begin{cases}
+\displaystyle\prod_{i:\, b_i = 1} (-1)^{\hat{m}_i} & \text{if } \hat{U}_i = Z \text{ for all } i \text{ where } b_i = 1, \\[6pt]
+0 & \text{otherwise},
+\end{cases}
+\end{equation}
+where $b \in \{0,1\}^n$ is the target Pauli fidelity index, $\hat{m}_i \in \{0,1\}$ is the
+Z-basis measurement outcome on qubit $i$, and $\hat{U}_i \in \{X, Y, Z\}$ is the randomly
+sampled Pauli basis — all obtained by measuring the calibration zero state
+$|0\rangle^{\otimes n}$. The final estimate is
+$f_b = \mathrm{median\text{-}of\text{-}means}\bigl\{\hat{f}_b^{(r)}\bigr\}_{1 \leq r \leq R}$.
+
 Therefore, the classical shadow combined with the calibration procedure will, first, estimate the noise channel $\widetilde{\mathcal{M}}$ of Eq. (14) via
 the calibration procedure, and then use the $\widetilde{\mathcal{M}}$ estimator 
 as the input parameter, $\mathcal{M}\rightarrow\widetilde{\mathcal{M}}$ of the classical shadow to predict any properties of interest (referred to as the estimation procedure). 
