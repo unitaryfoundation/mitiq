@@ -155,6 +155,8 @@ We welcome contributions to Mitiq including bug fixes, feature requests, etc.
 To get started, check out our [contribution guidelines](https://mitiq.readthedocs.io/en/stable/toc_contributing.html) and/or [documentation guidelines](https://mitiq.readthedocs.io/en/stable/contributing_docs.html).
 
 Contributions of all kinds are welcome!
+We accept AI-assissted contributions, and we ask contributors to be transparent about how they are using AI tooling to help reviewers best review contributions.
+See the [contributing documentation](https://mitiq.readthedocs.io/en/stable/contributing.html) for more details on the policy.
 
 ## Contributors ✨
 

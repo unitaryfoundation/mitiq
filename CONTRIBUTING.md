@@ -155,3 +155,19 @@ Milestones are tracked using the [GitHub milestone feature](https://github.com/u
 All releases for Mitiq are tagged on the `main` branch with tags for the version number of the release.
 Find all the previous releases [here](https://github.com/unitaryfoundation/mitiq/releases).
 
+## AI use policy and guidelines
+
+Mitiq's policy is that contributors can use whatever tools they would like to craft their contributions, but **there must be a human in the loop**.
+Contributors must read and review all LLM-generated code or text before they ask other project members to review it.
+The contributor is always the author and is fully accountable for their contributions.
+Contributors should be sufficiently confident that the contribution is high enough quality that asking for a review is a good use of scarce maintainer time, and they should be able to answer questions about their work during review.
+
+Contributors can use any tools that aid in understanding the mitiq codebase and writing code, including AI tools.
+However, as noted above, contributors always need to understand and explain the changes they're proposing to make, whether or not they used an LLM as part of your process to produce them.
+The answer to "Why is X an improvement?" should never be "I'm not sure. The AI did it."
+
+Contributors are expected to **be transparent and label contributions that contain substantial amounts of tool-generated content**.
+Our policy on labelling is intended to facilitate reviews, and not to track which parts of mitiq are generated.
+Contributors should note tool usage in their pull request description, commit message, or wherever authorship is normally indicated for the work.
+For instance, use a commit message trailer like `Assisted-by: `.
+This transparency helps the community develop best practices and understand the role of these new tools.
