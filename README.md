@@ -96,7 +96,10 @@ mitiq.qem_methods()
 | Quantum Subspace Expansion                  | [QSE](https://mitiq.readthedocs.io/en/stable/guide/qse.html) | [`mitiq.qse`](https://github.com/unitaryfoundation/mitiq/tree/main/mitiq/qse) | [1903.05786](https://arxiv.org/abs/1903.05786)|
 | Layerwise Richardson Extrapolation  | [LRE](https://mitiq.readthedocs.io/en/stable/guide/lre.html) |  [`mitiq.lre`](https://github.com/unitaryfoundation/mitiq/tree/main/mitiq/lre) | [2402.04000](https://arxiv.org/abs/2402.04000) |
 
-The following techniques are experimental (`from mitiq import experimental`) and may have unstable APIs:
+The following techniques are experimental and must be imported via `from mitiq import experimental`.
+**Experimental techniques are not covered by mitiq's semantic versioning guarantees.**
+A technique graduates to stable once it has broad test coverage, documented user guides, and has seen real-world validation on hardware or well-studied noise models.
+If you are using an experimental technique and would like to help it graduate, please open an issue or contribute to the discussion on [GitHub](https://github.com/unitaryfoundation/mitiq/issues).
 
 | Technique                                 | Documentation                                                | Mitiq module                                                              | Paper Reference(s)                                                                                                                                 |
 | ----------------------------------------- | ------------------------------------------------------------ | ------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------- |
