@@ -171,3 +171,5 @@ Our policy on labelling is intended to facilitate reviews, and not to track whic
 Contributors should note tool usage in their pull request description, commit message, or wherever authorship is normally indicated for the work.
 For instance, use a commit message trailer like `Assisted-by: `.
 This transparency helps the community develop best practices and understand the role of these new tools.
+
+Maintainers have the right to close contributor PRs and after warnings, ban contributors who do not abide by this policy.
