@@ -25,13 +25,13 @@ import numpy.typing as npt
 
 from mitiq import QPROGRAM, MeasurementResult
 from mitiq.executor.executor import Executor
-from mitiq.interface.conversions import convert_from_mitiq, convert_to_mitiq
-from mitiq.observable.observable import Observable
-from mitiq.trex.trex_utils import (
+from mitiq.experimental.trex.trex_utils import (
     create_calibration_circuits,
     insert_x_before_first_measurement,
     xor_bitstrings,
 )
+from mitiq.interface.conversions import convert_from_mitiq, convert_to_mitiq
+from mitiq.observable.observable import Observable
 
 
 def execute_with_trex(

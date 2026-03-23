@@ -36,7 +36,7 @@ from cirq.experiments.single_qubit_readout_calibration_test import (
 from mitiq import MeasurementResult
 from mitiq.observable.observable import Observable
 from mitiq.observable.pauli import PauliString
-from mitiq.trex import execute_with_trex
+from mitiq.experimental.trex import execute_with_trex
 
 qreg = [LineQubit(i) for i in range(2)]
 circuit = Circuit(X.on_each(*qreg))

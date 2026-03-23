@@ -106,6 +106,7 @@ If you are using an experimental technique and would like to help it graduate, p
 | Robust Shadow Estimation            | [RSE](https://mitiq.readthedocs.io/en/stable/guide/shadows.html)| [`mitiq.experimental.shadows`](https://github.com/unitaryfoundation/mitiq/tree/main/mitiq/experimental/shadows) | [2011.09636](https://arxiv.org/abs/2011.09636) <br> [2002.08953](https://arxiv.org/abs/2002.08953)|
 | Probabilistic Error Amplification  | [PEA](https://mitiq.readthedocs.io/en/stable/guide/pea.html) |  [`mitiq.experimental.pea`](https://github.com/unitaryfoundation/mitiq/tree/main/mitiq/experimental/pea) | [Nature](https://www.nature.com/articles/s41586-023-06096-3) |
 | Virtual Distillation  | [VD](https://mitiq.readthedocs.io/en/stable/guide/vd.html) |  [`mitiq.experimental.vd`](https://github.com/unitaryfoundation/mitiq/tree/main/mitiq/experimental/vd) | [APS](https://journals.aps.org/prx/abstract/10.1103/PhysRevX.11.041036) |
+| Twirled Readout Error eXtinction | [TREX](https://mitiq.readthedocs.io/en/latest/guide/trex.html) | [`mitiq.experimental.trex`](https://github.com/unitaryfoundation/mitiq/tree/main/mitiq/experimental/trex) | [2012.09738](https://arxiv.org/abs/2012.09738) |
 
 
 In addition, we also have Pauli Twirling which is a noise tailoring technique:

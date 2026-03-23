@@ -15,14 +15,14 @@ from cirq.experiments.single_qubit_readout_calibration_test import (
 )
 
 from mitiq import MeasurementResult, Observable, PauliString
-from mitiq.raw import execute as raw_execute
-from mitiq.trex import (
+from mitiq.experimental.trex import (
     combine_results,
     construct_circuits,
     execute_with_trex,
     mitigate_executor,
     trex_decorator,
 )
+from mitiq.raw import execute as raw_execute
 
 # Default qubit register and circuit for unit tests
 qreg = [cirq.LineQubit(i) for i in range(2)]

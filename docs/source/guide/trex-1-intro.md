@@ -91,9 +91,9 @@ matrix. It automatically runs calibration circuits to estimate and correct
 readout errors.
 
 ```{code-cell} ipython3
-from mitiq import trex
+from mitiq.experimental.trex import execute_with_trex
 
-mitigated_result = trex.execute_with_trex(
+mitigated_result = execute_with_trex(
     circuit,
     noisy_executor,
     observable,

@@ -10,7 +10,7 @@ import numpy as np
 import pytest
 
 from mitiq import MeasurementResult
-from mitiq.trex.trex_utils import (
+from mitiq.experimental.trex.trex_utils import (
     create_calibration_circuit,
     insert_x_before_first_measurement,
     xor_bitstrings,

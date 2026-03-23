@@ -33,7 +33,7 @@ As shown in [How do I use TREX?](trex-1-intro.md), the function
 {func}`.execute_with_trex()` applies TREX behind the scenes and directly
 returns the error-mitigated expectation value. In the next sections, we
 show how one can apply TREX at a lower level using
-{func}`mitiq.trex.trex.construct_circuits` and {func}`mitiq.trex.trex.combine_results`.
+{func}`mitiq.experimental.trex.trex.construct_circuits` and {func}`mitiq.experimental.trex.trex.combine_results`.
 
 ## Constructing twirled circuits
 
@@ -49,7 +49,7 @@ from cirq.experiments.single_qubit_readout_calibration_test import (
 from mitiq import MeasurementResult
 from mitiq.observable.observable import Observable
 from mitiq.observable.pauli import PauliString
-from mitiq.trex import construct_circuits, combine_results
+from mitiq.experimental.trex import construct_circuits, combine_results
 
 qreg = [LineQubit(i) for i in range(2)]
 circuit = Circuit(X.on_each(*qreg))
@@ -107,7 +107,7 @@ print("Ideal value: -2.0")
 TREX can also be applied using the executor wrapper pattern:
 
 ```{code-cell} ipython3
-from mitiq.trex import mitigate_executor
+from mitiq.experimental.trex import mitigate_executor
 
 mitigated = mitigate_executor(
     noisy_executor, observable,
@@ -120,7 +120,7 @@ print(f"Mitigated result: {result:.4f}")
 Or with the decorator pattern:
 
 ```{code-cell} ipython3
-from mitiq.trex import trex_decorator
+from mitiq.experimental.trex import trex_decorator
 
 @trex_decorator(observable, num_randomizations=16, random_state=42)
 def my_executor(circuit) -> MeasurementResult:

@@ -5,7 +5,7 @@
 
 """Twirled Readout Error eXtinction (TREX) techniques."""
 
-from mitiq.trex.trex import (
+from mitiq.experimental.trex.trex import (
     combine_results,
     construct_circuits,
     execute_with_trex,
