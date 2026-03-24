@@ -23,7 +23,8 @@ tqdm.tqdm.__init__ = partialmethod(tqdm.tqdm.__init__, disable=True)
 ```{code-cell} ipython3
 import cirq
 import numpy as np
-from mitiq import MeasurementResult, PauliString, shadows
+from mitiq import MeasurementResult, PauliString
+from mitiq.experimental import shadows
 from mitiq.interface.mitiq_cirq.cirq_utils import (
     sample_bitstrings as cirq_sample_bitstrings,
 )

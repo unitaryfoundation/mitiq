@@ -13,7 +13,7 @@ kernelspec:
 
 # How Do I Use Classical Shadows?
 
-The `mitiq.shadows` module estimates expectation values and reconstructs density matrices from random Pauli measurements.
+The `mitiq.experimental.shadows` module estimates expectation values and reconstructs density matrices from random Pauli measurements.
 It also supports robust shadow estimation, which calibrates out noise on the rotation gates and measurements.
 For the theory behind the technique, see [](shadows-5-theory.md).
 
@@ -27,7 +27,8 @@ tqdm.tqdm.__init__ = partialmethod(tqdm.tqdm.__init__, disable=True)
 ```{code-cell} ipython3
 import cirq
 import numpy as np
-from mitiq import MeasurementResult, PauliString, shadows
+from mitiq import MeasurementResult, PauliString
+from mitiq.experimental import shadows
 from mitiq.interface.mitiq_cirq.cirq_utils import (
     sample_bitstrings as cirq_sample_bitstrings,
 )

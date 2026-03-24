@@ -23,7 +23,7 @@ tqdm.tqdm.__init__ = partialmethod(tqdm.tqdm.__init__, disable=True)
 The high-level functions `shadows.shadow_quantum_processing` and
 `shadows.classical_post_processing` each compose several lower-level steps.
 This page walks through those steps explicitly, using functions from
-`mitiq.shadows.quantum_processing` and `mitiq.shadows.classical_postprocessing`.
+`mitiq.experimental.shadows.quantum_processing` and `mitiq.experimental.shadows.classical_postprocessing`.
 
 ```{figure} ../img/classicalshadow_workflow.png
 ---
@@ -63,7 +63,7 @@ each qubit.
 `sample_random_pauli_bases` draws uniformly from $\{X, Y, Z\}$ per qubit:
 
 ```{code-cell} ipython3
-from mitiq.shadows.quantum_processing import sample_random_pauli_bases
+from mitiq.experimental.shadows.quantum_processing import sample_random_pauli_bases
 
 num_snapshots = 300
 num_qubits = len(qubits)
@@ -79,7 +79,7 @@ the original circuit so that measuring in the $Z$ basis is equivalent to measuri
 the chosen Pauli basis:
 
 ```{code-cell} ipython3
-from mitiq.shadows.quantum_processing import get_rotated_circuits
+from mitiq.experimental.shadows.quantum_processing import get_rotated_circuits
 
 rotated_circuits = get_rotated_circuits(circuit, pauli_bases, qubits=qubits)
 print(f"Example Pauli basis: {pauli_bases[0]}")
@@ -111,7 +111,7 @@ of the quantum state from one measurement.
 measurement outcome into a $2^n \times 2^n$ matrix:
 
 ```{code-cell} ipython3
-from mitiq.shadows.classical_postprocessing import classical_snapshot
+from mitiq.experimental.shadows.classical_postprocessing import classical_snapshot
 
 snapshot = classical_snapshot(bitstrings[0], pauli_bases[0])
 print("Snapshot shape:", snapshot.shape)
@@ -124,7 +124,7 @@ print("Snapshot (real part):\n", np.round(np.real(snapshot), 2))
 full density matrix $\rho$:
 
 ```{code-cell} ipython3
-from mitiq.shadows.classical_postprocessing import shadow_state_reconstruction
+from mitiq.experimental.shadows.classical_postprocessing import shadow_state_reconstruction
 
 shadow_outcomes = (bitstrings, pauli_bases)
 
@@ -141,7 +141,7 @@ Only snapshots measured in a basis that matches the observable's Pauli support
 contribute:
 
 ```{code-cell} ipython3
-from mitiq.shadows.classical_postprocessing import expectation_estimation_shadow
+from mitiq.experimental.shadows.classical_postprocessing import expectation_estimation_shadow
 
 observable = PauliString("ZZ", support=(0, 1), coeff=1)
 
@@ -165,7 +165,7 @@ channel.
 single calibration measurement:
 
 ```{code-cell} ipython3
-from mitiq.shadows.classical_postprocessing import get_single_shot_pauli_fidelity
+from mitiq.experimental.shadows.classical_postprocessing import get_single_shot_pauli_fidelity
 
 single_fidelities = get_single_shot_pauli_fidelity(
     bitstring="000",
@@ -181,7 +181,7 @@ print("Single-shot Pauli fidelities (locality=2):", single_fidelities)
 measurements using the median-of-means estimator:
 
 ```{code-cell} ipython3
-from mitiq.shadows.classical_postprocessing import get_pauli_fidelities
+from mitiq.experimental.shadows.classical_postprocessing import get_pauli_fidelities
 
 def noisy_execute(circuit: cirq.Circuit) -> MeasurementResult:
     return cirq_sample_bitstrings(circuit, noise_level=(0.05,), shots=1)
@@ -235,6 +235,6 @@ print(f"Uncalibrated ⟨ZZ⟩: {uncalibrated:.4f}")
 print(f"Calibrated ⟨ZZ⟩:   {calibrated:.4f}")
 ```
 
-The high-level function `shadows.pauli_twirling_calibrate` performs the calibration
-steps above automatically, and `shadows.classical_post_processing` with
+The high-level function `mitiq.experimental.shadows.pauli_twirling_calibrate` performs the calibration
+steps above automatically, and `mitiq.experimental.shadows.classical_post_processing` with
 `calibration_results` passes the fidelities through to these low-level functions.
