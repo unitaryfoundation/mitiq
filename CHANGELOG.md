@@ -74,13 +74,13 @@ Special thanks to @vprusso, @cosenal, and first-time contributors @carpo3005, @a
 - Bump numba from 0.63.1 to 0.64.0 (#2946) [@dependabot]
 - Bump types-tabulate from 0.9.0.20241207 to 0.10.0.20260308 (#2945) [@dependabot]
 - Bump tornado from 6.5.2 to 6.5.5 (#2952) [@dependabot]
-- Bump pyjwt from 2.10.1 to 2.12.0 (#2957) [@dependabot[bot]]
-- Bump pyasn1 from 0.6.2 to 0.6.3 (#2962) [@dependabot[bot]]
+- Bump pyjwt from 2.10.1 to 2.12.0 (#2957) [@dependabot]
+- Bump pyasn1 from 0.6.2 to 0.6.3 (#2962) [@dependabot]
 
 ### 🙌 All-time Contributors
 
-Mitiq 1.0 is a milestone that belongs to everyone who has ever opened a PR, filed an issue, reviewed code, or improved our docs.
-A very special thanks to the all the contributors we've had over the years:
+Mitiq 1.0 belongs to everyone who has ever taken part in this project, through code, issues, reviews, or simply using the library and sharing feedback.
+A very special thanks to all who committed code over the years:
 
 @natestemen, @andreamari, @rmlarose, @nathanshammah, @purva-thakre,
 @Misty-W, @willzeng, @crazy4pi314, @L-P-B, @cosenal, @karalekas,
