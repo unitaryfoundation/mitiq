@@ -77,6 +77,26 @@ Special thanks to @vprusso, @cosenal, and first-time contributors @carpo3005, @a
 - Bump pyjwt from 2.10.1 to 2.12.0 (#2957) [@dependabot[bot]]
 - Bump pyasn1 from 0.6.2 to 0.6.3 (#2962) [@dependabot[bot]]
 
+### 🙌 All-time Contributors
+
+Mitiq 1.0 is a milestone that belongs to everyone who has ever opened a PR, filed an issue, reviewed code, or improved our docs.
+A very special thanks to the all the contributors we've had over the years:
+
+@natestemen, @andreamari, @rmlarose, @nathanshammah, @purva-thakre,
+@Misty-W, @willzeng, @crazy4pi314, @L-P-B, @cosenal, @karalekas,
+@b-goldsmith, @andre-a-alves, @Aaron-Robertson, @jordandsullivan, @FarLab,
+@amirebrahimi, @Min-Li, @nickdgardner, @Shivansh20128, @vprusso, @q-inho,
+@paniash, @elmandouh, @bubakazouba, @ACE07-Sev, @kozhukalov, @Rahul-Mistri,
+@DSamuel1, @yhindy, @obliviateandsurrender, @maloleroy, @lockwo,
+@gluonhiggs, @francescsabater, @axif0, @YuNariai, @EmilianoG-byte,
+@yitchen-tim, @vtomole, @vrajan1996, @sukrucildirr, @smburdick, @sid1993,
+@schrodinteq, @sanketsharma, @orisus42, @omahs, @nylewong, @muddi900,
+@mstechly, @mbrotos, @marwahaha, @lifechange777, @khknopp, @k-m-schultz,
+@jpacold, @isaac-gs, @grmlarose, @farzadkianvash, @ecarlander, @dubeyPraY,
+@deji725, @ckissane, @chrispy-chicken, @carpo3005, @bubai2000,
+@ZhaoyiLi-HekJukZaaiZyuJan, @Yash-10, @WingCode, @RubidgeCarrie,
+@NnguyenHTommy, @MZuhairKhan, @MChang360686, @LogMoss, @LaurentAjdnik,
+@Jegbrz, @JMuff22, @DHuybrechts, @BobinMathew, @AkashNarayanan, @1ucian0.
 
 ## Version 0.49.0 (March 8, 2026)
 
