@@ -49,3 +49,8 @@ def test_bad_n_qubits():
     ):
         for trials in [2, 3]:
             generate_rb_circuits(n_qubits=4, num_cliffords=10, trials=trials)
+
+
+def test_num_cliffords_negative():
+    with pytest.raises(ValueError, match="non-negative"):
+        generate_rb_circuits(n_qubits=2, num_cliffords=-1)

@@ -269,6 +269,14 @@ def test_make_circuits_invalid_circuit_type():
         settings.make_problems()
 
 
+def test_settings_rb_depth_required():
+    with pytest.raises(ValueError, match="circuit_depth"):
+        Settings(
+            benchmarks=[{"circuit_type": "rb", "num_qubits": 2}],
+            strategies=[],
+        ).make_problems()
+
+
 def test_make_strategies_invalid_technique():
     with pytest.raises(KeyError, match="DESTROY"):
         Settings(

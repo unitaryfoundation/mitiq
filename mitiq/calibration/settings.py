@@ -347,6 +347,10 @@ class Settings:
                     bitstring = "0" * i + "1" + "0" * (num_qubits - i - 1)
                     ideal[bitstring] = 1 / num_qubits
             elif circuit_type == "rb":
+                if depth == -1:
+                    raise ValueError(
+                        "Must specify `circuit_depth` for randomized benchmarking circuits."
+                    )
                 circuit = generate_rb_circuits(num_qubits, depth)[0]
                 ideal = {"0" * num_qubits: 1.0}
             elif circuit_type == "rotated_rb":

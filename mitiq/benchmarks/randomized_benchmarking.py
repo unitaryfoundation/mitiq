@@ -52,6 +52,10 @@ def generate_rb_circuits(
         raise ValueError(
             f"Only generates RB circuits on one or two qubits not {n_qubits}."
         )
+    if num_cliffords < 0:
+        raise ValueError(
+            f"Number of cliffords must be non-negative, not {num_cliffords}."
+        )
     qubits = cirq.LineQubit.range(n_qubits)
     cliffords = _single_qubit_cliffords()
     rng = np.random.RandomState(seed)
