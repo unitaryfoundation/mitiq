@@ -209,7 +209,7 @@ def ibmq_executor_full(circuit: qiskit.QuantumCircuit,
         exec_circuit = [exec_circuit]
 
     # Run the circuit on the selected backend
-    sampler = Sampler(backend if not NO_NOISE else backend_noiseless)
+    sampler = Sampler(exec_backend)
     job = sampler.run(exec_circuit, shots=shots)
 
     # Convert from raw measurement counts to the expectation value
