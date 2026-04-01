@@ -167,9 +167,10 @@ def mitiq_polyfit(
     w = None if weights is None else np.asarray(weights, dtype=float)
 
     with warnings.catch_warnings(record=True) as warn_list:
-        opt_params, [residuals, rank, *_] = np.polynomial.polynomial.polyfit(
+        opt_params, [_res, rank, *_] = np.polynomial.polynomial.polyfit(
             scale_factors, exp_values, deg, w=w, full=True
         )
+        residuals = cast(npt.NDArray[np.float64], _res)
         if rank < deg + 1:
             warnings.warn(_EXTR_WARN, ExtrapolationWarning)
 
