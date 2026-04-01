@@ -309,7 +309,7 @@ def test_richardson_extr(test_f: Callable[[float], float]):
     zne_value = fac.reduce()
     assert np.isclose(zne_value, seeded_f(0, err=0), atol=CLOSE_TOL)
     assert len(fac._opt_params) == len(X_VALS)
-    assert np.isclose(fac._opt_params[-1], zne_value)
+    assert np.isclose(fac._opt_params[0], zne_value)
     exp_vals = fac.get_expectation_values()
     assert np.isclose(fac.extrapolate(X_VALS, exp_vals), zne_value)
     assert np.isclose(
@@ -328,7 +328,7 @@ def test_fake_nodes_factory():
     zne_value = fac.reduce()
     assert np.isclose(zne_value, f_runge(0.0), atol=LARGE_TOL)
     assert len(fac._opt_params) == len(UNIFORM_X)
-    assert np.isclose(fac._opt_params[-1], zne_value)
+    assert np.isclose(fac._opt_params[0], zne_value)
     assert np.isclose(
         fac.extrapolate(UNIFORM_X, f_runge(UNIFORM_X)), zne_value
     )
@@ -362,7 +362,7 @@ def test_linear_extr():
     fac.run_classical(seeded_f)
     zne_value = fac.reduce()
     assert np.isclose(zne_value, seeded_f(0, err=0), atol=CLOSE_TOL)
-    assert np.allclose(fac._opt_params, [B, A], atol=CLOSE_TOL)
+    assert np.allclose(fac._opt_params, [A, B], atol=CLOSE_TOL)
     exp_vals = fac.get_expectation_values()
     assert np.isclose(fac.extrapolate(X_VALS, exp_vals), zne_value)
     assert np.isclose(
@@ -406,7 +406,7 @@ def test_opt_params_poly_factory(order: int):
     fac.run_classical(apply_seed_to_func(f_non_lin, seed=SEED))
     zne_value = fac.reduce()
     assert len(fac._opt_params) == order + 1
-    assert np.isclose(fac._opt_params[-1], zne_value)
+    assert np.isclose(fac._opt_params[0], zne_value)
 
 
 @mark.parametrize("avoid_log", [False, True])
@@ -778,8 +778,8 @@ def test_full_output_keyword():
 
     assert len(opt_params) == 2
     assert np.isclose(zne_limit, 0.0)
-    assert np.isclose(0.0, opt_params[1])
-    assert np.isclose(1.0, opt_params[0])
+    assert np.isclose(0.0, opt_params[0])
+    assert np.isclose(1.0, opt_params[1])
     assert zne_std is None
     assert params_cov is None
     assert np.isclose(zne_curve(0), 0.0)
@@ -803,7 +803,7 @@ def test_full_output_keyword_cov_std():
     assert len(opt_params) == 3
     assert np.isclose(zne_limit, 0.0)
     assert np.isclose(0.0, opt_params[1])
-    assert np.isclose(1.0, opt_params[0])
+    assert np.isclose(1.0, opt_params[2])
     assert params_cov is None
     assert zne_std is None
     assert np.isclose(zne_curve(0), 0.0)
@@ -828,7 +828,7 @@ def test_params_cov_and_zne_std():
     assert np.isclose(zne_limit, 0.0)
     assert np.isclose(0.0, opt_params[1])
     assert np.isclose(0.0, opt_params[0])
-    assert np.allclose(params_cov, [[3.0, -1.0], [-1.0, 1.0]])
+    assert np.allclose(params_cov, [[1.0, -1.0], [-1.0, 3.0]])
     assert np.isclose(zne_std, 1.0)
     assert np.isclose(zne_curve(0), 0.0)
     assert np.isclose(zne_curve(0.5), 0.0)
@@ -870,7 +870,7 @@ def test_get_methods_of_factories():
     assert np.allclose(fac.get_extrapolation_curve()(0.0), zne_reduce)
     assert np.allclose(fac.get_optimal_parameters(), [0.0, 0.0])
     assert np.allclose(
-        fac.get_parameters_covariance(), [[3.0, -1.0], [-1.0, 1.0]]
+        fac.get_parameters_covariance(), [[1.0, -1.0], [-1.0, 3.0]]
     )
     assert np.allclose(fac.get_scale_factors(), x_values)
     assert np.allclose(fac.get_zero_noise_limit(), zne_reduce)

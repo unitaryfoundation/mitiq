@@ -145,8 +145,8 @@ def mitiq_polyfit(
     weights: npt.ArrayLike | None = None,
 ) -> tuple[list[float], npt.NDArray[np.float64] | None]:
     """Fits the ansatz to the (scale factor, expectation value) data using
-    ``numpy.polyfit``, returning the optimal parameters and covariance matrix
-    of the parameters.
+    ``numpy.polynomial.polynomial.polyfit``, returning the optimal parameters
+    and covariance matrix of the parameters.
 
     Args:
         scale_factors: The array of noise scale factors.
@@ -167,13 +167,22 @@ def mitiq_polyfit(
     w = None if weights is None else np.asarray(weights, dtype=float)
 
     with warnings.catch_warnings(record=True) as warn_list:
-        try:
-            opt_params, params_cov = np.polyfit(
-                scale_factors, exp_values, deg, w=w, cov=True
-            )
-        except (ValueError, np.linalg.LinAlgError):
-            opt_params = np.polyfit(scale_factors, exp_values, deg, w=w)
-            params_cov = None
+        opt_params, [residuals, rank, *_] = np.polynomial.polynomial.polyfit(
+            scale_factors, exp_values, deg, w=w, full=True
+        )
+        if rank < deg + 1:
+            warnings.warn(_EXTR_WARN, ExtrapolationWarning)
+
+    params_cov = None
+    if len(residuals) > 0:
+        n = len(scale_factors)
+        fac = residuals[0] / (n - deg - 1)
+        V = np.vander(
+            np.asarray(scale_factors, dtype=float), N=deg + 1, increasing=True
+        )
+        if w is not None:
+            V = np.diag(w) @ V
+        params_cov = fac * np.linalg.inv(V.T @ V)
 
     for warn in warn_list:
         # replace RankWarning with ExtrapolationWarning
@@ -847,7 +856,7 @@ class PolyFactory(BatchedFactory):
             scale_factors, exp_values, order
         )
 
-        zne_limit = opt_params[-1]
+        zne_limit = opt_params[0]
 
         if not full_output:
             return zne_limit
@@ -856,10 +865,13 @@ class PolyFactory(BatchedFactory):
 
         if params_cov is not None:
             if params_cov.shape == (order + 1, order + 1):
-                zne_error = np.sqrt(params_cov[order, order])
+                zne_error = np.sqrt(params_cov[0, 0])
 
         def zne_curve(scale_factor: float) -> float:
-            return cast(float, np.polyval(opt_params, scale_factor))
+            return cast(
+                float,
+                np.polynomial.polynomial.polyval(scale_factor, opt_params),
+            )
 
         return zne_limit, zne_error, opt_params, params_cov, zne_curve
 
@@ -1345,23 +1357,25 @@ class PolyExpFactory(BatchedFactory):
         linear_params, _ = mitiq_polyfit(scale_factors, exp_values, deg=1)
 
         if asymptote is not None:
-            sign = np.sign(-(asymptote - linear_params[1]))
+            sign = np.sign(-(asymptote - linear_params[0]))
         else:
-            sign = np.sign(-linear_params[0])
+            sign = np.sign(-linear_params[1])
 
         def _ansatz_unknown(x: float, *coeffs: float) -> float:
             """Ansatz of generic order with unknown asymptote."""
             # Coefficients of the polynomial to be exponentiated
-            z_coeffs = coeffs[2:][::-1]
+            z_coeffs = coeffs[2:]
             return cast(
                 float,
-                coeffs[0] + coeffs[1] * np.exp(x * np.polyval(z_coeffs, x)),
+                coeffs[0]
+                + coeffs[1]
+                * np.exp(x * np.polynomial.polynomial.polyval(x, z_coeffs)),
             )
 
         def _ansatz_known(x: float, *coeffs: float) -> float:
             """Ansatz of generic order with known asymptote."""
             # Coefficients of the polynomial to be exponentiated
-            z_coeffs = coeffs[1:][::-1]
+            z_coeffs = coeffs[1:]
 
             # Assertion for passing mypy type checking
             # In reality, this assertion is not necessary since the case with
@@ -1370,7 +1384,9 @@ class PolyExpFactory(BatchedFactory):
 
             return cast(
                 float,
-                asymptote + coeffs[0] * np.exp(x * np.polyval(z_coeffs, x)),
+                asymptote
+                + coeffs[0]
+                * np.exp(x * np.polynomial.polynomial.polyval(x, z_coeffs)),
             )
 
         # CASE 1: asymptote is None.
@@ -1443,7 +1459,7 @@ class PolyExpFactory(BatchedFactory):
         zstack = list(np.log(shifted_y))  # type: ignore
 
         # Get coefficients {z_j} of z(x)= z_0 + z_1*x + z_2*x**2...
-        # Note: coefficients are ordered from high powers to powers of x
+        # Note: coefficients are ordered from low powers to high powers of x
         # Weights "w" are used to compensate for error propagation
         # after the log transformation y --> z
         z_coefficients, params_cov = mitiq_polyfit(
@@ -1453,22 +1469,22 @@ class PolyExpFactory(BatchedFactory):
             weights=np.sqrt(np.abs(shifted_y)),
         )
         # The zero noise limit is ansatz(0)
-        zne_limit = asymptote + sign * np.exp(z_coefficients[-1])
+        zne_limit = asymptote + sign * np.exp(z_coefficients[0])
 
         def _zne_curve(scale_factor: float) -> float:
             return asymptote + sign * np.exp(
-                np.polyval(z_coefficients, scale_factor)
+                np.polynomial.polynomial.polyval(scale_factor, z_coefficients)
             )
 
         # Use propagation of errors to calculate zne_error
         if params_cov is not None:
             if params_cov.shape == (order + 1, order + 1):
-                zne_error = np.exp(z_coefficients[-1]) * np.sqrt(
-                    params_cov[order, order]
+                zne_error = np.exp(z_coefficients[0]) * np.sqrt(
+                    params_cov[0, 0]
                 )
 
         # Parameters from low order to high order
-        opt_params = [asymptote] + list(z_coefficients[::-1])
+        opt_params = [asymptote] + list(z_coefficients)
 
         if full_output:
             return zne_limit, zne_error, opt_params, params_cov, _zne_curve
