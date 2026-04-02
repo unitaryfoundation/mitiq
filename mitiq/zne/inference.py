@@ -194,7 +194,7 @@ def mitiq_polyfit(
         warnings.warn_explicit(
             warn.message, warn.category, warn.filename, warn.lineno
         )
-    return list(opt_params), params_cov
+    return list(opt_params)[::-1], params_cov
 
 
 class Factory(ABC):
@@ -857,7 +857,7 @@ class PolyFactory(BatchedFactory):
             scale_factors, exp_values, order
         )
 
-        zne_limit = opt_params[0]
+        zne_limit = opt_params[-1]
 
         if not full_output:
             return zne_limit
@@ -869,10 +869,7 @@ class PolyFactory(BatchedFactory):
                 zne_error = np.sqrt(params_cov[0, 0])
 
         def zne_curve(scale_factor: float) -> float:
-            return cast(
-                float,
-                np.polynomial.polynomial.polyval(scale_factor, opt_params),
-            )
+            return cast(float, np.polyval(opt_params, scale_factor))
 
         return zne_limit, zne_error, opt_params, params_cov, zne_curve
 
@@ -1358,25 +1355,23 @@ class PolyExpFactory(BatchedFactory):
         linear_params, _ = mitiq_polyfit(scale_factors, exp_values, deg=1)
 
         if asymptote is not None:
-            sign = np.sign(-(asymptote - linear_params[0]))
+            sign = np.sign(-(asymptote - linear_params[1]))
         else:
-            sign = np.sign(-linear_params[1])
+            sign = np.sign(-linear_params[0])
 
         def _ansatz_unknown(x: float, *coeffs: float) -> float:
             """Ansatz of generic order with unknown asymptote."""
             # Coefficients of the polynomial to be exponentiated
-            z_coeffs = coeffs[2:]
+            z_coeffs = coeffs[2:][::-1]
             return cast(
                 float,
-                coeffs[0]
-                + coeffs[1]
-                * np.exp(x * np.polynomial.polynomial.polyval(x, z_coeffs)),
+                coeffs[0] + coeffs[1] * np.exp(x * np.polyval(z_coeffs, x)),
             )
 
         def _ansatz_known(x: float, *coeffs: float) -> float:
             """Ansatz of generic order with known asymptote."""
             # Coefficients of the polynomial to be exponentiated
-            z_coeffs = coeffs[1:]
+            z_coeffs = coeffs[1:][::-1]
 
             # Assertion for passing mypy type checking
             # In reality, this assertion is not necessary since the case with
@@ -1385,9 +1380,7 @@ class PolyExpFactory(BatchedFactory):
 
             return cast(
                 float,
-                asymptote
-                + coeffs[0]
-                * np.exp(x * np.polynomial.polynomial.polyval(x, z_coeffs)),
+                asymptote + coeffs[0] * np.exp(x * np.polyval(z_coeffs, x)),
             )
 
         # CASE 1: asymptote is None.
@@ -1460,7 +1453,7 @@ class PolyExpFactory(BatchedFactory):
         zstack = list(np.log(shifted_y))  # type: ignore
 
         # Get coefficients {z_j} of z(x)= z_0 + z_1*x + z_2*x**2...
-        # Note: coefficients are ordered from low powers to high powers of x
+        # Note: coefficients are ordered from high powers to low powers of x
         # Weights "w" are used to compensate for error propagation
         # after the log transformation y --> z
         z_coefficients, params_cov = mitiq_polyfit(
@@ -1470,22 +1463,22 @@ class PolyExpFactory(BatchedFactory):
             weights=np.sqrt(np.abs(shifted_y)),
         )
         # The zero noise limit is ansatz(0)
-        zne_limit = asymptote + sign * np.exp(z_coefficients[0])
+        zne_limit = asymptote + sign * np.exp(z_coefficients[-1])
 
         def _zne_curve(scale_factor: float) -> float:
             return asymptote + sign * np.exp(
-                np.polynomial.polynomial.polyval(scale_factor, z_coefficients)
+                np.polyval(z_coefficients, scale_factor)
             )
 
         # Use propagation of errors to calculate zne_error
         if params_cov is not None:
             if params_cov.shape == (order + 1, order + 1):
-                zne_error = np.exp(z_coefficients[0]) * np.sqrt(
+                zne_error = np.exp(z_coefficients[-1]) * np.sqrt(
                     params_cov[0, 0]
                 )
 
         # Parameters from low order to high order
-        opt_params = [asymptote] + list(z_coefficients)
+        opt_params = [asymptote] + list(z_coefficients[::-1])
 
         if full_output:
             return zne_limit, zne_error, opt_params, params_cov, _zne_curve
