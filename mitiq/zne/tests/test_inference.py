@@ -828,7 +828,7 @@ def test_params_cov_and_zne_std():
     assert np.isclose(zne_limit, 0.0)
     assert np.isclose(0.0, opt_params[1])
     assert np.isclose(0.0, opt_params[0])
-    assert np.allclose(params_cov, [[1.0, -1.0], [-1.0, 3.0]])
+    assert np.allclose(params_cov, [[3.0, -1.0], [-1.0, 1.0]])
     assert np.isclose(zne_std, 1.0)
     assert np.isclose(zne_curve(0), 0.0)
     assert np.isclose(zne_curve(0.5), 0.0)
@@ -870,7 +870,7 @@ def test_get_methods_of_factories():
     assert np.allclose(fac.get_extrapolation_curve()(0.0), zne_reduce)
     assert np.allclose(fac.get_optimal_parameters(), [0.0, 0.0])
     assert np.allclose(
-        fac.get_parameters_covariance(), [[1.0, -1.0], [-1.0, 3.0]]
+        fac.get_parameters_covariance(), [[3.0, -1.0], [-1.0, 1.0]]
     )
     assert np.allclose(fac.get_scale_factors(), x_values)
     assert np.allclose(fac.get_zero_noise_limit(), zne_reduce)

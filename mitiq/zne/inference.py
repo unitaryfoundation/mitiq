@@ -145,8 +145,8 @@ def mitiq_polyfit(
     weights: npt.ArrayLike | None = None,
 ) -> tuple[list[float], npt.NDArray[np.float64] | None]:
     """Fits the ansatz to the (scale factor, expectation value) data using
-    ``numpy.polynomial.polynomial.polyfit``, returning the optimal parameters
-    and covariance matrix of the parameters.
+    polynomial fitting, returning the optimal parameters and covariance matrix
+    of the parameters.
 
     Args:
         scale_factors: The array of noise scale factors.
@@ -194,7 +194,9 @@ def mitiq_polyfit(
         warnings.warn_explicit(
             warn.message, warn.category, warn.filename, warn.lineno
         )
-    return list(opt_params)[::-1], params_cov
+    return list(opt_params)[::-1], (
+        params_cov[::-1, ::-1] if params_cov is not None else None
+    )
 
 
 class Factory(ABC):
@@ -866,7 +868,7 @@ class PolyFactory(BatchedFactory):
 
         if params_cov is not None:
             if params_cov.shape == (order + 1, order + 1):
-                zne_error = np.sqrt(params_cov[0, 0])
+                zne_error = np.sqrt(params_cov[order, order])
 
         def zne_curve(scale_factor: float) -> float:
             return cast(float, np.polyval(opt_params, scale_factor))
@@ -1474,7 +1476,7 @@ class PolyExpFactory(BatchedFactory):
         if params_cov is not None:
             if params_cov.shape == (order + 1, order + 1):
                 zne_error = np.exp(z_coefficients[-1]) * np.sqrt(
-                    params_cov[0, 0]
+                    params_cov[order, order]
                 )
 
         # Parameters from low order to high order
