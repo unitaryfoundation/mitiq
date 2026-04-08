@@ -74,7 +74,7 @@ wheels = [
 
 [[package]]
 name = "amazon-braket-sdk"
-version = "1.114.0"
+version = "1.115.0"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "amazon-braket-default-simulator" },
@@ -92,9 +92,9 @@ dependencies = [
     { name = "oqpy" },
     { name = "sympy" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/92/f4/0cf29e61aeab6d39511d2025759e2d8832096985651390f5cf559dfab818/amazon_braket_sdk-1.114.0.tar.gz", hash = "sha256:f19e278166f08ad6324d736051af9fc68435d035e26c5d37ac4942886ff2a8ad", size = 497687, upload-time = "2026-03-23T16:16:41.1Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/5f/a9/6ddf726687104215b39e0c4dc54ec22d2cc2e187f75fbcd891f3020af263/amazon_braket_sdk-1.115.0.tar.gz", hash = "sha256:a28b180cf060508c4a53941a1e9a97ca9921e9c698ee203e32477931031289e3", size = 497929, upload-time = "2026-04-07T20:32:45.095Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/c2/96/f2e3aaa78d86bc3e7b3b38364497f14253461568f3b800141d0cdab1d494/amazon_braket_sdk-1.114.0-py3-none-any.whl", hash = "sha256:f2690d38742acec46d7d8d50c9f42e79d2957f8ec8ceb001ecaa8911b48011ad", size = 386463, upload-time = "2026-03-23T16:16:39.511Z" },
+    { url = "https://files.pythonhosted.org/packages/6f/94/cac50a630ebbb73752b72039112f11d2e494dd8941ae2983b4eb028e52ac/amazon_braket_sdk-1.115.0-py3-none-any.whl", hash = "sha256:ab9e6b1e456661caef23232d97b7b5d123a1753c5895f131cad27a5e5ff2f334", size = 386479, upload-time = "2026-04-07T20:32:43.25Z" },
 ]
 
 [[package]]
@@ -1695,7 +1695,7 @@ docs = [
 
 [package.metadata]
 requires-dist = [
-    { name = "amazon-braket-sdk", marker = "extra == 'braket'", specifier = ">=1.97,<1.115" },
+    { name = "amazon-braket-sdk", marker = "extra == 'braket'", specifier = ">=1.97,<1.116" },
     { name = "cirq-core", specifier = ">=1.6.0,<1.7.0" },
     { name = "cirq-ionq", marker = "extra == 'braket'", specifier = ">=1.6.0,<1.7.0" },
     { name = "llvmlite", marker = "extra == 'braket'", specifier = "==0.46.0" },
