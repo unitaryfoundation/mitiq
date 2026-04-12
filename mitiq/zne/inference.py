@@ -145,8 +145,8 @@ def mitiq_polyfit(
     weights: npt.ArrayLike | None = None,
 ) -> tuple[list[float], npt.NDArray[np.float64] | None]:
     """Fits the ansatz to the (scale factor, expectation value) data using
-    ``numpy.polyfit``, returning the optimal parameters and covariance matrix
-    of the parameters.
+    ``numpy.polynomial.polynomial.polyfit``, returning the optimal parameters
+    and covariance matrix of the parameters.
 
     Args:
         scale_factors: The array of noise scale factors.
@@ -163,17 +163,53 @@ def mitiq_polyfit(
     Raises:
         ExtrapolationWarning: If the extrapolation fit is ill-conditioned.
     """
+    from numpy.polynomial import polynomial
 
     w = None if weights is None else np.asarray(weights, dtype=float)
 
     with warnings.catch_warnings(record=True) as warn_list:
-        try:
-            opt_params, params_cov = np.polyfit(
-                scale_factors, exp_values, deg, w=w, cov=True
-            )
-        except (ValueError, np.linalg.LinAlgError):
-            opt_params = np.polyfit(scale_factors, exp_values, deg, w=w)
-            params_cov = None
+        warn_list.clear()
+        with warnings.catch_warnings(record=True) as inner_warn_list:
+            inner_warn_list.clear()
+            try:
+                # Use new numpy.polynomial API (replaces deprecated np.polyfit)
+                opt_params_asc, stats = polynomial.polyfit(
+                    scale_factors, exp_values, deg, w=w, full=True
+                )
+            except (ValueError, np.linalg.LinAlgError):
+                # Fall back without covariance if fit fails
+                opt_params_asc = np.polynomial.polynomial.polyfit(
+                    scale_factors, exp_values, deg, w=w
+                )
+                params_cov = None
+                # Flip coefficient order from ascending to descending
+                opt_params = list(opt_params_asc[::-1])
+            else:
+                # Compute covariance matrix from singular values
+                # opt_params_asc is in ascending order [a0, a1, a2, ...]
+                # We need to return in descending order [an, ..., a1, a0]
+                residuals = stats[0]
+                n = len(scale_factors)
+                dof = n - (deg + 1)
+
+                if dof > 0:
+                    sigma_sq = residuals.sum() / dof
+                    # Build Vandermonde matrix for ascending-order polynomial
+                    X = np.vander(np.asarray(scale_factors), deg + 1, increasing=True)
+                    if w is not None:
+                        XTWX = X.T @ np.diag(w) @ X
+                    else:
+                        XTWX = X.T @ X
+                    # Covariance in ascending order, then flip to descending
+                    cov_asc = sigma_sq * np.linalg.inv(XTWX)
+                    params_cov = cov_asc[::-1, ::-1]
+                else:
+                    params_cov = None
+
+                # Flip coefficients from ascending to descending order
+                opt_params = list(opt_params_asc[::-1])
+
+        warn_list.extend(inner_warn_list)
 
     for warn in warn_list:
         # replace RankWarning with ExtrapolationWarning
@@ -184,7 +220,7 @@ def mitiq_polyfit(
         warnings.warn_explicit(
             warn.message, warn.category, warn.filename, warn.lineno
         )
-    return list(opt_params), params_cov
+    return opt_params, params_cov
 
 
 class Factory(ABC):
