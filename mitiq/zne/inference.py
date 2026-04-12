@@ -145,8 +145,8 @@ def mitiq_polyfit(
     weights: npt.ArrayLike | None = None,
 ) -> tuple[list[float], npt.NDArray[np.float64] | None]:
     """Fits the ansatz to the (scale factor, expectation value) data using
-    ``numpy.polyfit``, returning the optimal parameters and covariance matrix
-    of the parameters.
+    ``numpy.polynomial.polynomial.polyfit``, returning the optimal parameters
+    and covariance matrix of the parameters.
 
     Args:
         scale_factors: The array of noise scale factors.
@@ -164,16 +164,28 @@ def mitiq_polyfit(
         ExtrapolationWarning: If the extrapolation fit is ill-conditioned.
     """
 
+    from numpy.polynomial import polynomial
+
     w = None if weights is None else np.asarray(weights, dtype=float)
 
     with warnings.catch_warnings(record=True) as warn_list:
-        try:
-            opt_params, params_cov = np.polyfit(
-                scale_factors, exp_values, deg, w=w, cov=True
-            )
-        except (ValueError, np.linalg.LinAlgError):
-            opt_params = np.polyfit(scale_factors, exp_values, deg, w=w)
-            params_cov = None
+        opt_params, [_res, rank, *_] = polynomial.polyfit(
+            scale_factors, exp_values, deg, w=w, full=True
+        )
+        residuals = cast(npt.NDArray[np.float64], _res)
+        if rank < deg + 1:
+            warnings.warn(_EXTR_WARN, ExtrapolationWarning)
+
+    params_cov = None
+    if len(residuals) > 0:
+        n = len(scale_factors)
+        fac = residuals[0] / (n - deg - 1)
+        V = np.vander(
+            np.asarray(scale_factors, dtype=float), N=deg + 1, increasing=True
+        )
+        if w is not None:
+            V = np.diag(w) @ V
+        params_cov = fac * np.linalg.inv(V.T @ V)
 
     for warn in warn_list:
         # replace RankWarning with ExtrapolationWarning
@@ -184,7 +196,9 @@ def mitiq_polyfit(
         warnings.warn_explicit(
             warn.message, warn.category, warn.filename, warn.lineno
         )
-    return list(opt_params), params_cov
+    return list(opt_params)[::-1], (
+        params_cov[::-1, ::-1] if params_cov is not None else None
+    )
 
 
 class Factory(ABC):
