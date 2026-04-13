@@ -197,7 +197,9 @@ def mitiq_polyfit(
                 if dof > 0:
                     sigma_sq = residuals.sum() / dof
                     # Build Vandermonde matrix for ascending-order polynomial
-                    X = np.vander(np.asarray(scale_factors), deg + 1, increasing=True)
+                    X = np.vander(
+                        np.asarray(scale_factors), deg + 1, increasing=True
+                    )
                     if w is not None:
                         XTWX = X.T @ np.diag(w) @ X
                     else:
