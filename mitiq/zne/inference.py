@@ -169,20 +169,22 @@ def mitiq_polyfit(
 
     with warnings.catch_warnings(record=True) as warn_list:
         warn_list.clear()
-        with warnings.catch_warnings(record=True) as inner_warn_list:
-            inner_warn_list.clear()
-            try:
-                # Use new numpy.polynomial API (replaces deprecated np.polyfit)
-                opt_params_asc, stats = polynomial.polyfit(
-                    scale_factors, exp_values, deg, w=w, full=True
-                )
-            except (ValueError, np.linalg.LinAlgError):
-                # Fall back without covariance if fit fails
+        try:
+            # Use new numpy.polynomial API (replaces deprecated np.polyfit)
+            opt_params_asc, stats = polynomial.polyfit(
+                scale_factors, exp_values, deg, w=w, full=True
+            )
+            # Check for ill-conditioned (singular) Vandermonde matrix
+            # If all scale_factors are the same, the matrix will be singular
+            unique_scales = len(np.unique(np.asarray(scale_factors)))
+            if unique_scales < deg + 1:
+                # Not enough unique scale factors for this degree
+                # This is an ill-conditioned fit
+                warnings.warn(_EXTR_WARN, RankWarning, stacklevel=2)
                 opt_params_asc = np.polynomial.polynomial.polyfit(
                     scale_factors, exp_values, deg, w=w
                 )
                 params_cov = None
-                # Flip coefficient order from ascending to descending
                 opt_params = list(opt_params_asc[::-1])
             else:
                 # Compute covariance matrix from singular values
@@ -201,15 +203,27 @@ def mitiq_polyfit(
                     else:
                         XTWX = X.T @ X
                     # Covariance in ascending order, then flip to descending
-                    cov_asc = sigma_sq * np.linalg.inv(XTWX)
-                    params_cov = cov_asc[::-1, ::-1]
+                    try:
+                        cov_asc = sigma_sq * np.linalg.inv(XTWX)
+                        params_cov = cov_asc[::-1, ::-1]
+                    except np.linalg.LinAlgError:
+                        # Singular matrix - ill-conditioned fit
+                        warnings.warn(_EXTR_WARN, RankWarning, stacklevel=2)
+                        params_cov = None
                 else:
                     params_cov = None
 
                 # Flip coefficients from ascending to descending order
                 opt_params = list(opt_params_asc[::-1])
 
-        warn_list.extend(inner_warn_list)
+        except (ValueError, np.linalg.LinAlgError):
+            # Fall back without covariance if fit fails
+            opt_params_asc = np.polynomial.polynomial.polyfit(
+                scale_factors, exp_values, deg, w=w
+            )
+            params_cov = None
+            # Flip coefficient order from ascending to descending
+            opt_params = list(opt_params_asc[::-1])
 
     for warn in warn_list:
         # replace RankWarning with ExtrapolationWarning
