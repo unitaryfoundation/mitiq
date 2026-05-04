@@ -86,7 +86,7 @@ docs = [
     "seaborn==0.13.2",
     "stim==1.15.0",
     "stimcirq==1.15.0",
-    "pyqrack==1.69.1",
+    "pyqrack==2.0.0",
     "ucc==0.4.12; python_version == '3.12'",
     "pytket-cirq==0.43.0",
 ]
