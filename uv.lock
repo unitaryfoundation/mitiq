@@ -1735,7 +1735,7 @@ docs = [
     { name = "openfermionpyscf", marker = "sys_platform != 'win32'", specifier = "==0.5" },
     { name = "pandas", specifier = "==2.3.3" },
     { name = "pydata-sphinx-theme", specifier = "==0.16.1" },
-    { name = "pyqrack", specifier = "==2.0.0" },
+    { name = "pyqrack", specifier = "==2.0.2" },
     { name = "pyscf", marker = "sys_platform != 'win32'", specifier = "==2.12.0" },
     { name = "pytket-cirq", specifier = "==0.43.0" },
     { name = "seaborn", specifier = "==0.13.2" },
@@ -2559,16 +2559,16 @@ wheels = [
 
 [[package]]
 name = "pyqrack"
-version = "2.0.0"
+version = "2.0.2"
 source = { registry = "https://pypi.org/simple" }
-sdist = { url = "https://files.pythonhosted.org/packages/a7/46/f1674b42b552017fb827e7f4d6ff4d135cabe6bd790d00bd62fe1b2df738/pyqrack-2.0.0.tar.gz", hash = "sha256:e88820f7df16070dcf395880aab8c3ed152e07fc72ebf227ed6fc6e66d63808f", size = 56174, upload-time = "2026-05-03T04:47:28.725Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/dc/29/cb7055e9832f362d4024509dc84eb29234b80a4a70894c20a410194b649b/pyqrack-2.0.2.tar.gz", hash = "sha256:2b1e3b39699c238a4556fcb0267d71138e9ba8401c1782b6095095a758de56d2", size = 56204, upload-time = "2026-05-13T16:03:22.045Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/a9/5b/80f5c1ce4772a6417a86ae0df4d6fac2d7cac13c2c523a0ce710c61b086b/pyqrack-2.0.0-py3-none-macosx_14_0_arm64.whl", hash = "sha256:f65ea6882f70d9e39af5fd2ba52af8de7605076884a03cff027bfeeb7e39aaf0", size = 1902826, upload-time = "2026-05-03T04:46:29.284Z" },
-    { url = "https://files.pythonhosted.org/packages/df/8a/31e009a56ca258d3f654a1783bba85767876fb99d186385d7037f0ecf4a1/pyqrack-2.0.0-py3-none-macosx_15_0_arm64.whl", hash = "sha256:22d35cd3dece0fd2e485041643a88f6de222cd839ec92e7eff98610ced1e52da", size = 1884569, upload-time = "2026-05-03T04:46:32.203Z" },
-    { url = "https://files.pythonhosted.org/packages/fb/28/f84e1767ab37ae0114d3456badfbf2bb918d1218cf7c0f08cdbdb7a978b6/pyqrack-2.0.0-py3-none-macosx_15_0_x86_64.whl", hash = "sha256:c7fd8b15378afbc3ae10afdabbdc95f435e38170f81649c31a8f73f9d29b9f0e", size = 2071811, upload-time = "2026-05-03T04:46:34.428Z" },
-    { url = "https://files.pythonhosted.org/packages/15/2c/c8db117bd48bb289f50bdcf03cc230d2db596471cb0ef6376c74da8fa05a/pyqrack-2.0.0-py3-none-manylinux_2_35_x86_64.whl", hash = "sha256:55f2964af2059cb291d55126bb00675428072c053bc0cab7e366bc73f70a7710", size = 3694493, upload-time = "2026-05-03T04:46:37.307Z" },
-    { url = "https://files.pythonhosted.org/packages/03/61/788e63ed879b06b858871d97db369a38cf9994c92bfc70397c7dde538d56/pyqrack-2.0.0-py3-none-manylinux_2_39_x86_64.whl", hash = "sha256:bef7b1caafabe9d5aa9900e59a0db3a7014e6f6fb6257e381ab64984a03c105e", size = 3640958, upload-time = "2026-05-03T04:46:40.048Z" },
-    { url = "https://files.pythonhosted.org/packages/61/52/d5f350266fddf2c7a1fc8678b5906f4aecdd4b31e6ff5cdf360fc2fbec9e/pyqrack-2.0.0-py3-none-win_amd64.whl", hash = "sha256:0b2b2887a5bcaa803606633a6ccf5b37922968f3f80c464260996b64d68e5bbf", size = 995121, upload-time = "2026-05-03T04:46:42Z" },
+    { url = "https://files.pythonhosted.org/packages/aa/c7/5f315a73659905b54477e6e0bef4cc3ecba93b294f052f591082568791d8/pyqrack-2.0.2-py3-none-macosx_14_0_arm64.whl", hash = "sha256:cb7eb1e1c4244111e00b491f8b8768ddc6b8cd995f6369fd3dac910f0d556660", size = 1904043, upload-time = "2026-05-13T16:02:25.41Z" },
+    { url = "https://files.pythonhosted.org/packages/11/2b/a8930eeb1547038f9f535282800cf8816cbe6755ae9f0224630c87f0b558/pyqrack-2.0.2-py3-none-macosx_15_0_arm64.whl", hash = "sha256:b0e138cd778cf8717fb86d95e795ed9d5438624d905f07fc278d7d9128edadaa", size = 1885326, upload-time = "2026-05-13T16:02:28.164Z" },
+    { url = "https://files.pythonhosted.org/packages/7b/92/770e95dcef8d7308183346ca93f16fbdd578d0c42883fc769ab08ee36aa1/pyqrack-2.0.2-py3-none-macosx_15_0_x86_64.whl", hash = "sha256:c8b19af67c6a890476b0cb2d8b06de07b94be51c3114a5c0b3ead4bf55d4947b", size = 2072652, upload-time = "2026-05-13T16:02:30.593Z" },
+    { url = "https://files.pythonhosted.org/packages/d5/0e/4bd505022f9c2bd7beb48ad9d58c5530cc87a2aebe1c5685ff69837dc791/pyqrack-2.0.2-py3-none-manylinux_2_35_x86_64.whl", hash = "sha256:44a0b6b9c19afd561239d50930e90d586901b88d93bff3db0259633a3f4bf552", size = 3695433, upload-time = "2026-05-13T16:02:33.367Z" },
+    { url = "https://files.pythonhosted.org/packages/a2/51/0ed54a1366d31744a822a82eab5ddfc48badcc48a8d084bf6c296fdb237d/pyqrack-2.0.2-py3-none-manylinux_2_39_x86_64.whl", hash = "sha256:085c39437e97b97dd0a65c49dd97f5bba5c6dc7e65f6d1d92f779935382773a4", size = 3642286, upload-time = "2026-05-13T16:02:36.133Z" },
+    { url = "https://files.pythonhosted.org/packages/d7/d0/07007a58cc8269ed8e5a525f1f12fc44640748453d32a6cda1122cdaa0cd/pyqrack-2.0.2-py3-none-win_amd64.whl", hash = "sha256:0fab5f645dcfa954ac3ec17078940e38c990c44fdfe96367d900b8cd1c61ee96", size = 995709, upload-time = "2026-05-13T16:02:38.319Z" },
 ]
 
 [[package]]
