@@ -101,9 +101,7 @@ def qrack_simulate(circuit: cirq.Circuit, shots=1000) -> float:
     # Setup the Qrack simulator and run it
     qsim = QrackSimulator(
         qiskit_circ.width(),
-        is_stabilizer_hybrid=True,
-        is_schmidt_decompose_multi=False,
-        is_gpu=False,
+        is_near_clifford_tableau_writer=True,
     )
     qcircuit.run(qsim)
 
