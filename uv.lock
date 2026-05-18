@@ -2902,7 +2902,7 @@ wheels = [
 
 [[package]]
 name = "qibo"
-version = "0.3.2"
+version = "0.3.3"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "cma" },
@@ -2915,9 +2915,9 @@ dependencies = [
     { name = "sympy" },
     { name = "tabulate" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/c9/64/77ddaff054df93ea82ab5e6cad2647dbdbdcfce453c04dec52e69eb417c3/qibo-0.3.2.tar.gz", hash = "sha256:8f21d98ebee9d8575b5ee6bcd6d9cebbb37ebb34960eebd79037b622f34ff798", size = 310229, upload-time = "2026-04-07T08:35:01.77Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/90/61/a732634a0396f8088034bacca5c3ce83deedf6de607e3661c920dd16a9cf/qibo-0.3.3.tar.gz", hash = "sha256:e7976b9e36b0c02d5f1e69adc24e7b52c82081c21d7eda05ce20c5bd39d12548", size = 311812, upload-time = "2026-05-15T08:33:18.661Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/48/e5/3f333f502b8bd47398a7f68c143ad8bb1dbe4a64a574de892a8a14bd2da4/qibo-0.3.2-py3-none-any.whl", hash = "sha256:c6883daa7fe664f916e069fe345156631daf5e598e55044e6891b8200aaf6400", size = 354556, upload-time = "2026-04-07T08:35:00.317Z" },
+    { url = "https://files.pythonhosted.org/packages/89/f0/9b403899ad32e7352b6b7cad78b9fc2197b647ec5c60b2b5933fec187b66/qibo-0.3.3-py3-none-any.whl", hash = "sha256:235b33a4f20939c7ecc27371c9f92b058e9d88a562af5be5962ce308dd00405c", size = 356174, upload-time = "2026-05-15T08:33:17.178Z" },
 ]
 
 [[package]]
