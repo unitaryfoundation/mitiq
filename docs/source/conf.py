@@ -445,6 +445,7 @@ nbsphinx_thumbnails = {
     "examples/ddd_on_ibmq_ghz": "_static/ddd_qiskit_ghz_plot.png",
     "examples/calibration-tutorial": "_static/calibration.png",
     "examples/combine_rem_zne": "_static/combine_rem_zne.png",
+    "examples/combine_422_zne": "_static/combine_422_zne.png",
     "examples/quantum_simulation_scars_ibmq": "_static/qmbs_ibmq.png",
     "examples/zne_logical_rb_cirq_stim": "_static/mitiq_stim_logo.png",
     "examples/quantum_simulation_1d_ising": "_static/quantum_simulation.png",
