@@ -312,7 +312,7 @@ Fix packaging issue that caused `import mitiq` to fail due to missing VERSION.tx
 
 - Many tutorials are now updated with modern Qiskit code, ready to run on the latest IBM devices thanks to @bdg221!
 - A new tutorial demonstrating how to use [UCC](https://github.com/unitaryfoundation/ucc) in conjunction with Mitiq that shows how compilation and mitigation work well together.
-- The Virtual Distillation technique now has a complete [user guide](https://mitiq.readthedocs.io/en/stable/guide/vd.html) along with [API-docs](https://mitiq.readthedocs.io/en/stable/apidoc.html#mitiq.vd.vd.execute_with_vd).
+- The Virtual Distillation technique now has a complete [user guide](https://mitiq.readthedocs.io/en/stable/guide/vd.html) along with [API-docs](https://mitiq.readthedocs.io/en/stable/apidoc.html#mitiq.experimental.vd.vd.execute_with_vd).
 
 #### ✨ Enhancements
 
