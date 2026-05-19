@@ -23,14 +23,14 @@ The [[4,2,2]] code encodes 2 logical qubits into 4 physical qubits and can detec
 Any single-qubit error anticommutes with at least one stabilizer, flipping its outcome from $+1$ to $-1$ and signalling that the shot should be discarded.
 
 The four logical codewords are:
-```{math}
+$$
 \begin{align}
 |0_L 0_L\rangle &= \tfrac{1}{\sqrt{2}}(|0000\rangle + |1111\rangle) \\
 |0_L 1_L\rangle &= \tfrac{1}{\sqrt{2}}(|0011\rangle + |1100\rangle) \\
 |1_L 0_L\rangle &= \tfrac{1}{\sqrt{2}}(|0101\rangle + |1010\rangle) \\
 |1_L 1_L\rangle &= \tfrac{1}{\sqrt{2}}(|0110\rangle + |1001\rangle)
 \end{align}
-```
+$$
 
 
 A useful reference for the encoding circuit and stabilizer structure is the [[4,2,2]] section of the [Quantum Error Correction Zoo](https://errorcorrectionzoo.org/c/stab_4_2_2).
