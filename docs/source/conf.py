@@ -232,7 +232,10 @@ bibtex_bibfiles = ["refs.bib"]
 linkcheck_ignore = [
     r"https://arxiv\.org/.*",
     r"https://doi\.org/.*",
+    r"http://dx\.doi\.org/.*",
     r"https://link\.aps\.org/doi/.*",
+    r"https://journals\.aps\.org/.*",
+    r"https://.*pepy\.tech/.*",
     r"https://www\.sciencedirect\.com/science/article/.*",
     r"https://github.com/unitaryfoundation/mitiq/compare/.*",
     r"https://github.com/unitaryfoundation/mitiq/compare/.*",
