@@ -25,6 +25,7 @@ ZNE with Cirq: Hamiltonian simulation with Pauli gates<hamiltonians.md>
 ZNE with Cirq: Energy of molecular Hydrogen <molecular_hydrogen.md>
 ZNE with Cirq: Noise scaling methods <scaling.md>
 ZNE with Qibo: Mitigating noisy simulations <qibo-noisy-simulation.md>
+Hybrid QEC + ZNE with Qibo: Detection and correction <qec-mitiq-qibo.md>
 ZNE and CDR with Cirq: 1D Ising Simulation <quantum_simulation_1d_ising.md>
 ZNE with PennyLane + Cirq: Energy of molecular Hydrogen <molecular_hydrogen_pennylane.md>
 ZNE with BQSKit compiled circuits <bqskit.md>
