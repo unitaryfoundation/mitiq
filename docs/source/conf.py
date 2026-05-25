@@ -14,6 +14,7 @@ import datetime
 import os
 import shutil
 import sys
+from pathlib import Path
 
 import pybtex.style.formatting
 import pybtex.style.formatting.unsrt
@@ -69,7 +70,52 @@ def handle_build_finished(app, exception):
         move_notebook_dir(app)
 
 
+def initialize_nb_cache(app):
+    """Pre-initialize the jupyter-cache DB in the main process to avoid a race
+    condition when multiple Sphinx worker processes simultaneously attempt to
+    CREATE TABLE on the same SQLite database (triggered by -j auto)."""
+    if app.config.nb_execution_mode != "cache":
+        return
+    try:
+        from jupyter_cache import get_cache
+
+        cache_path = app.config.nb_execution_cache_path or str(
+            Path(app.outdir).parent / ".jupyter_cache"
+        )
+        cache = get_cache(cache_path)
+        _ = cache.db  # accessing .db forces directory + table creation
+    except Exception as e:
+        print(f"Warning: could not pre-initialize jupyter cache: {e}")
+
+
+def _patch_jupyter_cache_for_parallel_builds():
+    """Patch jupyter_cache to handle FileExistsError when two parallel Sphinx
+    workers both get a cache miss, execute the same notebook, and race to
+    write to the same cache directory (mkdir without exist_ok=True)."""
+    from jupyter_cache.cache import main as jc_main
+    from jupyter_cache.cache.db import NbCacheRecord
+
+    _orig = jc_main.JupyterCacheBase.cache_notebook_bundle
+
+    def _safe_cache_notebook_bundle(self, bundle, **kwargs):
+        try:
+            return _orig(self, bundle, **kwargs)
+        except FileExistsError:
+            # A sibling worker already wrote this notebook to cache;
+            # return its record.
+            _, hashkey = self.create_hashed_notebook(bundle.nb)
+            return NbCacheRecord.record_from_hashkey(hashkey, self.db)
+
+    jc_main.JupyterCacheBase.cache_notebook_bundle = (
+        _safe_cache_notebook_bundle
+    )
+
+
+_patch_jupyter_cache_for_parallel_builds()
+
+
 def setup(app):
+    app.connect("builder-inited", initialize_nb_cache)
     app.connect("html-page-context", handle_page_context)
     app.connect("build-finished", handle_build_finished)
 
