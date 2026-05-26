@@ -128,7 +128,7 @@ def visualize_fits(
             result = cast(
                 tuple[
                     float,
-                    Optional[float],
+                    float | None,
                     list[float],
                     npt.NDArray[Any] | None,
                     Callable[[float], float],
