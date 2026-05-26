@@ -22,8 +22,9 @@ from mitiq.executor import Executor
 from mitiq.observable import PauliString, Observable
 
 # About and version.
+from importlib.metadata import version as _pkg_version
 from mitiq._about import about
-from mitiq._version import __version__
+__version__ = _pkg_version("mitiq")
 
 # QEM techniques.
 from mitiq import cdr, ddd, lre, pec, pt, qse, raw, rem, zne

@@ -43,12 +43,12 @@ This task has two parts:
     of the release section to include the release date and remove the
     "In Development" designation.
 
-### Bump version in VERSION.txt
+### Bump version in pyproject.toml
 
-When releasing a new version, one must update the `VERSION.txt` file
+When releasing a new version, one must update the `version` field in `pyproject.toml`
 which is the single source of truth for version information. We follow
 [SemVer](https://semver.org/), so typically a release will involve changing the version from
-`vX.Y.Zdev` (development) to `vX.Y.Z` (released).
+`X.Y.Zdev` (development) to `X.Y.Z` (released).
 
 ### Create a release pull request
 
@@ -61,7 +61,7 @@ This includes additional steps, such as running a link checker to verify all lin
 
 ## Do the release
 
-Once the above changes in the `CHANGELOG.md` and `VERSION.txt` are merged into main, you are ready to do the release.
+Once the above changes in the `CHANGELOG.md` and `pyproject.toml` are merged into main, you are ready to do the release.
 
 ### Create a new tag
 
@@ -69,7 +69,7 @@ Once the above changes (new changelog and new version) are merged into
 the main branch, checkout and pull the latest on the main branch
 from your local machine. Then once you are up to date, tag the most
 recent commit on main (using `git tag`) with a tag that matches the
-number `VERSION.txt` (with a preceding "v", so `0.1.0` is `v0.1.0`)
+version in `pyproject.toml` (with a preceding "v", so `0.1.0` is `v0.1.0`)
 and push this tag to the Github repository.
 
 ```bash
@@ -128,4 +128,4 @@ required for authentication.
 ## Update the new development version
 
 Add a new section to the `CHANGELOG.md` to track changes in the following release, meaning that if `vX.Y.Z` was just released, then there should be a section for `vX.(Y+1).0` that is marked "In Development".
-Finally, change the version in `VERSION.txt` from `vX.Y.Z` to `vX.(Y+1).0dev`.
+Finally, change the `version` field in `pyproject.toml` from `X.Y.Z` to `X.(Y+1).0dev`.

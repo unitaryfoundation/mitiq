@@ -31,9 +31,8 @@ copyright = f"2020 - {datetime.date.today().year} Unitary Foundation"
 author = "Tech Team @ Unitary Foundation"
 
 # The full version, including alpha/beta/rc tags
-directory_of_this_file = os.path.dirname(os.path.abspath(__file__))
-with open(f"{directory_of_this_file}/../../VERSION.txt", "r") as f:
-    release = f.read().strip()
+from importlib.metadata import version as _pkg_version
+release = _pkg_version("mitiq")
 
 sys.path.append(os.path.abspath("sphinxext"))
 

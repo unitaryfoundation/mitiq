@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "mitiq"
-dynamic = ["version"]
+version = "1.0.0"
 readme = "README.md"
 description = "Mitiq is an open source toolkit for implementing error mitigation techniques on most current intermediate-scale quantum computers." 
 authors = [ 
@@ -151,6 +151,3 @@ exclude_lines = [
 
 [tool.setuptools.packages.find]
 where = ["."]
-
-[tool.setuptools.dynamic]
-version = {file = "VERSION.txt"}
