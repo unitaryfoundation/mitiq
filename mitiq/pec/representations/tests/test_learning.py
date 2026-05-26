@@ -3,7 +3,7 @@
 # This source code is licensed under the GPL license (v3) found in the
 # LICENSE file in the root directory of this source tree.
 
-import os
+from pathlib import Path
 
 import numpy as np
 import pytest
@@ -249,10 +249,8 @@ def test_learn_depolarizing_noise_parameter(epsilon):
     epsilon0 = (1 - offset) * epsilon
     eps_string = str(epsilon).replace(".", "_")
     pec_data = np.loadtxt(
-        os.path.join(
-            "./mitiq/pec/representations/tests/learning_pec_data",
-            f"learning_pec_data_eps_{eps_string}.txt",
-        )
+        Path("./mitiq/pec/representations/tests/learning_pec_data")
+        / f"learning_pec_data_eps_{eps_string}.txt"
     )
 
     [success, epsilon_opt] = learn_depolarizing_noise_parameter(
@@ -304,10 +302,8 @@ def test_learn_biased_noise_parameters(epsilon, eta):
     eps_string = str(epsilon).replace(".", "_")
     for tc in range(0, num_training_circuits):
         pec_data[:, :, tc] = np.loadtxt(
-            os.path.join(
-                "./mitiq/pec/representations/tests/learning_pec_data",
-                f"learning_pec_data_eps_{eps_string}eta_{eta}tc_{tc}.txt",
-            )
+            Path("./mitiq/pec/representations/tests/learning_pec_data")
+            / f"learning_pec_data_eps_{eps_string}eta_{eta}tc_{tc}.txt"
         )
 
     [success, epsilon_opt, eta_opt] = learn_biased_noise_parameters(
