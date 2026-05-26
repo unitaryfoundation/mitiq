@@ -14,6 +14,7 @@ import datetime
 import os
 import shutil
 import sys
+from importlib.metadata import version as _pkg_version
 
 import pybtex.style.formatting
 import pybtex.style.formatting.unsrt
@@ -31,7 +32,7 @@ copyright = f"2020 - {datetime.date.today().year} Unitary Foundation"
 author = "Tech Team @ Unitary Foundation"
 
 # The full version, including alpha/beta/rc tags
-from importlib.metadata import version as _pkg_version
+
 release = _pkg_version("mitiq")
 
 sys.path.append(os.path.abspath("sphinxext"))
