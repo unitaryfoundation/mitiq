@@ -18,7 +18,7 @@ from collections import Counter
 from collections.abc import Sequence
 from dataclasses import dataclass
 from enum import Enum, EnumMeta
-from typing import Any, TypeAlias, cast
+from typing import Any, TypeAlias, Union, cast
 
 import numpy as np
 import numpy.typing as npt
@@ -79,15 +79,15 @@ except ImportError:  # pragma: no cover
     _OpenQASMCircuit = _Circuit  # type: ignore
 
 # Supported + installed quantum programs.
-QPROGRAM: TypeAlias = (
-    _Circuit
-    | _Program
-    | _QuantumCircuit
-    | _BKCircuit
-    | _QuantumTape
-    | _QiboCircuit
-    | _OpenQASMCircuit
-)
+QPROGRAM: TypeAlias = Union[
+    _Circuit,
+    _Program,
+    _QuantumCircuit,
+    _BKCircuit,
+    _QuantumTape,
+    _QiboCircuit,
+    _OpenQASMCircuit,
+]
 
 
 # Supported quantum programs.
