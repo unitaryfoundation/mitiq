@@ -1747,7 +1747,7 @@ docs = [
     { name = "sphinx-gallery", specifier = "==0.19.0" },
     { name = "sphinx-tags", specifier = "==0.4" },
     { name = "sphinxcontrib-bibtex", specifier = "==2.6.5" },
-    { name = "stim", specifier = "==1.15.0" },
+    { name = "stim", specifier = "==1.16.0" },
     { name = "stimcirq", specifier = "==1.16.0" },
     { name = "ucc", marker = "python_full_version == '3.12.*'", specifier = "==0.4.12" },
 ]
@@ -3563,21 +3563,21 @@ wheels = [
 
 [[package]]
 name = "stim"
-version = "1.15.0"
+version = "1.16.0"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "numpy" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/77/15/0218eacd61cda992daf398bc36daf9830c8b430157a3ac0c06379598d24a/stim-1.15.0.tar.gz", hash = "sha256:95236006859d6754be99629d4fb44788e742e962ac8c59caad421ca088f7350e", size = 853226, upload-time = "2025-05-07T06:19:30.452Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/77/bd/c0f5d6241cdb806400a63e0c7febe22982ddf1c8761142bb0ea6b51d3f50/stim-1.16.0.tar.gz", hash = "sha256:9092a996429dcf616d8d4ca01fec886b7b310caf9425a39fcfe499005636bd52", size = 882497, upload-time = "2026-05-22T05:41:56.575Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/94/5f/82a80a3b0e494af4723737ea2109e64edbedc25fe05dcee8918e70d3a060/stim-1.15.0-cp311-cp311-macosx_10_9_x86_64.whl", hash = "sha256:48525d92965cc65b61399a9e1fe1d7a8925981bb4430ef69866d4e5c67a77d16", size = 1956537, upload-time = "2025-05-07T06:18:36.685Z" },
-    { url = "https://files.pythonhosted.org/packages/a8/82/0a01580071c6d50107298e93faa88250fc30f1538117ec887ec48de7816d/stim-1.15.0-cp311-cp311-macosx_11_0_arm64.whl", hash = "sha256:0bb3757c69c9b16fd24ff7400b5cddb22017c4cae84fc4b7b73f84373cb03c00", size = 1826988, upload-time = "2025-05-07T06:18:38.598Z" },
-    { url = "https://files.pythonhosted.org/packages/d7/c1/1dfa90b0622070eb39b4260eca26814d6fbac0f278e23b156072d9fac86b/stim-1.15.0-cp311-cp311-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:f0fb249f1a2897a22cbe4e0c2627abf49188cbbf19b942d4749972d1c3bdf12c", size = 4989254, upload-time = "2025-05-07T06:18:40.628Z" },
-    { url = "https://files.pythonhosted.org/packages/cb/27/5b8e8155e7fb75a9313e70f77a62233e0b9041c5acb60f6cf5a908d221e8/stim-1.15.0-cp311-cp311-win_amd64.whl", hash = "sha256:6e3b61a2d9dc4b4312f5cf2ccf9c9f7175fe13a12e5c08df99835c5275680919", size = 2625370, upload-time = "2025-05-07T06:18:42.65Z" },
-    { url = "https://files.pythonhosted.org/packages/65/99/da44f1fde8692deb74e291899699ee166e5726b975addff50f0f68bfc4c1/stim-1.15.0-cp312-cp312-macosx_10_13_x86_64.whl", hash = "sha256:d426e00afe21478828369df3aaa82905e710c5b1f72582ec45244e3739d6183d", size = 1974467, upload-time = "2025-05-07T06:18:44.665Z" },
-    { url = "https://files.pythonhosted.org/packages/46/f3/5aa6a7b31bcc9fb2540f65954b99dbf1e8c5fcd8d0aa164857b74e5eae9a/stim-1.15.0-cp312-cp312-macosx_11_0_arm64.whl", hash = "sha256:fc613f78bc88b4318d7f34f9fddacec52638c11b72cc618f911bdd7ca153f938", size = 1838840, upload-time = "2025-05-07T06:18:46.025Z" },
-    { url = "https://files.pythonhosted.org/packages/5b/25/f3b56b07c0c3fb31cb973a5c47ef88da022a859940dd46c910b706fc74aa/stim-1.15.0-cp312-cp312-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:fdd9e5ab85ba2fb113b8834422518f6e46a4aea2e0f6f7305cfc2ad0fcd07086", size = 4968123, upload-time = "2025-05-07T06:18:48.197Z" },
-    { url = "https://files.pythonhosted.org/packages/81/7e/abfed103a045a6ee8c7f3f00cd820d1cf9127304066aec42ea9fb89ee9c0/stim-1.15.0-cp312-cp312-win_amd64.whl", hash = "sha256:e92d5be90f6c92bada6b5aea64dfe9c80813a06e1316a71d5a36203dd24492f5", size = 2625908, upload-time = "2025-05-07T06:18:49.681Z" },
+    { url = "https://files.pythonhosted.org/packages/3f/1d/3619629c01407eef4042c22299afaf8d3f5fc3b0b26c98ffb4cd86f7cc1e/stim-1.16.0-cp311-cp311-macosx_10_9_x86_64.whl", hash = "sha256:8d44f858f3d5d1107e674886facbb011ed85438f0888278d6aa3c1f42d9e5a5f", size = 2046328, upload-time = "2026-05-22T05:41:27.345Z" },
+    { url = "https://files.pythonhosted.org/packages/be/37/3742215d5fd4e090ce7ae964e43d978d1ac9865b5865530a6d5f1063a124/stim-1.16.0-cp311-cp311-macosx_11_0_arm64.whl", hash = "sha256:1890bda08adfd6daa875d1d5e41039c5ae8c58faabc7cd1813f8d8de9f1536a2", size = 1892693, upload-time = "2026-05-22T05:41:28.958Z" },
+    { url = "https://files.pythonhosted.org/packages/d4/d8/a84d59b49395e4f8e080991915929c69e1e6a40c411a9c0998904dbf8bef/stim-1.16.0-cp311-cp311-manylinux_2_27_x86_64.manylinux_2_28_x86_64.whl", hash = "sha256:bd2d28093818f981f8dedb2be160b62d818279b81748d72dc4fca6cdd160291d", size = 5248218, upload-time = "2026-05-22T05:41:31.191Z" },
+    { url = "https://files.pythonhosted.org/packages/b8/87/a845b9d17ab5e352eee30169a58bd8213e85ff47c6340daff2f8a25ed28e/stim-1.16.0-cp311-cp311-win_amd64.whl", hash = "sha256:b367f90826e796417932ea46c0e53d80e3c5bebac0c6633c0aa07a8fcaa4298b", size = 2755461, upload-time = "2026-05-22T05:41:33.426Z" },
+    { url = "https://files.pythonhosted.org/packages/20/d9/8b70c39860e67e233178a9ef595c15a7ec718f0b88bc424ae2c6ad8f97da/stim-1.16.0-cp312-cp312-macosx_10_13_x86_64.whl", hash = "sha256:3e2883216fb4f57411531c99dfa1838c0d8201c619ccd01b197b9afd54d326cf", size = 2067905, upload-time = "2026-05-22T05:41:34.9Z" },
+    { url = "https://files.pythonhosted.org/packages/51/e3/45a8c0889f4629027cbdd8ed8e9f5824b5bd8b12b0f5d24be27ec0c2a3dc/stim-1.16.0-cp312-cp312-macosx_11_0_arm64.whl", hash = "sha256:b8580dfbe5ff27594dd15a83b24262630b82cf089d1463d29dbee90ffbc6898b", size = 1902644, upload-time = "2026-05-22T05:41:36.132Z" },
+    { url = "https://files.pythonhosted.org/packages/e4/71/db565f5bd0f273414e90d85551eed1c75f7b689847bd605a7cf0c4c0386d/stim-1.16.0-cp312-cp312-manylinux_2_27_x86_64.manylinux_2_28_x86_64.whl", hash = "sha256:883b24c3c95fa69818e931e8b60daf4fc8195d159d321e7548d8706dbac16558", size = 5307850, upload-time = "2026-05-22T05:41:37.69Z" },
+    { url = "https://files.pythonhosted.org/packages/bb/65/0ddfa6f76c4a137aefeee4d51a65945e0ec77cc2221322f13a5768f4c488/stim-1.16.0-cp312-cp312-win_amd64.whl", hash = "sha256:85b9c544c65377a42c6b5c9a57616a5ed5580e1cabb286a604800a045c7a12fb", size = 2760794, upload-time = "2026-05-22T05:41:39.731Z" },
 ]
 
 [[package]]

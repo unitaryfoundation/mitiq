@@ -84,7 +84,7 @@ docs = [
     "openfermionpyscf==0.5; sys_platform != 'win32'",
     "bqskit==1.2.1",
     "seaborn==0.13.2",
-    "stim==1.15.0",
+    "stim==1.16.0",
     "stimcirq==1.16.0",
     "pyqrack==2.0.2",
     "ucc==0.4.12; python_version == '3.12'",
