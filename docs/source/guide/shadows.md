@@ -13,10 +13,12 @@ kernelspec:
 
 # Classical Shadows
 
-Classical shadows {cite}`huang2020predicting` create an approximate classical representation of a quantum state using minimal measurements.
+Classical shadows {cite}`huang2020predicting` create an approximate classical representation of a quantum state using minimal measurements of copies of said state.
 The protocol is based on shadow tomography, a technique for reconstructing properties of a quantum state from a small number of measurements.
 This approach not only characterizes and mitigates noise effectively but also retains sample efficiency and demonstrates noise resilience {cite}`chen2021robust`.
-For more details, see [](./shadows-5-theory.md).
+
+Mitiq currently supports both classical shadow estimation and robust shadow estimation workflows.
+Details of each workflow are shown in the following diagrams.
 
 ```{figure} ../img/classicalshadow_workflow.png
 ---
