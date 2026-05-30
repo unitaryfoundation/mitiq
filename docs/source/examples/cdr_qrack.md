@@ -99,7 +99,10 @@ def qrack_simulate(circuit: cirq.Circuit, shots=1000) -> float:
     qcircuit = QrackCircuit.in_from_qiskit_circuit(qiskit_circ) 
 
     # Setup the Qrack simulator and run it
-    qsim = QrackSimulator(qiskit_circ.width(), isStabilizerHybrid=True, isTensorNetwork=False, isSchmidtDecomposeMulti=False, isSchmidtDecompose=False, isOpenCL=False)
+    qsim = QrackSimulator(
+        qiskit_circ.width(),
+        is_near_clifford_tableau_writer=True,
+    )
     qcircuit.run(qsim)
 
     # Use shot measurements to return the expectation value of 00

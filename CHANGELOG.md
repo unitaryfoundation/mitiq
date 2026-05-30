@@ -1,27 +1,102 @@
 # Changelog
 
-## Version 1.0.0 (unreleased)
+## Version 1.0.0
 
-### Breaking Changes
+([Full Changelog](https://github.com/unitaryfoundation/mitiq/compare/v0.49.0...v1.0.0))
+
+### Highlights
+
+🎉 **Mitiq 1.0 is here!**
+
+After more than six years of development, [50 releases](https://github.com/unitaryfoundation/mitiq/releases), and 1,700 commits by [96 contributors](https://github.com/unitaryfoundation/mitiq/graphs/contributors), Mitiq's version will finally reflect the project's stability.
+This milestone marks a commitment to a stable public API for the core error mitigation techniques (ZNE, PEC, DDD, LRE, CDR, REM, and PT) governed by [semantic versioning](https://semver.org/).
+Future breaking changes to these modules will require a new major version.
+
+This release also introduces the `mitiq.experimental` module which houses techniques whose APIs are still evolving and being tested (PEA, Shadows, VD, and the brand new TREX).
+Experimental techniques emit a `FutureWarning` on import to remind users that their interfaces may change.
+Feedback on these techniques is especially helpful!
+
+Rounding out the release is a complete user guide for Probabilistic Error Amplification (PEA), a bug fix for ZNE that has gone unnoticed since ZNE was added, and the addition of Twirled Readout Error eXtinction (TREX) as Mitiq's newest (experimental) error mitigation technique.
+
+**Thank you to every contributor who has helped build Mitiq since 2020!**
+
+Special thanks to @vprusso, @cosenal, and first-time contributors @carpo3005, @axif0, and @bubai2000 for their work in this release!
+
+### 🚨 Breaking Changes
 
 - `mitiq.pea`, `mitiq.shadows`, and `mitiq.vd` are no longer accessible from
   the top-level `mitiq` namespace. Code using `from mitiq import pea` (or
   `shadows`/`vd`) will raise an `ImportError` and must be updated.
 
-  Migrate by importing from the submodule directly or via `mitiq.experimental`:
-
-  ```python
-  # before
-  from mitiq import pea
-
-  # after (either works)
-  import mitiq.pea as pea
-  from mitiq.experimental import pea
+  ```diff
+  -from mitiq import pea
+  +from mitiq.experimental import pea
   ```
 
-  These techniques are now part of `mitiq.experimental`, which signals that
-  their APIs may change without notice and are not covered by mitiq's semantic
-  versioning guarantees. A `FutureWarning` is emitted on import.
+  These techniques are now part of `mitiq.experimental`, which signals that their APIs may change without notice and are not covered by Mitiq's semantic versioning guarantees. A `FutureWarning` is emitted on import.
+
+- Move less tested techniques to experimental module (#2966) [@natestemen]
+
+### ✨ Enhancements
+
+- feat: trex qem technique (#2934) [@vprusso]
+
+### 🐛 Bug Fixes
+
+- Fix PolyExpFactory.extrapolate() bug (#2941) [@carpo3005]
+- fix cost when ideal executor is being used (#2951) [@natestemen]
+- fix module import issues (#2954) [@natestemen]
+
+### 📓 Documentation
+
+- PEA user guide (#2933) [@natestemen]
+- Shadows tutorials cleaning (#2964) [@natestemen]
+- Clean up shadows code (#2965) [@natestemen]
+- clean up pennylane tutorial (#2950) [@natestemen]
+- `:func:` for function references and Restores the missing Pauli fidelity formula (#2958) [@axif0]
+- Add calibration benchmark script for average ZNE improvement (#2960) [@axif0]
+
+### 🧑🏽‍💻 Developer Improvements
+
+- add AI contribution policy (#2974) [@natestemen]
+- remove mention of AUTHORS file (#2971) [@natestemen]
+- Replace deprecated actions/create-release with GitHub CLI method (#2956) [@bubai2000]
+- simplify docs build set up (#2948) [@natestemen]
+- Make docs-build workflow more frugal (#2953) [@cosenal]
+- move coverage config to pyproject.toml (#2947) [@natestemen]
+- Fix Codecov base head (#2969) [@cosenal]
+
+### 📦 Dependency Updates
+
+- Bump pennylane from 0.43.1 to 0.44.1 (#2968) [@dependabot]
+- Bump wheel to 0.46.3 (#2967) [@cosenal]
+- Bump qibo from 0.2.23 to 0.3.1 (#2944) [@dependabot]
+- Bump numba from 0.63.1 to 0.64.0 (#2946) [@dependabot]
+- Bump types-tabulate from 0.9.0.20241207 to 0.10.0.20260308 (#2945) [@dependabot]
+- Bump tornado from 6.5.2 to 6.5.5 (#2952) [@dependabot]
+- Bump pyjwt from 2.10.1 to 2.12.0 (#2957) [@dependabot]
+- Bump pyasn1 from 0.6.2 to 0.6.3 (#2962) [@dependabot]
+
+### 🙌 All-time Contributors
+
+Mitiq 1.0 belongs to everyone who has ever taken part in this project, through code, issues, reviews, or simply using the library and sharing feedback.
+A very special thanks to all who committed code over the years:
+
+@natestemen, @andreamari, @rmlarose, @nathanshammah, @purva-thakre,
+@Misty-W, @willzeng, @crazy4pi314, @L-P-B, @cosenal, @karalekas,
+@b-goldsmith, @andre-a-alves, @Aaron-Robertson, @jordandsullivan, @FarLab,
+@amirebrahimi, @Min-Li, @nickdgardner, @Shivansh20128, @vprusso, @q-inho,
+@paniash, @elmandouh, @bubakazouba, @ACE07-Sev, @kozhukalov, @Rahul-Mistri,
+@DSamuel1, @yhindy, @obliviateandsurrender, @maloleroy, @lockwo,
+@gluonhiggs, @francescsabater, @axif0, @YuNariai, @EmilianoG-byte,
+@yitchen-tim, @vtomole, @vrajan1996, @sukrucildirr, @smburdick, @sid1993,
+@schrodinteq, @sanketsharma, @orisus42, @omahs, @nylewong, @muddi900,
+@mstechly, @mbrotos, @marwahaha, @lifechange777, @khknopp, @k-m-schultz,
+@jpacold, @isaac-gs, @grmlarose, @farzadkianvash, @ecarlander, @dubeyPraY,
+@deji725, @ckissane, @chrispy-chicken, @carpo3005, @bubai2000,
+@ZhaoyiLi-HekJukZaaiZyuJan, @Yash-10, @WingCode, @RubidgeCarrie,
+@NnguyenHTommy, @MZuhairKhan, @MChang360686, @LogMoss, @LaurentAjdnik,
+@Jegbrz, @JMuff22, @DHuybrechts, @BobinMathew, @AkashNarayanan, @1ucian0.
 
 ## Version 0.49.0 (March 8, 2026)
 
@@ -237,7 +312,7 @@ Fix packaging issue that caused `import mitiq` to fail due to missing VERSION.tx
 
 - Many tutorials are now updated with modern Qiskit code, ready to run on the latest IBM devices thanks to @bdg221!
 - A new tutorial demonstrating how to use [UCC](https://github.com/unitaryfoundation/ucc) in conjunction with Mitiq that shows how compilation and mitigation work well together.
-- The Virtual Distillation technique now has a complete [user guide](https://mitiq.readthedocs.io/en/stable/guide/vd.html) along with [API-docs](https://mitiq.readthedocs.io/en/stable/apidoc.html#mitiq.vd.vd.execute_with_vd).
+- The Virtual Distillation technique now has a complete [user guide](https://mitiq.readthedocs.io/en/stable/guide/vd.html) along with [API-docs](https://mitiq.readthedocs.io/en/stable/apidoc.html#mitiq.experimental.vd.vd.execute_with_vd).
 
 #### ✨ Enhancements
 

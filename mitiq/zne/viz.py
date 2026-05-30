@@ -6,7 +6,7 @@
 """Visualization utilities for zero-noise extrapolation."""
 
 import warnings
-from typing import Any, Callable, Optional, Protocol, Sequence, cast
+from typing import Any, Callable, Protocol, Sequence, cast
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -34,9 +34,9 @@ def visualize_fits(
     scale_factors: Sequence[float],
     exp_values: Sequence[float],
     *,
-    factories: Optional[Sequence[SupportsExtrapolate]] = None,
+    factories: Sequence[SupportsExtrapolate] | None = None,
     order: int = 2,
-    ideal_value: Optional[float] = None,
+    ideal_value: float | None = None,
 ) -> Figure:
     """Visualizes extrapolation fits together with data.
 
@@ -128,7 +128,7 @@ def visualize_fits(
             result = cast(
                 tuple[
                     float,
-                    Optional[float],
+                    float | None,
                     list[float],
                     npt.NDArray[Any] | None,
                     Callable[[float], float],

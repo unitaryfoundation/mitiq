@@ -110,7 +110,7 @@ jobs:
         # Upload once per workflow on same-repo PRs and on pushes to main so
         # PR comparisons always have a recent base report on the default branch.
         if: ${{ matrix.python-version == '3.12' && matrix.os == 'ubuntu-latest' && (github.event_name == 'push' || github.event.pull_request.head.repo.full_name == github.repository) }}
-        uses: codecov/codecov-action@v5
+        uses: codecov/codecov-action@v6
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
           fail_ci_if_error: true
