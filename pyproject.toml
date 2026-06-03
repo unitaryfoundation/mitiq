@@ -64,6 +64,9 @@ dev = [
     "ruff==0.15.6",
     "mypy==1.0.0",
     "types-tabulate",
+    "mthree>=0.2.0",
+    "qermit>=0.3.0",
+    "python-dotenv>=1.0.0",
 ]
 docs = [
     "Sphinx==8.1.3",
