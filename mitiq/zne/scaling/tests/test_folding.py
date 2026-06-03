@@ -1395,3 +1395,15 @@ def test_scaling_with_pyquil_retains_declarations(fold_method):
 
     scaled = fold_method(program, 1)
     assert scaled.declarations == program.declarations
+
+
+def test_fold_all_negative_num_folds_raises():
+    circuit = Circuit([ops.H.on(LineQubit(0))])
+    with pytest.raises(ValueError, match="must be positive"):
+        _fold_all(circuit, num_folds=-1)
+
+
+def test_fold_global_scale_factor_less_than_one_raises():
+    circuit = Circuit([ops.H.on(LineQubit(0)), ops.X.on(LineQubit(0))])
+    with pytest.raises(ValueError, match="scale factor must be a real number"):
+        fold_global(circuit, scale_factor=0.5)
