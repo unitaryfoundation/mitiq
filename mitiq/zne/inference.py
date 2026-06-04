@@ -20,7 +20,9 @@ from matplotlib.figure import Figure
 try:
     from numpy.exceptions import RankWarning
 except ImportError:
-    from numpy.linalg import LinAlgError as RankWarning  # type: ignore[assignment]
+    from numpy.linalg import (
+        LinAlgError as RankWarning,  # type: ignore[assignment]
+    )
 from scipy.optimize import OptimizeWarning, curve_fit
 
 from mitiq import QPROGRAM, QuantumResult
