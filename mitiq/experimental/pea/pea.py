@@ -16,12 +16,11 @@ from mitiq import QPROGRAM, Executor, Observable, QuantumResult
 from mitiq.experimental.pea.scale_amplifications import (
     scale_circuit_amplifications,
 )
+from mitiq.pec import OperationRepresentation, sample_circuit
 from mitiq.pec.pec import (
     _LARGE_SAMPLE_WARN,
     LargeSampleWarning,
-    sample_circuit,
 )
-from mitiq.pec.types.types import OperationRepresentation
 from mitiq.zne.inference import LinearFactory
 
 
