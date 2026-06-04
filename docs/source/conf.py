@@ -14,6 +14,7 @@ import datetime
 import os
 import shutil
 import sys
+from importlib.metadata import version as _pkg_version
 
 import pybtex.style.formatting
 import pybtex.style.formatting.unsrt
@@ -31,9 +32,8 @@ copyright = f"2020 - {datetime.date.today().year} Unitary Foundation"
 author = "Tech Team @ Unitary Foundation"
 
 # The full version, including alpha/beta/rc tags
-directory_of_this_file = os.path.dirname(os.path.abspath(__file__))
-with open(f"{directory_of_this_file}/../../VERSION.txt", "r") as f:
-    release = f.read().strip()
+
+release = _pkg_version("mitiq")
 
 sys.path.append(os.path.abspath("sphinxext"))
 
@@ -232,7 +232,11 @@ bibtex_bibfiles = ["refs.bib"]
 linkcheck_ignore = [
     r"https://arxiv\.org/.*",
     r"https://doi\.org/.*",
+    r"http://dx\.doi\.org/.*",
     r"https://link\.aps\.org/doi/.*",
+    r"https://journals\.aps\.org/.*",
+    r"https://.*pepy\.tech/.*",
+    r"https://www\.contributor-covenant\.org/.*",
     r"https://www\.sciencedirect\.com/science/article/.*",
     r"https://github.com/unitaryfoundation/mitiq/compare/.*",
     r"https://github.com/unitaryfoundation/mitiq/compare/.*",
