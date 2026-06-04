@@ -83,16 +83,9 @@ Required dependencies (added to `pyproject.toml`):
 - `qermit` (dev dependency)
 - `python-dotenv` (dev dependency)
 
-## IBM QUANTUM BUNKER Integration
+## Future Extensions
 
-The scripts can be extended with `--bunker-mode` to integrate with the IBM QUANTUM BUNKER API:
-
-- Use real hardware data via `/recover/{job_id}` endpoint
-- Use emulator with time-aware noise models via `/emulator/run_chsh`
-- Leverage GPU acceleration via `/gpu/info`
-- Track backend drift via `/drift/{backend}`
-
-See `BUNKER_API_INTEGRATION.md` for details.
+The scripts can be extended with additional integration options for real hardware data and time-aware noise models.
 
 ## Testing
 
@@ -120,7 +113,6 @@ python scripts/benchmark_pec.py --circuit ghz --n-qubits 4 --noise-level 0.01 --
 - ⏳ Implement mthree benchmark in benchmark_meas_mitigation.py
 - ⏳ Implement qermit benchmark in benchmark_meas_mitigation.py
 - ⏳ Implement qermit benchmark in benchmark_pec.py
-- ⏳ Add --bunker-mode flag for Bunker API integration
 - ⏳ Test with Quantum Volume and Mirror circuits
 
 ## Bounty #2876 Acceptance Criteria
