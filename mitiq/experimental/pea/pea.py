@@ -46,12 +46,14 @@ def construct_circuits(
             sequence is sampled.
         scale_factors: A list of (positive) numbers by which the baseline
             noise level is to be amplified.
-        noise_model: [DEPRECATED] A string describing the noise model to be used
-            for the noise-scaled representations, e.g. "local_depolarizing" or
-            "global_depolarizing". Use 'representations' instead.
+        noise_model: [DEPRECATED] A string describing the noise model
+            to be used for the noise-scaled representations,
+            e.g. "local_depolarizing" or "global_depolarizing".
+            Use 'representations' instead.
         epsilon: Baseline noise level. Required if noise_model is used.
-        representations: A list of OperationRepresentation objects to use for
-            noise amplification. If provided, noise_model and epsilon are ignored.
+        representations: A list of OperationRepresentation objects
+            to use for noise amplification. If provided,
+            noise_model and epsilon are ignored.
         random_state: The random state or seed for reproducibility.
         precision: The desired precision for the sampling process.
             Default is 0.1.
@@ -82,7 +84,8 @@ def construct_circuits(
         )
     if noise_model is None and representations is None:
         raise ValueError(
-            "Must provide either 'noise_model' (deprecated) or 'representations'."
+            "Must provide either 'noise_model' (deprecated) "
+            "or 'representations'."
         )
 
     # Issue deprecation warning if noise_model is used
@@ -94,7 +97,9 @@ def construct_circuits(
             stacklevel=2,
         )
         # Convert noise_model to representations for backward compatibility
-        representations = scale_circuit_amplifications(circuit, 1.0, noise_model, epsilon)
+        representations = scale_circuit_amplifications(
+            circuit, 1.0, noise_model, epsilon
+        )
 
     # Get the 1-norm of the circuit quasi-probability representation
     _, _, norm = sample_circuit(
@@ -118,20 +123,21 @@ def construct_circuits(
         # For PEA, we regenerate representations with scaled noise level
         if noise_model is not None:
             # Use legacy path for scaling
-            scaled_amplifications = scale_circuit_amplifications(circuit, s, noise_model, epsilon)
+            scaled_amplifications = scale_circuit_amplifications(
+                circuit, s, noise_model, epsilon
+            )
         else:
             # For custom representations, we need to scale them
-            # This is a simplified implementation - regenerate with assumed local depolarizing
+            # This is a simplified implementation - regenerate with
+            # assumed local depolarizing
             # A full implementation would properly scale the coefficients
-            from mitiq.pec.representations.depolarizing import (
-                represent_operations_in_circuit_with_local_depolarizing_noise,
-            )
+
             # Assume epsilon is the base noise level from the representations
             # This is a limitation of the current implementation
             scaled_amplifications = scale_circuit_amplifications(
                 circuit, s, "local_depolarizing", epsilon
             )
-        
+
         sampled_circuits, signs, norm = sample_circuit(
             circuit,
             scaled_amplifications,
@@ -195,7 +201,8 @@ def execute_with_pea(
     scale_factors: list[float],
     noise_model: str | None = None,
     epsilon: float = 0.0,
-    extrapolation_method: Callable[[Sequence[float], Sequence[float]], float] | None = None,
+    extrapolation_method: Callable[[Sequence[float], Sequence[float]], float]
+    | None = None,
     observable: Observable | None = None,
     representations: list | None = None,
     random_state: int | np.random.RandomState | None = None,
@@ -226,9 +233,10 @@ def execute_with_pea(
             unmitigated ``QuantumResult`` (e.g. an expectation value).
         scale_factors: A list of (positive) numbers by which the baseline
             noise level is to be amplified.
-        noise_model: [DEPRECATED] A string describing the noise model to be used
-            for the noise-scaled representations, e.g. "local_depolarizing" or
-            "global_depolarizing". Use 'representations' instead.
+        noise_model: [DEPRECATED] A string describing the noise model
+            to be used for the noise-scaled representations,
+            e.g. "local_depolarizing" or "global_depolarizing".
+            Use 'representations' instead.
         epsilon: Baseline noise level. Required if noise_model is used.
         extrapolation_method: The method of extrapolation to use when fitting
             the measured results. A list of built-in functions can be found
@@ -237,8 +245,9 @@ def execute_with_pea(
             the `executor` must return an expectation value. Otherwise,
             the `QuantumResult` returned by `executor` is used to compute the
             expectation of the observable.
-        representations: A list of OperationRepresentation objects to use for
-            noise amplification. If provided, noise_model and epsilon are ignored.
+        representations: A list of OperationRepresentation objects
+            to use for noise amplification. If provided,
+            noise_model and epsilon are ignored.
         random_state: The random state or seed for reproducibility.
         precision: The desired precision for the sampling process.
             Default is 0.1.

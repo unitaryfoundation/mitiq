@@ -8,8 +8,8 @@
 from typing import Callable, Dict
 
 from mitiq import QPROGRAM, Executor, QuantumResult
-from mitiq.experimental.deb.symmetrization import construct_circuits
 from mitiq.experimental.deb.sharpening import sharpen
+from mitiq.experimental.deb.symmetrization import construct_circuits
 
 
 def execute_with_debiasing(
@@ -49,7 +49,9 @@ def execute_with_debiasing(
         if total_shots > 0:
             for bitstring, count in counts.items():
                 prob = count / total_shots
-                averaged_dist[bitstring] = averaged_dist.get(bitstring, 0) + prob
+                averaged_dist[bitstring] = (
+                    averaged_dist.get(bitstring, 0) + prob
+                )
 
     # Normalize by number of variants
     for bitstring in averaged_dist:

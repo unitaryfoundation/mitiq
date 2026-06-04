@@ -7,8 +7,6 @@
 
 from typing import Dict, List
 
-import numpy as np
-
 
 def sharpen(
     results: List[Dict[str, int]],
@@ -77,7 +75,9 @@ def sharpen(
             total_counts: Dict[str, float] = {}
             for counts in results:
                 for bitstring, count in counts.items():
-                    total_counts[bitstring] = total_counts.get(bitstring, 0) + count
+                    total_counts[bitstring] = (
+                        total_counts.get(bitstring, 0) + count
+                    )
 
             # Normalize
             total = sum(total_counts.values())

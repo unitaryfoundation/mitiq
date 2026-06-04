@@ -16,6 +16,7 @@ import numpy as np
 import numpy.typing as npt
 from cirq import Circuit
 from matplotlib.figure import Figure
+
 try:
     from numpy.exceptions import RankWarning
 except ImportError:

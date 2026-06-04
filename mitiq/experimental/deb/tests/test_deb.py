@@ -23,7 +23,9 @@ def test_execute_with_debiasing():
         result = simulator.run(circ, repetitions=100)
         return dict(result.histogram(key="result"))
 
-    debiased = execute_with_debiasing(circuit, executor, num_variants=3, random_state=42)
+    debiased = execute_with_debiasing(
+        circuit, executor, num_variants=3, random_state=42
+    )
     assert isinstance(debiased, dict)
     assert len(debiased) > 0
     # Check normalization

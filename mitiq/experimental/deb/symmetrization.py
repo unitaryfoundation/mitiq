@@ -23,7 +23,8 @@ def construct_circuits(
     For each variant, random single-qubit Pauli operators are sampled from
     {I, X, Y, Z} per qubit and applied before and after the circuit.
     Since Paulis are self-inverse, they cancel exactly for an ideal circuit,
-    but coherent errors get dressed differently in each variant and average out.
+    but coherent errors get dressed differently in each variant and
+    average out.
 
     Args:
         circuit: The input circuit to symmetrize.

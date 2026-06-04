@@ -39,7 +39,10 @@ def test_construct_circuits_pauli_layers():
 
 
 def test_construct_circuits_noiseless_same_distribution():
-    """Test that on a noiseless simulator, all variants return the same distribution."""
+    """
+    Test that on a noiseless simulator, all variants return the same
+    distribution.
+    """
     q = cirq.LineQubit(0)
     circuit = cirq.Circuit(cirq.H(q), cirq.measure(q, key="result"))
 
@@ -56,6 +59,7 @@ def test_construct_circuits_noiseless_same_distribution():
     # All variants should have the same distribution (50/50 for H gate)
     # Allow some tolerance for randomness
     for i in range(1, len(results)):
-        assert results[i] == results[0] or abs(
-            results[i].get(0, 0) - results[0].get(0, 0)
-        ) < 20
+        assert (
+            results[i] == results[0]
+            or abs(results[i].get(0, 0) - results[0].get(0, 0)) < 20
+        )

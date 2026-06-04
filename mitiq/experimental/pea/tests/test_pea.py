@@ -6,6 +6,7 @@
 """Unit tests for PEA."""
 
 import warnings
+
 import cirq
 import numpy as np
 import pytest
@@ -232,12 +233,14 @@ def test_construct_circuits_with_representations():
     """Test that construct_circuits accepts representations parameter."""
     q = cirq.LineQubit(0)
     circuit = cirq.Circuit(cirq.H(q), cirq.X(q))
-    
+
     # Generate representations
-    representations = represent_operations_in_circuit_with_local_depolarizing_noise(
-        circuit, noise_level=0.01
+    representations = (
+        represent_operations_in_circuit_with_local_depolarizing_noise(
+            circuit, noise_level=0.01
+        )
     )
-    
+
     # Test with representations parameter
     circuits, signs, norms = construct_circuits(
         circuit,
@@ -247,21 +250,25 @@ def test_construct_circuits_with_representations():
         random_state=42,
         precision=0.5,
     )
-    
+
     assert len(circuits) == 2
     assert len(signs) == 2
     assert len(norms) == 2
 
 
 def test_construct_circuits_mutually_exclusive():
-    """Test that providing both noise_model and representations raises error."""
+    """
+    Test that providing both noise_model and representations raises error.
+    """
     q = cirq.LineQubit(0)
     circuit = cirq.Circuit(cirq.H(q))
-    
-    representations = represent_operations_in_circuit_with_local_depolarizing_noise(
-        circuit, noise_level=0.01
+
+    representations = (
+        represent_operations_in_circuit_with_local_depolarizing_noise(
+            circuit, noise_level=0.01
+        )
     )
-    
+
     with pytest.raises(ValueError, match="Cannot provide both"):
         construct_circuits(
             circuit,
@@ -276,7 +283,7 @@ def test_construct_circuits_deprecation_warning():
     """Test that noise_model triggers deprecation warning."""
     q = cirq.LineQubit(0)
     circuit = cirq.Circuit(cirq.H(q))
-    
+
     with warnings.catch_warnings(record=True) as w:
         warnings.simplefilter("always")
         construct_circuits(
@@ -286,7 +293,7 @@ def test_construct_circuits_deprecation_warning():
             epsilon=0.01,
             precision=0.5,
         )
-        
+
         assert len(w) > 0
         assert issubclass(w[0].category, DeprecationWarning)
         assert "deprecated" in str(w[0].message).lower()
@@ -296,7 +303,7 @@ def test_construct_circuits_neither_parameter():
     """Test that providing neither parameter raises error."""
     q = cirq.LineQubit(0)
     circuit = cirq.Circuit(cirq.H(q))
-    
+
     with pytest.raises(ValueError, match="Must provide either"):
         construct_circuits(
             circuit,
@@ -308,7 +315,7 @@ def test_construct_circuits_backward_compatibility():
     """Test that noise_model still works (backward compatibility)."""
     q = cirq.LineQubit(0)
     circuit = cirq.Circuit(cirq.H(q))
-    
+
     with warnings.catch_warnings():
         warnings.simplefilter("ignore", DeprecationWarning)
         circuits, signs, norms = construct_circuits(
@@ -318,7 +325,7 @@ def test_construct_circuits_backward_compatibility():
             epsilon=0.01,
             precision=0.5,
         )
-    
+
     assert len(circuits) == 1
     assert len(signs) == 1
     assert len(norms) == 1

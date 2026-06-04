@@ -28,7 +28,9 @@ def test_sharpen_no_winner_fallback():
         {"00": 34, "01": 33, "10": 33},
         {"00": 33, "01": 34, "10": 33},
     ]
-    sharpened = sharpen(results, threshold=50)  # High threshold to force fallback
+    sharpened = sharpen(
+        results, threshold=50
+    )  # High threshold to force fallback
     # Should return averaged distribution
     assert len(sharpened) == 3
     assert abs(sharpened["00"] - 0.33) < 0.1
