@@ -21,6 +21,8 @@ from mitiq.pec.pec import (
     LargeSampleWarning,
     sample_circuit,
 )
+from mitiq.pec.types.types import OperationRepresentation
+from mitiq.zne.inference import LinearFactory
 
 
 def construct_circuits(
@@ -28,7 +30,7 @@ def construct_circuits(
     scale_factors: list[float],
     noise_model: str | None = None,
     epsilon: float = 0.0,
-    representations: list | None = None,
+    representations: list[OperationRepresentation] | None = None,
     random_state: int | np.random.RandomState | None = None,
     precision: float = 0.1,
     num_samples: int | None = None,
@@ -97,11 +99,16 @@ def construct_circuits(
             stacklevel=2,
         )
         # Convert noise_model to representations for backward compatibility
-        representations = scale_circuit_amplifications(
-            circuit, 1.0, noise_model, epsilon
+        representations = cast(
+            list[OperationRepresentation],
+            scale_circuit_amplifications(
+                circuit, 1.0, noise_model, epsilon
+            )
         )
 
     # Get the 1-norm of the circuit quasi-probability representation
+    if representations is None:
+        raise ValueError("representations cannot be None")
     _, _, norm = sample_circuit(
         circuit,
         representations,
@@ -204,7 +211,7 @@ def execute_with_pea(
     extrapolation_method: Callable[[Sequence[float], Sequence[float]], float]
     | None = None,
     observable: Observable | None = None,
-    representations: list | None = None,
+    representations: list[OperationRepresentation] | None = None,
     random_state: int | np.random.RandomState | None = None,
     precision: float = 0.1,
     num_samples: int | None = None,
@@ -284,12 +291,15 @@ def execute_with_pea(
         for sc in scaled_circuits
     ]
 
+    if extrapolation_method is None:
+        extrapolation_method = LinearFactory.extrapolate  # type: ignore[assignment]
+
     pea_value = combine_results(
         scale_factors,
         scaled_results,
         scaled_norms,
         scaled_signs,
-        extrapolation_method,
+        extrapolation_method,  # type: ignore[arg-type]
     )
 
     if not full_output:

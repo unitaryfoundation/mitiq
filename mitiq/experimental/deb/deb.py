@@ -5,7 +5,7 @@
 
 """High-level debiasing and sharpening error mitigation tools."""
 
-from typing import Callable, Dict
+from typing import Callable, Dict, List, cast
 
 from mitiq import QPROGRAM, Executor, QuantumResult
 from mitiq.experimental.deb.sharpening import sharpen
@@ -39,15 +39,19 @@ def execute_with_debiasing(
     # Execute each variant
     results = []
     for variant in variants:
-        result = executor(variant)
+        executor_callable: Callable[[QPROGRAM], QuantumResult] = cast(
+            Callable[[QPROGRAM], QuantumResult], executor
+        )
+        result = executor_callable(variant)
         results.append(result)
 
     # Average the probability distributions
     averaged_dist: Dict[str, float] = {}
     for counts in results:
-        total_shots = sum(counts.values())
+        counts_dict: Dict[str, int] = cast(Dict[str, int], counts)
+        total_shots = sum(counts_dict.values())
         if total_shots > 0:
-            for bitstring, count in counts.items():
+            for bitstring, count in counts_dict.items():
                 prob = count / total_shots
                 averaged_dist[bitstring] = (
                     averaged_dist.get(bitstring, 0) + prob
@@ -90,10 +94,16 @@ def execute_with_debiasing_and_sharpening(
     # Execute each variant
     results = []
     for variant in variants:
-        result = executor(variant)
+        executor_callable: Callable[[QPROGRAM], QuantumResult] = cast(
+            Callable[[QPROGRAM], QuantumResult], executor
+        )
+        result = executor_callable(variant)
         results.append(result)
 
     # Apply sharpening (plurality voting)
-    sharpened_dist = sharpen(results, threshold=sharpen_threshold)
+    results_dict: List[Dict[str, int]] = cast(
+        List[Dict[str, int]], results
+    )
+    sharpened_dist = sharpen(results_dict, threshold=sharpen_threshold)
 
     return sharpened_dist
