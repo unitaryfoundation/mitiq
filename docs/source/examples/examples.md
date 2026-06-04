@@ -42,6 +42,7 @@ CDR with Qrack as Near-Clifford Simulator <cdr_qrack.md>
 GGI Summer School ZNE Hands-On Tutorial <ggi_summer_school_unsolved.md>
 Composing techniques: REM + ZNE <combine_rem_zne.md>
 Composing techniques: DDD + ZNE <combine_ddd_zne.md>
+Composing techniques: error detection + ZNE <error_detection_422_zne.md>
 Advanced Error Mitigation Pipeline: PT + DDD + REM + ZNE <advanced_error_mitigation_pipeline.md>
 The Mitiq paper code <mitiq-paper/mitiq-paper-codeblocks.md>
 ```
