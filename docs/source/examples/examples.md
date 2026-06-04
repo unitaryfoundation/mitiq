@@ -38,6 +38,7 @@ Classical Shadows with Cirq: State Reconstruction and Observable Estimation <sha
 Robust Shadow Estimation with Cirq: Pauli Twirling Calibration of Classical Shadows <rshadows_tutorial.md>
 DDD with Cirq: Mirror circuits <ddd_tutorial.md>
 DDD with Qiskit: GHZ circuits <ddd_on_ibmq_ghz.md>
+CDR with Cirq: Simple example <cdr_simple.md>
 CDR with Qrack as Near-Clifford Simulator <cdr_qrack.md>
 GGI Summer School ZNE Hands-On Tutorial <ggi_summer_school_unsolved.md>
 Composing techniques: REM + ZNE <combine_rem_zne.md>
