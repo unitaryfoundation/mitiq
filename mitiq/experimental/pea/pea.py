@@ -21,16 +21,101 @@ from mitiq.pec.pec import (
     LargeSampleWarning,
     sample_circuit,
 )
+from mitiq.pec.types import OperationRepresentation
+
+
+def _canonical_scaled_representations(
+    representations: Sequence[OperationRepresentation],
+    scale_factor: float,
+) -> list[OperationRepresentation]:
+    r"""Returns canonically scaled representations for PEA.
+
+    A quasi-probability representation can be split into positive and negative
+    parts as ``G = gamma_plus * Phi_plus - gamma_minus * Phi_minus``. PEA's
+    canonical noise scaling uses
+    ``G(lambda) = (gamma_plus - lambda * gamma_minus) * Phi_plus
+    - (1 - lambda) * gamma_minus * Phi_minus``.
+    """
+    scaled_representations = []
+    for representation in representations:
+        gamma_plus = sum(c for c in representation.coeffs if c > 0)
+        gamma_minus = sum(-c for c in representation.coeffs if c < 0)
+
+        if np.isclose(gamma_plus, 0.0):
+            raise ValueError(
+                "Cannot canonically scale a representation without positive "
+                "coefficients."
+            )
+
+        if np.isclose(gamma_minus, 0.0):
+            scaled_coeffs = list(representation.coeffs)
+        else:
+            positive_scale = (
+                gamma_plus - scale_factor * gamma_minus
+            ) / gamma_plus
+            negative_scale = 1.0 - scale_factor
+            scaled_coeffs = [
+                float(c * positive_scale if c > 0 else c * negative_scale)
+                for c in representation.coeffs
+            ]
+
+        scaled_representations.append(
+            OperationRepresentation(
+                getattr(representation, "_native_ideal", representation.ideal),
+                representation.noisy_operations,
+                scaled_coeffs,
+                representation.is_qubit_dependent,
+            )
+        )
+
+    return scaled_representations
+
+
+def _resolve_representations(
+    circuit: Circuit,
+    scale_factor: float,
+    noise_model: str | None,
+    epsilon: float | None,
+    representations: Sequence[OperationRepresentation] | None,
+) -> Sequence[OperationRepresentation]:
+    if representations is not None and noise_model is not None:
+        raise ValueError(
+            "Exactly one of 'representations' or 'noise_model' should be "
+            "provided."
+        )
+    if representations is None and noise_model is None:
+        raise ValueError(
+            "Either 'representations' or 'noise_model' must be provided."
+        )
+    if representations is not None:
+        return _canonical_scaled_representations(representations, scale_factor)
+
+    if epsilon is None:
+        raise ValueError(
+            "'epsilon' must be provided when using the legacy 'noise_model' "
+            "argument."
+        )
+    assert noise_model is not None
+    warnings.warn(
+        "The 'noise_model' argument is deprecated. Pass "
+        "'representations' directly instead.",
+        DeprecationWarning,
+        stacklevel=3,
+    )
+    return scale_circuit_amplifications(
+        circuit, scale_factor, noise_model, epsilon
+    )
 
 
 def construct_circuits(
     circuit: Circuit,
     scale_factors: list[float],
-    noise_model: str,
-    epsilon: float,
+    noise_model: str | None = None,
+    epsilon: float | None = None,
     random_state: int | np.random.RandomState | None = None,
     precision: float = 0.1,
     num_samples: int | None = None,
+    representations: Sequence[OperationRepresentation] | None = None,
 ) -> tuple[list[list[QPROGRAM]], list[list[int]], list[float]]:
     """Samples lists of implementable circuits from the noise-amplified
     representation of the input ideal circuit at each input noise scale
@@ -45,10 +130,12 @@ def construct_circuits(
             sequence is sampled.
         scale_factors: A list of (positive) numbers by which the baseline
             noise level is to be amplified.
-        noise_model: A string describing the noise model to be used for the
+        representations: Quasi-probability representations of the circuit
+            operations to be canonically noise-scaled for PEA.
+        noise_model: A legacy string describing the noise model to be used for
             noise-scaled representations, e.g. "local_depolarizing" or
-            "global_depolarizing".
-        epsilon: Baseline noise level.
+            "global_depolarizing". Deprecated in favor of ``representations``.
+        epsilon: Baseline noise level. Required only with ``noise_model``.
         random_state: The random state or seed for reproducibility.
         precision: The desired precision for the sampling process.
             Default is 0.1.
@@ -72,7 +159,9 @@ def construct_circuits(
     # Get the 1-norm of the circuit quasi-probability representation
     _, _, norm = sample_circuit(
         circuit,
-        scale_circuit_amplifications(circuit, 1.0, noise_model, epsilon),
+        _resolve_representations(
+            circuit, 1.0, noise_model, epsilon, representations
+        ),
         num_samples=1,
     )
 
@@ -89,7 +178,9 @@ def construct_circuits(
     for s in scale_factors:
         sampled_circuits, signs, norm = sample_circuit(
             circuit,
-            scale_circuit_amplifications(circuit, s, noise_model, epsilon),
+            _resolve_representations(
+                circuit, s, noise_model, epsilon, representations
+            ),
             num_samples=num_samples,
             random_state=random_state,
         )
@@ -148,15 +239,17 @@ def execute_with_pea(
     circuit: Circuit,
     executor: Executor | Callable[[QPROGRAM], QuantumResult],
     scale_factors: list[float],
-    noise_model: str,
-    epsilon: float,
-    extrapolation_method: Callable[[Sequence[float], Sequence[float]], float],
+    noise_model: str | None = None,
+    epsilon: float | None = None,
+    extrapolation_method: Callable[[Sequence[float], Sequence[float]], float]
+    | None = None,
     observable: Observable | None = None,
     random_state: int | np.random.RandomState | None = None,
     precision: float = 0.1,
     num_samples: int | None = None,
     full_output: bool = False,
     force_run_all: bool = False,
+    representations: Sequence[OperationRepresentation] | None = None,
 ) -> float | tuple[float, dict[str, Any]]:
     r"""Estimates the error-mitigated expectation value associated to the
     input circuit, via the application of probabilistic error amplification
@@ -180,10 +273,12 @@ def execute_with_pea(
             unmitigated ``QuantumResult`` (e.g. an expectation value).
         scale_factors: A list of (positive) numbers by which the baseline
             noise level is to be amplified.
-        noise_model: A string describing the noise model to be used for the
+        representations: Quasi-probability representations of the circuit
+            operations to be canonically noise-scaled for PEA.
+        noise_model: A legacy string describing the noise model to be used for
             noise-scaled representations, e.g. "local_depolarizing" or
-            "global_depolarizing".
-        epsilon: Baseline noise level.
+            "global_depolarizing". Deprecated in favor of ``representations``.
+        epsilon: Baseline noise level. Required only with ``noise_model``.
         extrapolation_method: The method of extrapolation to use when fitting
             the measured results. A list of built-in functions can be found
             in ``mitiq.zne.inference``.
@@ -208,14 +303,18 @@ def execute_with_pea(
         ``full_output`` is ``False``, only ``pea_value`` is
         returned.
     """
+    if extrapolation_method is None:
+        raise ValueError("'extrapolation_method' must be provided.")
+
     scaled_circuits, scaled_signs, scaled_norms = construct_circuits(
         circuit,
         scale_factors,
-        noise_model,
-        epsilon,
-        random_state,
-        precision,
-        num_samples,
+        noise_model=noise_model,
+        epsilon=epsilon,
+        random_state=random_state,
+        precision=precision,
+        num_samples=num_samples,
+        representations=representations,
     )
     # Execute all sampled circuits
     if not isinstance(executor, Executor):

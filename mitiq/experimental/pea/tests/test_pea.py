@@ -5,6 +5,8 @@
 
 """Unit tests for PEA."""
 
+import warnings
+
 import cirq
 import numpy as np
 import pytest
@@ -17,12 +19,18 @@ from mitiq.experimental.pea import (
 from mitiq.experimental.pea.amplifications.amplify_depolarizing import (
     amplify_noisy_ops_in_circuit_with_local_depolarizing_noise,
 )
+from mitiq.experimental.pea.scale_amplifications import (
+    scale_circuit_amplifications,
+)
 from mitiq.interface import convert_from_mitiq, convert_to_mitiq
 from mitiq.interface.mitiq_cirq import compute_density_matrix
 from mitiq.pec import (
     OperationRepresentation,
 )
 from mitiq.pec.pec import LargeSampleWarning, sample_circuit
+from mitiq.pec.representations.depolarizing import (
+    represent_operations_in_circuit_with_local_depolarizing_noise,
+)
 from mitiq.typing import QPROGRAM, SUPPORTED_PROGRAM_TYPES
 from mitiq.zne.inference import LinearFactory
 
@@ -57,6 +65,98 @@ BASE_NOISE = 0.02
 q0, q1 = cirq.LineQubit.range(2)
 oneq_circ = cirq.Circuit(cirq.Z.on(q0), cirq.Z.on(q0))
 twoq_circ = cirq.Circuit(cirq.Y.on(q1), cirq.CNOT.on(q0, q1), cirq.Y.on(q1))
+
+
+def test_construct_circuits_accepts_direct_representations():
+    representations = (
+        represent_operations_in_circuit_with_local_depolarizing_noise(
+            oneq_circ,
+            noise_level=BASE_NOISE,
+        )
+    )
+
+    scaled_circuits, scaled_signs, scaled_norms = construct_circuits(
+        oneq_circ,
+        scale_factors=[0, 1],
+        representations=representations,
+        num_samples=10,
+        random_state=1,
+    )
+
+    assert [len(circuits) for circuits in scaled_circuits] == [10, 10]
+    assert len(scaled_signs) == 2
+    assert scaled_norms[0] > scaled_norms[1]
+    assert np.isclose(scaled_norms[1], 1.0)
+    assert all(sign == 1 for sign in scaled_signs[1])
+
+
+def test_construct_circuits_rejects_ambiguous_representation_source():
+    representations = get_pauli_and_cnot_representations(BASE_NOISE)
+
+    with pytest.raises(ValueError, match="Exactly one"):
+        construct_circuits(
+            oneq_circ,
+            scale_factors=[1],
+            noise_model="local_depolarizing",
+            epsilon=BASE_NOISE,
+            representations=representations,
+        )
+
+    with pytest.raises(ValueError, match="Either 'representations'"):
+        construct_circuits(oneq_circ, scale_factors=[1])
+
+    with pytest.raises(ValueError, match="'epsilon' must be provided"):
+        construct_circuits(
+            oneq_circ,
+            scale_factors=[1],
+            noise_model="local_depolarizing",
+        )
+
+
+def test_noise_model_path_is_deprecated_but_backward_compatible():
+    with warnings.catch_warnings(record=True) as caught:
+        warnings.simplefilter("always", DeprecationWarning)
+        legacy = construct_circuits(
+            oneq_circ,
+            scale_factors=[1],
+            noise_model="local_depolarizing",
+            epsilon=BASE_NOISE,
+            num_samples=10,
+            random_state=1,
+        )
+
+    assert any(
+        "'noise_model' argument is deprecated" in str(warning.message)
+        for warning in caught
+    )
+    assert len(legacy[0][0]) == 10
+
+
+def test_direct_representations_match_legacy_at_base_scale():
+    representations = scale_circuit_amplifications(
+        oneq_circ,
+        scale_factor=1,
+        noise_model="local_depolarizing",
+        epsilon=BASE_NOISE,
+    )
+
+    direct = construct_circuits(
+        oneq_circ,
+        scale_factors=[1],
+        representations=representations,
+        num_samples=10,
+        random_state=1,
+    )
+    legacy = construct_circuits(
+        oneq_circ,
+        scale_factors=[1],
+        noise_model="local_depolarizing",
+        epsilon=BASE_NOISE,
+        num_samples=10,
+        random_state=1,
+    )
+
+    assert direct == legacy
 
 
 @pytest.mark.parametrize("precision", [0.2, 0.1])
