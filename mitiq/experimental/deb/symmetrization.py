@@ -39,7 +39,7 @@ def construct_circuits(
 
     # Convert to Cirq circuit if needed
     if not isinstance(circuit, cirq.Circuit):
-        circuit = cirq.Circuit(circuit)
+        circuit = cirq.Circuit(circuit)  # type: ignore[arg-type]
 
     qubits = list(circuit.all_qubits())
     n_qubits = len(qubits)
