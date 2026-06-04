@@ -110,6 +110,10 @@ We use an [executor function](../guide/executors.md) to run the quantum circuit 
 
 The executor returns a `MeasurementResult` whose bitstrings contain **6 bits each**: bits 0–3 are the data qubits and bits 4–5 are the syndrome ancillae ($XXXX$, $ZZZZ$ respectively).
 
+```{note}
+When either ancilla measures `1`, the corresponding stabilizer outcome is $-1$, signalling that a single-qubit error anticommuted with it, that shot is flagged as erroneous. In the post-selection step, any shot with `bits[4] == 1` or `bits[5] == 1` is discarded; only shots where *both* ancillae are `0` are retained for analysis.
+```
+
 ```{code-cell} ipython3
 def execute(
     circuit: cirq.Circuit,
