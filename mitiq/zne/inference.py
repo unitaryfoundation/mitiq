@@ -16,7 +16,10 @@ import numpy as np
 import numpy.typing as npt
 from cirq import Circuit
 from matplotlib.figure import Figure
-from numpy.exceptions import RankWarning
+try:
+    from numpy.exceptions import RankWarning
+except ImportError:
+    from numpy.linalg import LinAlgError as RankWarning
 from scipy.optimize import OptimizeWarning, curve_fit
 
 from mitiq import QPROGRAM, QuantumResult
