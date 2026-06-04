@@ -101,9 +101,7 @@ def execute_with_debiasing_and_sharpening(
         results.append(result)
 
     # Apply sharpening (plurality voting)
-    results_dict: List[Dict[str, int]] = cast(
-        List[Dict[str, int]], results
-    )
+    results_dict: List[Dict[str, int]] = cast(List[Dict[str, int]], results)
     sharpened_dist = sharpen(results_dict, threshold=sharpen_threshold)
 
     return sharpened_dist

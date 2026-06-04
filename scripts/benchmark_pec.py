@@ -185,8 +185,7 @@ def run_qermit_pec(
         "mitigated_value": None,
         "runtime": 0,
         "note": (
-            "qermit PEC not yet implemented - "
-            "requires dependency installation"
+            "qermit PEC not yet implemented - requires dependency installation"
         ),
     }
 

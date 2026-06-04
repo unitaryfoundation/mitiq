@@ -399,9 +399,7 @@ def main():
     ideal_value = ideal_executor(circuit)
 
     # Run noisy executor
-    print(
-        f"Running noisy executor with noise level {args.noise_level}..."
-    )
+    print(f"Running noisy executor with noise level {args.noise_level}...")
     noisy_value = noisy_executor(
         circuit, noise_level=args.noise_level, shots=args.shots
     )
@@ -417,9 +415,7 @@ def main():
 
     print("\nRunning Mitiq ZNE (Linear)...")
     results.append(
-        run_mitiq_zne_linear(
-            circuit, executor, args.noise_level, args.shots
-        )
+        run_mitiq_zne_linear(circuit, executor, args.noise_level, args.shots)
     )
 
     print("Running Mitiq ZNE (Richardson)...")
@@ -431,9 +427,7 @@ def main():
 
     print("Running Mitiq ZNE (Exponential)...")
     results.append(
-        run_mitiq_zne_exp(
-            circuit, executor, args.noise_level, args.shots
-        )
+        run_mitiq_zne_exp(circuit, executor, args.noise_level, args.shots)
     )
 
     print("Running Mitiq ZNE (Random Folding)...")

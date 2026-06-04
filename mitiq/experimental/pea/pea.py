@@ -101,9 +101,7 @@ def construct_circuits(
         # Convert noise_model to representations for backward compatibility
         representations = cast(
             list[OperationRepresentation],
-            scale_circuit_amplifications(
-                circuit, 1.0, noise_model, epsilon
-            )
+            scale_circuit_amplifications(circuit, 1.0, noise_model, epsilon),
         )
 
     # Get the 1-norm of the circuit quasi-probability representation

@@ -141,8 +141,7 @@ def run_mthree(
         "mitigated_value": None,
         "runtime": 0,
         "note": (
-            "mthree not yet implemented - "
-            "requires dependency installation"
+            "mthree not yet implemented - requires dependency installation"
         ),
     }
 
@@ -161,8 +160,7 @@ def run_qermit(
         "mitigated_value": None,
         "runtime": 0,
         "note": (
-            "qermit not yet implemented - "
-            "requires dependency installation"
+            "qermit not yet implemented - requires dependency installation"
         ),
     }
 
