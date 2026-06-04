@@ -20,3 +20,6 @@ jupyter_execute/
 coverage.xml
 .coverage
 .coverage.*
+# Private Bunker documentation
+BUNKER_API_INTEGRATION.md
+*BUNKER*.md
