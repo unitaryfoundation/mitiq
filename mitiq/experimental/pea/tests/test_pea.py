@@ -159,6 +159,58 @@ def test_direct_representations_match_legacy_at_base_scale():
     assert direct == legacy
 
 
+def test_direct_representations_reject_all_positive_non_base_scale():
+    representations = scale_circuit_amplifications(
+        oneq_circ,
+        scale_factor=1,
+        noise_model="local_depolarizing",
+        epsilon=BASE_NOISE,
+    )
+
+    with pytest.raises(ValueError, match="all-positive"):
+        construct_circuits(
+            oneq_circ,
+            scale_factors=[1, 2],
+            representations=representations,
+            num_samples=10,
+        )
+
+
+def test_direct_representations_precision_uses_largest_scaled_norm():
+    representations = (
+        represent_operations_in_circuit_with_local_depolarizing_noise(
+            oneq_circ,
+            noise_level=BASE_NOISE,
+        )
+    )
+    scale_factors = [0, 1]
+    precision = 0.2
+
+    _, _, scaled_norms = construct_circuits(
+        oneq_circ,
+        scale_factors=scale_factors,
+        representations=representations,
+        num_samples=1,
+        random_state=1,
+    )
+    scaled_circuits, _, _ = construct_circuits(
+        oneq_circ,
+        scale_factors=scale_factors,
+        representations=representations,
+        precision=precision,
+        random_state=1,
+    )
+
+    expected_num_samples = int((max(scaled_norms) / precision) ** 2)
+    base_num_samples = int((scaled_norms[1] / precision) ** 2)
+
+    assert expected_num_samples > base_num_samples
+    assert [len(circuits) for circuits in scaled_circuits] == [
+        expected_num_samples,
+        expected_num_samples,
+    ]
+
+
 @pytest.mark.parametrize("precision", [0.2, 0.1])
 def test_precision_option_used_in_num_samples(precision):
     """Tests that the 'precision' argument is used to deduce num_samples."""

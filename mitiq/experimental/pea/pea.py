@@ -48,6 +48,11 @@ def _canonical_scaled_representations(
             )
 
         if np.isclose(gamma_minus, 0.0):
+            if not np.isclose(scale_factor, 1.0):
+                raise ValueError(
+                    "Cannot canonically scale an all-positive "
+                    "representation away from scale factor 1."
+                )
             scaled_coeffs = list(representation.coeffs)
         else:
             positive_scale = (
@@ -156,17 +161,27 @@ def construct_circuits(
             f" but precision is {precision}."
         )
 
-    # Get the 1-norm of the circuit quasi-probability representation
-    _, _, norm = sample_circuit(
-        circuit,
+    scaled_representations = [
         _resolve_representations(
-            circuit, 1.0, noise_model, epsilon, representations
-        ),
-        num_samples=1,
-    )
+            circuit, s, noise_model, epsilon, representations
+        )
+        for s in scale_factors
+    ]
 
     # Deduce the number of samples (if not given by the user)
     if num_samples is None:
+        _, _, norm = sample_circuit(
+            circuit,
+            _resolve_representations(
+                circuit, 1.0, noise_model, epsilon, representations
+            ),
+            num_samples=1,
+        )
+        for scaled_representation in scaled_representations:
+            _, _, scaled_norm = sample_circuit(
+                circuit, scaled_representation, num_samples=1
+            )
+            norm = max(norm, scaled_norm)
         num_samples = int((norm / precision) ** 2)
 
     if num_samples > 10**5:
@@ -175,12 +190,10 @@ def construct_circuits(
     scaled_sampled_circuits = []
     scaled_signs = []
     scaled_norms = []
-    for s in scale_factors:
+    for scaled_representation in scaled_representations:
         sampled_circuits, signs, norm = sample_circuit(
             circuit,
-            _resolve_representations(
-                circuit, s, noise_model, epsilon, representations
-            ),
+            scaled_representation,
             num_samples=num_samples,
             random_state=random_state,
         )
