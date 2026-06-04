@@ -26,6 +26,12 @@ readout value when $A$ is measured on $\rho$. Mathematically, this is $\text{Tr}
 for near-term quantum computing because in variational quantum algorithms,
 the only role of the quantum processor is to repeatedly compute expectation values, which a classical processor then uses to perform some overall useful computational task. In Mitiq, [Executors](executors.md) are used to calculate error-mitigated expectation values.
 
+Debiasing
+: A noise-tailoring approach that executes randomized Pauli-symmetrized
+variants of a circuit and aggregates their bitstring distributions. The
+random Pauli layers leave the intended computation easy to compare in the
+ideal case while changing how coherent errors appear across variants.
+
 Gate Fidelity
 : A number between 0 and 1 measuring how
 closely a particular device's (noisy) physical implementation of a gate approximates the ideal gate's action on quantum states. Mitiq implements a noise-scaling method for ZNE in which each gate of the input circuit is sampled for [unitary folding](./zne-3-options.md#unitary-folding) with probability proportional to its infidelity (1 - fidelity), described [here](./zne-3-options.md#folding-gates-by-fidelity) and [here](https://mitiq.readthedocs.io/en/stable/apidoc.html#mitiq.zne.scaling.folding.fold_gates_at_random) in the documentation.
@@ -41,6 +47,11 @@ the method needs $C \cdot N$ circuit shots to obtain the same precision as the s
 
 [Pauli Twirling (PT)](pt.md)
 : A technique utilizing Pauli gates is used to tailor the noise in an input circuit to be more manageable. Coherent errors contribute heavily to the quadratically worst-case gate infidelities scenario compared to incoherent errors. This could indirectly affect the performance of a large noisy quantum circuit if the circuit noise is not tailored to be a Pauli noise channel i.e. incoherent. 
+
+Sharpening
+: A nonlinear post-processing step for bitstring distributions. It chooses
+the most likely bitstring from each randomized variant and returns the
+distribution of those plurality-vote winners.
 
 
 ## QEM Methods

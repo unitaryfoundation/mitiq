@@ -259,6 +259,29 @@ guarantees. Access them via `mitiq.experimental`.
    :members:
 ```
 
+### Debiasing and Sharpening
+
+#### Debiasing (High-Level Tools)
+
+```{eval-rst}
+.. automodule:: mitiq.experimental.deb.deb
+   :members:
+```
+
+#### Symmetrization
+
+```{eval-rst}
+.. automodule:: mitiq.experimental.deb.symmetrization
+   :members:
+```
+
+#### Sharpening
+
+```{eval-rst}
+.. automodule:: mitiq.experimental.deb.sharpening
+   :members:
+```
+
 ### Twirled Readout Error eXtinction
 
 #### TREX (High-Level Tools)

@@ -10,6 +10,7 @@ import importlib
 
 import pytest
 
+import mitiq.experimental.deb
 import mitiq.experimental.pea
 import mitiq.experimental.shadows
 import mitiq.experimental.vd
@@ -28,6 +29,11 @@ def test_shadows_import_warns():
 def test_vd_import_warns():
     with pytest.warns(FutureWarning, match="vd is experimental"):
         importlib.reload(mitiq.experimental.vd)
+
+
+def test_deb_import_warns():
+    with pytest.warns(FutureWarning, match="deb is experimental"):
+        importlib.reload(mitiq.experimental.deb)
 
 
 def test_pea_old_path_raises():
