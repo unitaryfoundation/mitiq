@@ -354,14 +354,18 @@ def test_pea_data_with_full_output():
         full_output=True,
     )
     # Get num samples from precision
-    _, _, norm = sample_circuit(
-        twoq_circ,
-        amplify_noisy_ops_in_circuit_with_local_depolarizing_noise(
-            twoq_circ, epsilon
-        ),
-        num_samples=1,
-    )
-    num_samples = int((norm / precision) ** 2)
+    scale_factors = [1, 1.2, 1.6]
+    norms = []
+    for scale_factor in scale_factors:
+        _, _, norm = sample_circuit(
+            twoq_circ,
+            scale_circuit_amplifications(
+                twoq_circ, scale_factor, "local_depolarizing", epsilon
+            ),
+            num_samples=1,
+        )
+        norms.append(norm)
+    num_samples = int((max(norms) / precision) ** 2)
 
     # Manually get raw expectation values
     scaled_exp_values = [
