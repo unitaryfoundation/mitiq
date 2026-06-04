@@ -14,7 +14,6 @@ import datetime
 import os
 import shutil
 import sys
-from importlib.metadata import version as _pkg_version
 
 import pybtex.style.formatting
 import pybtex.style.formatting.unsrt
@@ -32,8 +31,9 @@ copyright = f"2020 - {datetime.date.today().year} Unitary Foundation"
 author = "Tech Team @ Unitary Foundation"
 
 # The full version, including alpha/beta/rc tags
-
-release = _pkg_version("mitiq")
+directory_of_this_file = os.path.dirname(os.path.abspath(__file__))
+with open(f"{directory_of_this_file}/../../VERSION.txt", "r") as f:
+    release = f.read().strip()
 
 sys.path.append(os.path.abspath("sphinxext"))
 
@@ -232,11 +232,7 @@ bibtex_bibfiles = ["refs.bib"]
 linkcheck_ignore = [
     r"https://arxiv\.org/.*",
     r"https://doi\.org/.*",
-    r"http://dx\.doi\.org/.*",
     r"https://link\.aps\.org/doi/.*",
-    r"https://journals\.aps\.org/.*",
-    r"https://.*pepy\.tech/.*",
-    r"https://www\.contributor-covenant\.org/.*",
     r"https://www\.sciencedirect\.com/science/article/.*",
     r"https://github.com/unitaryfoundation/mitiq/compare/.*",
     r"https://github.com/unitaryfoundation/mitiq/compare/.*",
@@ -449,6 +445,7 @@ nbsphinx_thumbnails = {
     "examples/ddd_on_ibmq_ghz": "_static/ddd_qiskit_ghz_plot.png",
     "examples/calibration-tutorial": "_static/calibration.png",
     "examples/combine_rem_zne": "_static/combine_rem_zne.png",
+    "examples/combine_422_zne": "_static/combine_422_zne.png",
     "examples/quantum_simulation_scars_ibmq": "_static/qmbs_ibmq.png",
     "examples/zne_logical_rb_cirq_stim": "_static/mitiq_stim_logo.png",
     "examples/quantum_simulation_1d_ising": "_static/quantum_simulation.png",
