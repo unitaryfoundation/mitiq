@@ -55,6 +55,14 @@ qiskit = [
     "qiskit-ibm-runtime~=0.41.1",
     "ply==3.11",
 ]
+benchmarks = [
+    "mthree>=3.0.0",
+    "ply==3.11",
+    "pytket-quantinuum>=0.59.1",
+    "qermit>=0.7.1",
+    "qiskit>=2.0.0,<3.0.0",
+    "qiskit-aer~=0.17.0",
+]
 
 [dependency-groups]
 dev = [
