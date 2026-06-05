@@ -21,21 +21,10 @@ The [[4,2,2]] code is the smallest quantum error detecting code. It encodes 2 lo
 
 The four logical codewords are:
 
-$$
-|0_L 0_L\rangle = \frac{1}{\sqrt{2}}(|0000\rangle + |1111\rangle)
-$$
-
-$$
-|0_L 1_L\rangle = \frac{1}{\sqrt{2}}(|0011\rangle + |1100\rangle)
-$$
-
-$$
-|1_L 0_L\rangle = \frac{1}{\sqrt{2}}(|0101\rangle + |1010\rangle)
-$$
-
-$$
-|1_L 1_L\rangle = \frac{1}{\sqrt{2}}(|0110\rangle + |1001\rangle)
-$$
+- |0_L 0_L⟩ = (|0000⟩ + |1111⟩)/√2
+- |0_L 1_L⟩ = (|0011⟩ + |1100⟩)/√2
+- |1_L 0_L⟩ = (|0101⟩ + |1010⟩)/√2
+- |1_L 1_L⟩ = (|0110⟩ + |1001⟩)/√2
 
 ## Setup
 
