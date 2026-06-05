@@ -64,8 +64,8 @@ from typing import Callable, Tuple
 
 import numpy as np
 
+# ── helpers ──────────────────────────────────────────────────────────────────
 
-# ── helpers ────────────────────────────────────────────────────────────────────
 
 class _Counter:
     """Callable wrapper that counts invocations."""
@@ -81,16 +81,16 @@ class _Counter:
 
 def _zn_eigenvalue(n: int) -> np.ndarray:
     """Return eigenvalues of Z⊗n: (-1)^popcount(i) for i in [0, 2^n)."""
-    return np.array([(-1) ** bin(i).count("1") for i in range(2 ** n)], dtype=float)
+    return np.array([(-1) ** bin(i).count("1") for i in range(2**n)], dtype=float)
 
 
-# ── circuit generation ─────────────────────────────────────────────────────────
+# ── circuit generation ───────────────────────────────────────────────────────
+
 
 def get_benchmark_circuit(
     circuit_type: str, n_qubits: int, depth: int, seed: int
 ) -> Tuple:
     """Return (cirq_circuit, ideal_expval) for the chosen circuit type."""
-    import cirq
     from mitiq import benchmarks
 
     if circuit_type == "ghz":
@@ -120,7 +120,8 @@ def _ideal_expval(circuit, n_qubits: int) -> float:
     import cirq
 
     clean = cirq.Circuit(
-        op for op in circuit.all_operations()
+        op
+        for op in circuit.all_operations()
         if not isinstance(op.gate, cirq.MeasurementGate)
     )
     sv = cirq.Simulator().simulate(clean).final_state_vector.flatten()
@@ -144,7 +145,8 @@ def _count_gates(circuit) -> Tuple[int, int]:
     return n1, n2
 
 
-# ── shared cirq noisy executor (density matrix) ───────────────────────────────
+# ── shared cirq noisy executor (density matrix) ──────────────────────────────
+
 
 def _make_dm_executor(n_qubits: int, noise_level: float) -> Callable:
     """
@@ -159,7 +161,8 @@ def _make_dm_executor(n_qubits: int, noise_level: float) -> Callable:
 
     def executor(circuit: cirq.Circuit) -> float:
         clean = cirq.Circuit(
-            op for op in circuit.all_operations()
+            op
+            for op in circuit.all_operations()
             if not isinstance(op.gate, cirq.MeasurementGate)
         )
         rho = sim.simulate(clean).final_density_matrix
@@ -168,7 +171,8 @@ def _make_dm_executor(n_qubits: int, noise_level: float) -> Callable:
     return executor
 
 
-# ── mitiq PEC ─────────────────────────────────────────────────────────────────
+# ── mitiq PEC ────────────────────────────────────────────────────────────────
+
 
 def benchmark_mitiq_pec(
     circuit, n_qubits: int, noise_level: float, shots: int, num_samples: int, seed: int
@@ -204,7 +208,7 @@ def benchmark_mitiq_pec(
     return noisy_val, mitigated, elapsed, counter.n
 
 
-# ── qermit PEC — in-process bug fix ───────────────────────────────────────────
+# ── qermit PEC — in-process bug fix ──────────────────────────────────────────
 #
 # Root cause (qermit 0.9.3 / pytket-qiskit 0.77):
 #   random_commuting_clifford() calls
@@ -228,6 +232,7 @@ def benchmark_mitiq_pec(
 #
 #   This patch is idempotent (guarded by _patched_by_benchmark attribute) and
 #   does not modify any installed file, so it survives pip reinstalls.
+
 
 def _patch_qermit_random_commuting_clifford() -> bool:
     """Apply in-process fix for the qermit random_commuting_clifford qubit bug.
@@ -334,7 +339,8 @@ def _patch_qermit_random_commuting_clifford() -> bool:
     return True
 
 
-# ── qermit PEC ────────────────────────────────────────────────────────────────
+# ── qermit PEC ───────────────────────────────────────────────────────────────
+
 
 def benchmark_qermit_pec(
     circuit, n_qubits: int, noise_level: float, shots: int, seed: int
@@ -360,7 +366,11 @@ def benchmark_qermit_pec(
     from pytket.utils import QubitPauliOperator
     from pytket.extensions.qiskit import AerBackend
     from qermit import (
-        AnsatzCircuit, ObservableExperiment, ObservableTracker, SymbolsDict, MitEx,
+        AnsatzCircuit,
+        ObservableExperiment,
+        ObservableTracker,
+        SymbolsDict,
+        MitEx,
     )
     from qermit.probabilistic_error_cancellation import gen_PEC_learning_based_MitEx
     from qiskit_aer.noise import NoiseModel, depolarizing_error
@@ -413,7 +423,8 @@ def benchmark_qermit_pec(
     return noisy_val, mitigated, elapsed, n_circuits
 
 
-# ── Qiskit PEC ────────────────────────────────────────────────────────────────
+# ── Qiskit PEC ───────────────────────────────────────────────────────────────
+
 
 def benchmark_qiskit_pec(
     circuit, n_qubits: int, noise_level: float, shots: int, seed: int
@@ -482,7 +493,7 @@ def benchmark_qiskit_pec(
     return noisy_val, mitigated, elapsed, shots
 
 
-# ── table output ──────────────────────────────────────────────────────────────
+# ── table output ─────────────────────────────────────────────────────────────
 
 _COL = (25, 8, 8, 10, 8, 9, 7, 5, 5)
 _HDR = (
@@ -511,7 +522,8 @@ def _row(name, ideal, noisy, mitigated, elapsed, n_circs, n1, n2):
     )
 
 
-# ── main ──────────────────────────────────────────────────────────────────────
+# ── main ─────────────────────────────────────────────────────────────────────
+
 
 def main() -> None:
     parser = argparse.ArgumentParser(
@@ -523,15 +535,22 @@ def main() -> None:
     parser.add_argument("--depth", type=int, default=4)
     parser.add_argument("--noise-level", type=float, default=0.01)
     parser.add_argument("--shots", type=int, default=8192)
-    parser.add_argument("--pec-samples", type=int, default=200,
-                        help="Quasi-probability samples for mitiq.pec (default: 200)")
+    parser.add_argument(
+        "--pec-samples",
+        type=int,
+        default=200,
+        help="Quasi-probability samples for mitiq.pec (default: 200)",
+    )
     parser.add_argument("--seed", type=int, default=42)
     parser.add_argument(
-        "--tool", choices=["all", "mitiq", "qermit", "qiskit"], default="all",
+        "--tool",
+        choices=["all", "mitiq", "qermit", "qiskit"],
+        default="all",
     )
     args = parser.parse_args()
 
     import warnings
+
     warnings.filterwarnings("ignore", category=DeprecationWarning)
     warnings.filterwarnings("ignore", category=PendingDeprecationWarning)
     warnings.filterwarnings("ignore", message=".*global phase.*")
@@ -540,6 +559,7 @@ def main() -> None:
     warnings.filterwarnings("ignore", message=".*Covariance of the parameters.*")
     try:
         from scipy.optimize import OptimizeWarning
+
         warnings.filterwarnings("ignore", category=OptimizeWarning)
     except ImportError:
         pass
@@ -558,7 +578,9 @@ def main() -> None:
         args.circuit, args.n_qubits, args.depth, args.seed
     )
     n1, n2 = _count_gates(circuit)
-    print(f"Ideal ⟨Z⊗{args.n_qubits}⟩ = {ideal:.6f}   1Q gates: {n1}   2Q gates: {n2}\n")
+    print(
+        f"Ideal ⟨Z⊗{args.n_qubits}⟩ = {ideal:.6f}   1Q gates: {n1}   2Q gates: {n2}\n"
+    )
     print(_HDR)
     print(_SEP)
 

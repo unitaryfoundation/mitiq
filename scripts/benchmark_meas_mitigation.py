@@ -7,14 +7,15 @@ circuit with synthetic readout (bitflip) noise.
 Usage
 -----
     python scripts/benchmark_meas_mitigation.py
-    python scripts/benchmark_meas_mitigation.py --n-qubits 4 --noise-level 0.05 --shots 8192
+    python scripts/benchmark_meas_mitigation.py \
+        --n-qubits 4 --noise-level 0.05 --shots 8192
 
 Arguments
 ---------
     --circuit      Circuit type: ghz (only supported option)   (default: ghz)
     --n-qubits     Number of qubits                            (default: 4)
     --noise-level  Per-qubit readout bitflip probability        (default: 0.05)
-    --shots        Shots per circuit execution                   (default: 8192)
+    --shots        Shots per circuit execution        (default: 8192)
     --seed         Random seed                                   (default: 42)
     --tool         Run a specific tool only: rem | trex | mthree | all
                                                                 (default: all)
@@ -36,7 +37,8 @@ Notes
 -----
     The observable is Z⊗n (tensor product of Pauli Z on all qubits).
     For a GHZ state with even n, the ideal expectation value is +1.0.
-    Noise model: independent bitflip on each qubit with probability noise_level.
+    Noise model: independent per-qubit bitflip with probability
+    noise_level.
     mitiq.rem uses a pre-computed inverse confusion matrix.
     mitiq.experimental.trex uses twirled readout error mitigation.
     mthree uses matrix-free measurement error mitigation (M3).
@@ -45,14 +47,13 @@ Notes
 from __future__ import annotations
 
 import argparse
-import sys
 import time
 from typing import Callable, Tuple
 
 import numpy as np
 
+# ── helpers ──────────────────────────────────────────────────────────────────
 
-# ── helpers ────────────────────────────────────────────────────────────────────
 
 class _Counter:
     """Callable wrapper that counts invocations.
@@ -75,10 +76,14 @@ class _Counter:
 
 def _zn_eigenvalue(n: int) -> np.ndarray:
     """Return eigenvalues of Z⊗n: (-1)^popcount(i) for i in [0, 2^n)."""
-    return np.array([(-1) ** bin(i).count("1") for i in range(2 ** n)], dtype=float)
+    return np.array(
+        [(-1) ** bin(i).count("1") for i in range(2**n)],
+        dtype=float,
+    )
 
 
-# ── circuit generation ─────────────────────────────────────────────────────────
+# ── circuit generation ───────────────────────────────────────────────────────
+
 
 def _get_cirq_ghz(n_qubits: int):
     """Return a cirq GHZ circuit (no measurements)."""
@@ -92,7 +97,8 @@ def _ideal_expval(circuit, n_qubits: int) -> float:
     import cirq
 
     clean = cirq.Circuit(
-        op for op in circuit.all_operations()
+        op
+        for op in circuit.all_operations()
         if not isinstance(op.gate, cirq.MeasurementGate)
     )
     sv = cirq.Simulator().simulate(clean).final_state_vector.flatten()
@@ -101,7 +107,7 @@ def _ideal_expval(circuit, n_qubits: int) -> float:
 
 
 def _count_gates(circuit) -> Tuple[int, int]:
-    """Return (n_1q_gates, n_2q_gates) for a cirq circuit, ignoring measurements."""
+    """Return (n_1q_gates, n_2q_gates), ignoring measurements."""
     import cirq
 
     n1 = n2 = 0
@@ -118,6 +124,7 @@ def _count_gates(circuit) -> Tuple[int, int]:
 
 # ── noisy executor (readout bitflip) ─────────────────────────────────────────
 
+
 def _make_readout_executor(n_qubits: int, noise_level: float, shots: int) -> Callable:
     """
     Return an executor that runs the circuit ideally then applies independent
@@ -133,7 +140,8 @@ def _make_readout_executor(n_qubits: int, noise_level: float, shots: int) -> Cal
 
     def executor(circuit: cirq.Circuit) -> MeasurementResult:
         clean = cirq.Circuit(
-            op for op in circuit.all_operations()
+            op
+            for op in circuit.all_operations()
             if not isinstance(op.gate, cirq.MeasurementGate)
         )
         clean = clean + cirq.measure(*qubits, key="m")
@@ -145,14 +153,17 @@ def _make_readout_executor(n_qubits: int, noise_level: float, shots: int) -> Cal
         return MeasurementResult(bits)
 
     # mitiq inspects __annotations__ to determine the executor return type
-    executor.__annotations__ = {"circuit": cirq.Circuit, "return": MeasurementResult}
+    executor.__annotations__ = {
+        "circuit": cirq.Circuit,
+        "return": MeasurementResult,
+    }
     return executor
 
 
-def _noisy_expval_from_bitflip(circuit, n_qubits: int, noise_level: float, shots: int) -> float:
+def _noisy_expval_from_bitflip(
+    circuit, n_qubits: int, noise_level: float, shots: int
+) -> float:
     """Compute noisy ⟨Z⊗n⟩ under readout bitflip noise (shot-based)."""
-    import cirq
-    from mitiq import MeasurementResult
 
     executor = _make_readout_executor(n_qubits, noise_level, shots)
     mr = executor(circuit)
@@ -162,7 +173,8 @@ def _noisy_expval_from_bitflip(circuit, n_qubits: int, noise_level: float, shots
     return float(np.mean(ev[indices]))
 
 
-# ── mitiq.rem ─────────────────────────────────────────────────────────────────
+# ── mitiq.rem ────────────────────────────────────────────────────────────────
+
 
 def benchmark_mitiq_rem(
     circuit,
@@ -186,16 +198,21 @@ def benchmark_mitiq_rem(
     mit_counter = _Counter(mit_executor)
 
     t0 = time.perf_counter()
-    mitigated = float(execute_with_rem(
-        circuit, mit_counter, obs,
-        inverse_confusion_matrix=icm,
-    ).real)
+    mitigated = float(
+        execute_with_rem(
+            circuit,
+            mit_counter,
+            obs,
+            inverse_confusion_matrix=icm,
+        ).real
+    )
     elapsed = time.perf_counter() - t0
 
     return noisy_val, mitigated, elapsed, mit_counter.n
 
 
-# ── mitiq.experimental.trex ───────────────────────────────────────────────────
+# ── mitiq.experimental.trex ──────────────────────────────────────────────────
+
 
 def benchmark_mitiq_trex(
     circuit,
@@ -209,8 +226,6 @@ def benchmark_mitiq_trex(
     from mitiq.experimental.trex import execute_with_trex
 
     obs = Observable(PauliString(spec="Z" * n_qubits))
-    executor = _make_readout_executor(n_qubits, noise_level, shots)
-
     noisy_counter = _Counter(_make_readout_executor(n_qubits, noise_level, shots))
     noisy_val = float(obs.expectation(circuit, noisy_counter).real)
 
@@ -218,17 +233,22 @@ def benchmark_mitiq_trex(
     trex_counter = _Counter(trex_executor)
 
     t0 = time.perf_counter()
-    mitigated = float(execute_with_trex(
-        circuit, trex_counter, obs,
-        num_randomizations=32,
-        random_state=seed,
-    ))
+    mitigated = float(
+        execute_with_trex(
+            circuit,
+            trex_counter,
+            obs,
+            num_randomizations=32,
+            random_state=seed,
+        )
+    )
     elapsed = time.perf_counter() - t0
 
     return noisy_val, mitigated, elapsed, trex_counter.n
 
 
-# ── mthree ────────────────────────────────────────────────────────────────────
+# ── mthree ───────────────────────────────────────────────────────────────────
+
 
 def benchmark_mthree(
     circuit,
@@ -236,7 +256,7 @@ def benchmark_mthree(
     noise_level: float,
     shots: int,
 ) -> Tuple[float, float, float, int]:
-    """Benchmark mthree M3Mitigation on a Qiskit AerSimulator with readout noise."""
+    """Benchmark mthree M3Mitigation on AerSimulator with readout noise."""
     import mthree
     from qiskit import QuantumCircuit, transpile
     from qiskit_aer import AerSimulator
@@ -250,22 +270,14 @@ def benchmark_mthree(
     qc.measure_all()
 
     # Readout-only noise model
-    ro_error = ReadoutError([[1 - noise_level, noise_level], [noise_level, 1 - noise_level]])
+    ro_error = ReadoutError(
+        [[1 - noise_level, noise_level], [noise_level, 1 - noise_level]]
+    )
     nm = NoiseModel()
     nm.add_all_qubit_readout_error(ro_error)
     sim = AerSimulator(noise_model=nm)
 
     t_qc = transpile(qc, sim, optimization_level=0)
-
-    # Noiseless baseline (no noise model)
-    sim_ideal = AerSimulator()
-    ideal_qc = QuantumCircuit(n_qubits)
-    ideal_qc.h(0)
-    for i in range(n_qubits - 1):
-        ideal_qc.cx(i, i + 1)
-    ideal_qc.measure_all()
-    ideal_counts = sim_ideal.run(transpile(ideal_qc, sim_ideal), shots=shots).result().get_counts()
-    ideal_val = _expval_from_counts(ideal_counts, n_qubits)
 
     # Noisy counts
     noisy_counts = sim.run(t_qc, shots=shots).result().get_counts()
@@ -276,7 +288,8 @@ def benchmark_mthree(
     mit.cals_from_system(range(n_qubits), shots=shots)
     n_circuits = 1  # noisy run
     # calibration circuits also count
-    n_cal = n_qubits  # mthree calibrates each qubit with 2 circuits; count conservatively
+    # mthree calibrates each qubit; count conservatively
+    n_cal = n_qubits
 
     t0 = time.perf_counter()
     quasis = mit.apply_correction(noisy_counts, range(n_qubits))
@@ -284,7 +297,7 @@ def benchmark_mthree(
 
     diagonal = {
         format(i, f"0{n_qubits}b"): (-1) ** bin(i).count("1")
-        for i in range(2 ** n_qubits)
+        for i in range(2**n_qubits)
     }
     mitigated = float(quasis.expval(diagonal))
 
@@ -301,7 +314,7 @@ def _expval_from_counts(counts: dict, n: int) -> float:
     return ev
 
 
-# ── table output ──────────────────────────────────────────────────────────────
+# ── table output ─────────────────────────────────────────────────────────────
 
 _COL = (20, 8, 8, 10, 8, 9, 7, 5, 5)
 _HDR = (
@@ -320,8 +333,16 @@ def _improv(noisy: float, mitigated: float, ideal: float) -> str:
     return f"{abs(noisy - ideal) / denom:.2f}×"
 
 
-def _row(name: str, ideal: float, noisy: float, mitigated: float,
-         elapsed: float, n_circs: int, n1: int, n2: int) -> None:
+def _row(
+    name: str,
+    ideal: float,
+    noisy: float,
+    mitigated: float,
+    elapsed: float,
+    n_circs: int,
+    n1: int,
+    n2: int,
+) -> None:
     factor = _improv(noisy, mitigated, ideal)
     print(
         f"{name:<{_COL[0]}} {ideal:>{_COL[1]}.4f} {noisy:>{_COL[2]}.4f} "
@@ -331,26 +352,39 @@ def _row(name: str, ideal: float, noisy: float, mitigated: float,
     )
 
 
-# ── main ──────────────────────────────────────────────────────────────────────
+# ── main ─────────────────────────────────────────────────────────────────────
+
 
 def main() -> None:
     parser = argparse.ArgumentParser(
         description=__doc__,
         formatter_class=argparse.RawDescriptionHelpFormatter,
     )
-    parser.add_argument("--circuit", choices=["ghz"], default="ghz",
-                        help="Circuit type (default: ghz)")
-    parser.add_argument("--n-qubits", type=int, default=4,
-                        help="Number of qubits (default: 4)")
-    parser.add_argument("--noise-level", type=float, default=0.05,
-                        help="Per-qubit readout bitflip probability (default: 0.05)")
-    parser.add_argument("--shots", type=int, default=8192,
-                        help="Shots per circuit (default: 8192)")
+    parser.add_argument(
+        "--circuit", choices=["ghz"], default="ghz", help="Circuit type (default: ghz)"
+    )
+    parser.add_argument(
+        "--n-qubits", type=int, default=4, help="Number of qubits (default: 4)"
+    )
+    parser.add_argument(
+        "--noise-level",
+        type=float,
+        default=0.05,
+        help="Per-qubit readout bitflip probability (default: 0.05)",
+    )
+    parser.add_argument(
+        "--shots", type=int, default=8192, help="Shots per circuit (default: 8192)"
+    )
     parser.add_argument("--seed", type=int, default=42)
-    parser.add_argument("--tool", choices=["all", "rem", "trex", "mthree"], default="all")
+    parser.add_argument(
+        "--tool",
+        choices=["all", "rem", "trex", "mthree"],
+        default="all",
+    )
     args = parser.parse_args()
 
     import warnings
+
     warnings.filterwarnings("ignore", category=DeprecationWarning)
     warnings.filterwarnings("ignore", category=PendingDeprecationWarning)
     warnings.filterwarnings("ignore", message=".*global phase.*")
@@ -369,7 +403,10 @@ def main() -> None:
     ideal = _ideal_expval(circuit, args.n_qubits)
     n1, n2 = _count_gates(circuit)
 
-    print(f"Ideal ⟨Z⊗{args.n_qubits}⟩ = {ideal:.6f}   1Q gates: {n1}   2Q gates: {n2}\n")
+    print(
+        f"Ideal ⟨Z⊗{args.n_qubits}⟩ = {ideal:.6f}"
+        f"   1Q gates: {n1}   2Q gates: {n2}\n"
+    )
     print(_HDR)
     print(_SEP)
 
@@ -395,9 +432,19 @@ def main() -> None:
             if key == "trex":
                 kwargs["seed"] = args.seed
             noisy, mitigated, elapsed, n_circs = fn(**kwargs)
-            _row(display_name, ideal, noisy, mitigated, elapsed, n_circs, n1, n2)
+            _row(
+                display_name,
+                ideal,
+                noisy,
+                mitigated,
+                elapsed,
+                n_circs,
+                n1,
+                n2,
+            )
         except ImportError as exc:
-            print(f"{'  ' + display_name:<{_COL[0]}} SKIP (missing dep): {exc}")
+            label = "  " + display_name
+            print(f"{label:<{_COL[0]}} SKIP (missing dep): {exc}")
         except Exception as exc:
             print(f"{'  ' + display_name:<{_COL[0]}} ERROR: {exc}")
 

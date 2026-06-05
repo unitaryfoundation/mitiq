@@ -97,6 +97,9 @@ Documentation = "https://mitiq.readthedocs.io/en/stable/"
 Repository = "https://github.com/unitaryfoundation/mitiq/"
 Issues = "https://github.com/unitaryfoundation/mitiq/issues/"
 
+[tool.black]
+line-length = 79
+
 [tool.ruff]
 exclude = ["__init__.py"]
 line-length = 79
