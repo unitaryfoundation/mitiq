@@ -30,8 +30,6 @@ $$
 \end{align}
 $$
 
-+++ 
-
 ## Setup
 
 We begin by importing the relevant modules and libraries required for the rest of this tutorial.
@@ -328,8 +326,6 @@ However, the combination of error detection and ZNE provides significant improve
 The key insight is that by applying post-selection at each noise scale level used by ZNE, we ensure that the extrapolation is performed on high-quality data points. This prevents outliers from biasing the extrapolation curve and leads to more accurate zero-noise estimates.
 
 This complementary approach is particularly valuable for near-term quantum hardware where error rates are significant but full error correction is not yet feasible. The combined technique effectively leverages both hardware-level error detection (via quantum error detecting codes) and software-level error mitigation (via ZNE) for maximum effectiveness.
-
-+++ 
 
 ## References
 
