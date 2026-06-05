@@ -29,8 +29,6 @@ $$
 \end{align}
 $$
 
-+++
-
 ## Setup
 
 We begin by importing the relevant modules and libraries required for the rest of this tutorial.
