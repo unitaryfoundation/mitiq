@@ -1,12 +1,13 @@
 ---
 jupytext:
+  formats: md:myst
   text_representation:
     extension: .md
     format_name: myst
     format_version: 0.13
-    jupytext_version: 1.16.6
+    jupytext_version: 1.14.1
 kernelspec:
-  display_name: Python 3
+  display_name: Python 3 (ipykernel)
   language: python
   name: python3
 ---
@@ -25,6 +26,8 @@ The four logical codewords are:
 - |0_L 1_L⟩ = (|0011⟩ + |1100⟩)/√2
 - |1_L 0_L⟩ = (|0101⟩ + |1010⟩)/√2
 - |1_L 1_L⟩ = (|0110⟩ + |1001⟩)/√2
+
++++
 
 ## Setup
 
@@ -297,7 +300,7 @@ for name, value in results.items():
 plt.figure(figsize=(10, 6))
 names = list(results.keys())
 values = list(results.values())
-colors = ['green', 'red', 'orange', 'blue']
+colors = ['green', 'red', 'orange', 'blue', 'purple']
 
 plt.bar(names, values, color=colors, alpha=0.7)
 plt.axhline(y=results['Ideal (noiseless)'], color='green', linestyle='--', label='Ideal value')
