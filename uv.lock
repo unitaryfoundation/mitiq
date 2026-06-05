@@ -74,7 +74,7 @@ wheels = [
 
 [[package]]
 name = "amazon-braket-sdk"
-version = "1.117.1"
+version = "1.118.0"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "amazon-braket-default-simulator" },
@@ -92,9 +92,9 @@ dependencies = [
     { name = "oqpy" },
     { name = "sympy" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/ac/cf/7e6f483a78ff35a609a4be9b8a1455e77340e17fc259158a90a2248ec1f3/amazon_braket_sdk-1.117.1.tar.gz", hash = "sha256:76a09e40b5fbf8ac40704a3e95cf55caef16796c7ba19e5f5920deaaa7206c59", size = 499673, upload-time = "2026-04-29T16:17:40.834Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/81/a4/c8c7ce587b51e7bfc3d169c331c78d8c0ec1fb5bf12dd8116dc4aa59bd62/amazon_braket_sdk-1.118.0.tar.gz", hash = "sha256:334d12db00faff3ce23dc1ba431ef4ee24d52a46b5ff43c0f235accbe3ccc223", size = 261947, upload-time = "2026-06-04T16:17:18.208Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/9d/8a/3570dc35976856657ce37661045b953f5b0d1fc22d073f01b59d12895168/amazon_braket_sdk-1.117.1-py3-none-any.whl", hash = "sha256:0e5fb4f2f409150f4f9a5fef5a0155833b7e33c128f42644b72edf876f35cf72", size = 387628, upload-time = "2026-04-29T16:17:38.364Z" },
+    { url = "https://files.pythonhosted.org/packages/f8/a6/91ead7219ef32c3cbcfe03348e7f866662709484e75307432ae026f81a02/amazon_braket_sdk-1.118.0-py3-none-any.whl", hash = "sha256:7cb0aba3125ce76fc20c2ed0721a72317a0fa3f98d9e69b6e0f95745f3851b29", size = 388058, upload-time = "2026-06-04T16:17:16.445Z" },
 ]
 
 [[package]]
@@ -1696,7 +1696,7 @@ docs = [
 
 [package.metadata]
 requires-dist = [
-    { name = "amazon-braket-sdk", marker = "extra == 'braket'", specifier = ">=1.97,<1.118" },
+    { name = "amazon-braket-sdk", marker = "extra == 'braket'", specifier = ">=1.97,<1.119" },
     { name = "cirq-core", specifier = ">=1.6.0,<1.7.0" },
     { name = "cirq-ionq", marker = "extra == 'braket'", specifier = ">=1.6.0,<1.7.0" },
     { name = "llvmlite", marker = "extra == 'braket'", specifier = "==0.46.0" },
