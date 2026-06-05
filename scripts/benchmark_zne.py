@@ -185,7 +185,9 @@ def _expval_from_counts(counts: dict, n: int) -> float:
 # ── shared noisy executor (Qiskit AerSimulator) ──────────────────────────────
 
 
-def _make_qiskit_executor(n_qubits: int, noise_level: float, shots: int) -> Callable:
+def _make_qiskit_executor(
+    n_qubits: int, noise_level: float, shots: int
+) -> Callable:
     """
     Return a cirq-circuit executor backed by Qiskit AerSimulator.
 
@@ -252,8 +254,8 @@ def _get_mitiq_factories() -> "dict[str, object]":
     return {
         # name                  factory                            scale pts
         "linear": LinearFactory([1.0, 2.0, 3.0]),  # 3 → deg-1
-        "richardson": RichardsonFactory([1.0, 2.0, 3.0]),  # 3 → deg-2 Richardson
-        "poly-deg2": PolyFactory([1.0, 2.0, 3.0], order=2),  # 3 pts, deg-2 poly
+        "richardson": RichardsonFactory([1.0, 2.0, 3.0]),  # deg-2 Richardson
+        "poly-deg2": PolyFactory([1.0, 2.0, 3.0], order=2),  # deg-2 poly
         "exp": ExpFactory([1.0, 2.0, 3.0]),  # 3 pts, a·exp(b·x)+c
         "poly-exp-deg2": PolyExpFactory(  # 4 pts, poly inside exp
             [1.0, 2.0, 3.0, 4.0], order=2
@@ -367,16 +369,17 @@ def benchmark_qermit_zne(
     ``10 × noise_level`` for 2-qubit gates (cx / cz).
     Observable: Z⊗n specified on logical qubits (q[0]…q[n-1]).
     """
-    from pytket import Circuit as TKCircuit, Qubit
+    from pytket import Circuit as TKCircuit
+    from pytket import Qubit
+    from pytket.extensions.qiskit import AerBackend
     from pytket.pauli import Pauli, QubitPauliString
     from pytket.utils import QubitPauliOperator
-    from pytket.extensions.qiskit import AerBackend
     from qermit import (
         AnsatzCircuit,
+        MitEx,
         ObservableExperiment,
         ObservableTracker,
         SymbolsDict,
-        MitEx,
     )
     from qermit.zero_noise_extrapolation import Folding, gen_ZNE_MitEx
     from qermit.zero_noise_extrapolation.zne import Fit
@@ -413,9 +416,13 @@ def benchmark_qermit_zne(
     q_qubits = [Qubit(i) for i in range(n_qubits)]
     pauli_str = QubitPauliString(q_qubits, [Pauli.Z] * n_qubits)
     observable = QubitPauliOperator({pauli_str: 1.0})
-    ansatz = AnsatzCircuit(Circuit=tk_circuit, Shots=shots, SymbolsDict=SymbolsDict())
+    ansatz = AnsatzCircuit(
+        Circuit=tk_circuit, Shots=shots, SymbolsDict=SymbolsDict()
+    )
     obs_tracker = ObservableTracker(qubit_pauli_operator=observable)
-    exp = ObservableExperiment(AnsatzCircuit=ansatz, ObservableTracker=obs_tracker)
+    exp = ObservableExperiment(
+        AnsatzCircuit=ansatz, ObservableTracker=obs_tracker
+    )
 
     if fit_type is None:
         fit_type = Fit.linear
@@ -523,8 +530,12 @@ def benchmark_qiskit_zne(
     qc = _get_qiskit_circuit(circuit, n_qubits)
 
     nm = NoiseModel()
-    nm.add_all_qubit_quantum_error(depolarizing_error(noise_level, 1), ["h", "x"])
-    nm.add_all_qubit_quantum_error(depolarizing_error(noise_level * 10, 2), ["cx"])
+    nm.add_all_qubit_quantum_error(
+        depolarizing_error(noise_level, 1), ["h", "x"]
+    )
+    nm.add_all_qubit_quantum_error(
+        depolarizing_error(noise_level * 10, 2), ["cx"]
+    )
     sim = AerSimulator(noise_model=nm)
 
     vals: list[float] = []
@@ -593,7 +604,10 @@ def main() -> None:
         "--n-qubits", type=int, default=4, help="Number of qubits (default: 4)"
     )
     parser.add_argument(
-        "--depth", type=int, default=4, help="Circuit depth for qv/mirror (default: 4)"
+        "--depth",
+        type=int,
+        default=4,
+        help="Circuit depth for qv/mirror (default: 4)",
     )
     parser.add_argument(
         "--noise-level",
@@ -602,7 +616,10 @@ def main() -> None:
         help="Single-qubit depolarising probability (default: 0.01)",
     )
     parser.add_argument(
-        "--shots", type=int, default=8192, help="Shots per circuit (default: 8192)"
+        "--shots",
+        type=int,
+        default=8192,
+        help="Shots per circuit (default: 8192)",
     )
     parser.add_argument("--seed", type=int, default=42)
     parser.add_argument(
@@ -629,7 +646,9 @@ def main() -> None:
     warnings.filterwarnings("ignore", message=".*very short.*")
     warnings.filterwarnings("ignore", message=".*IBMFractional.*")
     warnings.filterwarnings("ignore", message=".*no effect in local.*")
-    warnings.filterwarnings("ignore", message=".*Covariance of the parameters.*")
+    warnings.filterwarnings(
+        "ignore", message=".*Covariance of the parameters.*"
+    )
     try:
         from scipy.optimize import OptimizeWarning
 
@@ -658,9 +677,11 @@ def main() -> None:
     print(_HDR)
     print(_SEP)
 
-    tools_to_run = ["mitiq", "qermit", "qiskit"] if args.tool == "all" else [args.tool]
+    tools_to_run = (
+        ["mitiq", "qermit", "qiskit"] if args.tool == "all" else [args.tool]
+    )
 
-    # ── helper to emit one row ─────────────────────────────────────────────────
+    # ── helper to emit one row ───────────────────────────────────────────────
     def _run_row(display_name, fn, extra_kwargs=None):
         try:
             kw = dict(
@@ -687,21 +708,23 @@ def main() -> None:
         except Exception as exc:
             print(f"{display_name:<{_COL[0]}} ERROR: {str(exc)[:60]}")
 
-    # ── per-tool dispatch ──────────────────────────────────────────────────────
+    # ── per-tool dispatch ────────────────────────────────────────────────────
     for key in tools_to_run:
         if key == "mitiq":
             if args.factories:
-                print(f"\n── mitiq.zne factories ({'─'*40})")
+                print(f"\n── mitiq.zne factories ({'─' * 40})")
                 for fname, fac in _get_mitiq_factories().items():
                     _run_row(
-                        f"mitiq.zne ({fname})", benchmark_mitiq_zne, {"factory": fac}
+                        f"mitiq.zne ({fname})",
+                        benchmark_mitiq_zne,
+                        {"factory": fac},
                     )
             else:
                 _run_row("mitiq.zne", benchmark_mitiq_zne)
 
         elif key == "qermit":
             if args.factories:
-                print(f"\n── qermit ZNE fits ({'─'*43})")
+                print(f"\n── qermit ZNE fits ({'─' * 43})")
                 for fname, (fit_t, scales) in _get_qermit_fits().items():
                     _run_row(
                         f"qermit ({fname})",
@@ -713,7 +736,7 @@ def main() -> None:
 
         elif key == "qiskit":
             if args.factories:
-                print(f"\n── Qiskit ZNE (manual) fits ({'─'*35})")
+                print(f"\n── Qiskit ZNE (manual) fits ({'─' * 35})")
                 for fname, (deg, scales) in _QISKIT_ZNE_FITS.items():
                     _run_row(
                         f"Qiskit ZNE ({fname})",
@@ -725,8 +748,8 @@ def main() -> None:
 
     print(_SEP)
     print(
-        "\nImprov = |noisy − ideal| / |mitigated − ideal|  "
-        "(>1 means mitigation helped)"
+        "\nImprov = |noisy − ideal| / |mitigated − ideal|"
+        "  (>1 means mitigation helped)"
     )
     if args.factories:
         print(

@@ -7,19 +7,20 @@ GHZ circuit with synthetic depolarising gate noise.
 Usage
 -----
     python scripts/benchmark_pec.py
-    python scripts/benchmark_pec.py --circuit ghz --n-qubits 4 --noise-level 0.01
+    python scripts/benchmark_pec.py \
+        --circuit ghz --n-qubits 4 --noise-level 0.01
 
 Arguments
 ---------
     --circuit        Circuit type: ghz | qv | mirror             (default: ghz)
     --n-qubits       Number of qubits                            (default: 4)
     --depth          Circuit depth for qv / mirror               (default: 4)
-    --noise-level    Single-qubit depolarising error              (default: 0.01)
-    --shots          Shots per circuit execution                   (default: 8192)
-    --pec-samples    Number of quasi-probability samples (mitiq)  (default: 200)
-    --seed           Random seed                                   (default: 42)
+    --noise-level    Single-qubit depolarising error            (default: 0.01)
+    --shots          Shots per circuit execution              (default: 8192)
+    --pec-samples    Number of quasi-probability samples      (default: 200)
+    --seed           Random seed                              (default: 42)
     --tool           Run a specific tool: mitiq | qermit | qiskit | all
-                                                                  (default: all)
+                                                              (default: all)
 
 Dependencies
 ------------
@@ -81,7 +82,9 @@ class _Counter:
 
 def _zn_eigenvalue(n: int) -> np.ndarray:
     """Return eigenvalues of Z⊗n: (-1)^popcount(i) for i in [0, 2^n)."""
-    return np.array([(-1) ** bin(i).count("1") for i in range(2**n)], dtype=float)
+    return np.array(
+        [(-1) ** bin(i).count("1") for i in range(2**n)], dtype=float
+    )
 
 
 # ── circuit generation ───────────────────────────────────────────────────────
@@ -130,7 +133,7 @@ def _ideal_expval(circuit, n_qubits: int) -> float:
 
 
 def _count_gates(circuit) -> Tuple[int, int]:
-    """Return (n_1q_gates, n_2q_gates) for a cirq circuit, ignoring measurements."""
+    """Return (n_1q_gates, n_2q_gates), ignoring measurements."""
     import cirq
 
     n1 = n2 = 0
@@ -175,10 +178,16 @@ def _make_dm_executor(n_qubits: int, noise_level: float) -> Callable:
 
 
 def benchmark_mitiq_pec(
-    circuit, n_qubits: int, noise_level: float, shots: int, num_samples: int, seed: int
+    circuit,
+    n_qubits: int,
+    noise_level: float,
+    shots: int,
+    num_samples: int,
+    seed: int,
 ) -> Tuple[float, float, float, int]:
     """
-    Benchmark mitiq.pec using local depolarising quasi-probability representations.
+    Benchmark mitiq.pec using local depolarising
+    quasi-probability representations.
     """
     from mitiq.pec import (
         execute_with_pec,
@@ -244,21 +253,26 @@ def _patch_qermit_random_commuting_clifford() -> bool:
     if getattr(_mod.random_commuting_clifford, "_patched_by_benchmark", False):
         return False  # already applied this session
 
-    # ── imports needed by the patched function ────────────────────────────────
+    # ── imports needed by the patched function ──────────────────────────────
     from typing import List, cast
+
     from pytket.circuit import CircBox, Node
     from pytket.passes import DecomposeBoxes
+    from pytket.pauli import QubitPauliString
     from pytket.placement import place_with_map
     from pytket.predicates import CliffordCircuitPredicate
-    from pytket.utils import get_pauli_expectation_value
-    from pytket.pauli import QubitPauliString
     from pytket.unit_id import Qubit
+    from pytket.utils import get_pauli_expectation_value
 
     # Keep a reference to the module-level random_clifford_circ helper
     _random_clifford_circ = _mod.random_clifford_circ
 
     def _fixed_random_commuting_clifford(
-        circ, qps, simulator_backend, max_count: int = 1000, n_shots: int = 1000
+        circ,
+        qps,
+        simulator_backend,
+        max_count: int = 1000,
+        n_shots: int = 1000,
     ):
         """Fixed random_commuting_clifford: uses a copy for place_with_map.
 
@@ -296,9 +310,11 @@ def _patch_qermit_random_commuting_clifford() -> bool:
             for x in qps.map:
                 new_qps_qbs.append(n_q_map[x])
                 qps_paulis.append(qps.map[x])
-            new_qps = QubitPauliString(cast(List[Qubit], new_qps_qbs), qps_paulis)
+            new_qps = QubitPauliString(
+                cast(List[Qubit], new_qps_qbs), qps_paulis
+            )
 
-            # ── THE FIX ───────────────────────────────────────────────────────
+            # ── THE FIX ─────────────────────────────────────────────────────
             # Work on a copy so that place_with_map does not rename
             # rand_cliff_circ's qubits in-place (node[i] → q[i]).
             eval_circ = rand_cliff_circ.copy()
@@ -309,13 +325,17 @@ def _patch_qermit_random_commuting_clifford() -> bool:
                 expect_val = get_pauli_expectation_value(
                     eval_circ, new_qps, simulator_backend
                 )
-            elif simulator_backend.supports_shots or simulator_backend.supports_counts:
+            elif (
+                simulator_backend.supports_shots
+                or simulator_backend.supports_counts
+            ):
                 expect_val = get_pauli_expectation_value(
                     eval_circ, new_qps, simulator_backend, n_shots=n_shots
                 )
             else:
                 raise RuntimeError(
-                    "The simulator backend does not support state, shots or counts."
+                    "The simulator backend does not support"
+                    " state, shots or counts."
                 )
 
             count += 1
@@ -327,9 +347,9 @@ def _patch_qermit_random_commuting_clifford() -> bool:
 
         if not CliffordCircuitPredicate().verify(rand_cliff_circ):
             raise RuntimeError(
-                "The resulting circuit is not a Clifford circuit. This could be "
-                "because not all Computing gates in the original circuit were "
-                "labelled as such."
+                "The resulting circuit is not a Clifford circuit."
+                " This could be because not all Computing gates"
+                " in the original circuit were labelled as such."
             )
 
         return rand_cliff_circ
@@ -355,27 +375,31 @@ def benchmark_qermit_pec(
     compile both backends to the same ``node[i]`` qubit register.
 
     Applies _patch_qermit_random_commuting_clifford() before running to fix
-    the in-place qubit-renaming bug present in qermit 0.9.3 / pytket-qiskit 0.77.
+    the in-place qubit-renaming bug present in
+    qermit 0.9.3 / pytket-qiskit 0.77.
     The patch is idempotent and does not modify any installed file.
     """
     # Apply in-process fix for the node[i]/q[i] qubit-mapping bug.
     _patch_qermit_random_commuting_clifford()
 
-    from pytket import Circuit as TKCircuit, Qubit
+    from pytket import Circuit as TKCircuit
+    from pytket import Qubit
+    from pytket.extensions.qiskit import AerBackend
     from pytket.pauli import Pauli, QubitPauliString
     from pytket.utils import QubitPauliOperator
-    from pytket.extensions.qiskit import AerBackend
     from qermit import (
         AnsatzCircuit,
+        MitEx,
         ObservableExperiment,
         ObservableTracker,
         SymbolsDict,
-        MitEx,
     )
-    from qermit.probabilistic_error_cancellation import gen_PEC_learning_based_MitEx
+    from qermit.probabilistic_error_cancellation import (
+        gen_PEC_learning_based_MitEx,
+    )
     from qiskit_aer.noise import NoiseModel, depolarizing_error
 
-    # ── pytket GHZ circuit ────────────────────────────────────────────────────
+    # ── pytket GHZ circuit ──────────────────────────────────────────────────
     tk_circuit = TKCircuit(n_qubits)
     tk_circuit.H(0)
     for i in range(n_qubits - 1):
@@ -394,16 +418,20 @@ def benchmark_qermit_pec(
         return AerBackend(noise_model=nm)
 
     noisy_backend = _make_aer_backend(noise_level, noise_level * 10)
-    # Epsilon noise forces AerBackend to compile to node[i] qubits, matching noisy_backend
+    # Epsilon noise → node[i] qubits, matching noisy_backend
     ideal_backend = _make_aer_backend(1e-9, 1e-9)
 
     # Observable on LOGICAL q[i] qubits so qermit PEC can remap
     q_qubits = [Qubit(i) for i in range(n_qubits)]
     pauli_str = QubitPauliString(q_qubits, [Pauli.Z] * n_qubits)
     observable = QubitPauliOperator({pauli_str: 1.0})
-    ansatz = AnsatzCircuit(Circuit=tk_circuit, Shots=shots, SymbolsDict=SymbolsDict())
+    ansatz = AnsatzCircuit(
+        Circuit=tk_circuit, Shots=shots, SymbolsDict=SymbolsDict()
+    )
     obs_tracker = ObservableTracker(qubit_pauli_operator=observable)
-    exp = ObservableExperiment(AnsatzCircuit=ansatz, ObservableTracker=obs_tracker)
+    exp = ObservableExperiment(
+        AnsatzCircuit=ansatz, ObservableTracker=obs_tracker
+    )
 
     noisy_val = float(MitEx(noisy_backend).run([exp])[0][pauli_str])
 
@@ -434,18 +462,19 @@ def benchmark_qiskit_pec(
 
     Requires IBM Quantum cloud credentials:
         from qiskit_ibm_runtime import QiskitRuntimeService
-        QiskitRuntimeService.save_account(channel="ibm_quantum", token="<API_TOKEN>")
+        QiskitRuntimeService.save_account(
+            channel="ibm_quantum", token="<API_TOKEN>")
 
     Without credentials this function raises RuntimeError, which is caught at
     the call site and printed as SKIP.
     """
     from qiskit import QuantumCircuit, transpile
     from qiskit.quantum_info import SparsePauliOp
-    from qiskit_ibm_runtime import QiskitRuntimeService, EstimatorV2
+    from qiskit_ibm_runtime import EstimatorV2, QiskitRuntimeService
     from qiskit_ibm_runtime.noise_learner import NoiseLearner
     from qiskit_ibm_runtime.options import NoiseLearnerOptions
 
-    # ── connect to IBM Quantum ────────────────────────────────────────────────
+    # ── connect to IBM Quantum ──────────────────────────────────────────────
     try:
         service = QiskitRuntimeService()
     except Exception as exc:
@@ -469,7 +498,7 @@ def benchmark_qiskit_pec(
     obs_raw = SparsePauliOp("Z" * n_qubits)
     obs_isa = obs_raw.apply_layout(qc_isa.layout)
 
-    # ── learn layer noise ─────────────────────────────────────────────────────
+    # ── learn layer noise ───────────────────────────────────────────────────
     nl_options = NoiseLearnerOptions()
     nl_options.shots_per_randomization = shots
     noise_learner = NoiseLearner(mode=backend, options=nl_options)
@@ -530,7 +559,9 @@ def main() -> None:
         description=__doc__,
         formatter_class=argparse.RawDescriptionHelpFormatter,
     )
-    parser.add_argument("--circuit", choices=["ghz", "qv", "mirror"], default="ghz")
+    parser.add_argument(
+        "--circuit", choices=["ghz", "qv", "mirror"], default="ghz"
+    )
     parser.add_argument("--n-qubits", type=int, default=4)
     parser.add_argument("--depth", type=int, default=4)
     parser.add_argument("--noise-level", type=float, default=0.01)
@@ -556,7 +587,9 @@ def main() -> None:
     warnings.filterwarnings("ignore", message=".*global phase.*")
     warnings.filterwarnings("ignore", message=".*IBMFractional.*")
     warnings.filterwarnings("ignore", message=".*no effect in local.*")
-    warnings.filterwarnings("ignore", message=".*Covariance of the parameters.*")
+    warnings.filterwarnings(
+        "ignore", message=".*Covariance of the parameters.*"
+    )
     try:
         from scipy.optimize import OptimizeWarning
 
@@ -568,7 +601,8 @@ def main() -> None:
 
     print(
         f"\nPEC Benchmark\n"
-        f"circuit={args.circuit}  n_qubits={args.n_qubits}  depth={args.depth}  "
+        f"circuit={args.circuit}  n_qubits={args.n_qubits}"
+        f"  depth={args.depth}  "
         f"noise_level={args.noise_level}  shots={args.shots}  "
         f"pec_samples={args.pec_samples}"
     )
@@ -579,7 +613,8 @@ def main() -> None:
     )
     n1, n2 = _count_gates(circuit)
     print(
-        f"Ideal ⟨Z⊗{args.n_qubits}⟩ = {ideal:.6f}   1Q gates: {n1}   2Q gates: {n2}\n"
+        f"Ideal ⟨Z⊗{args.n_qubits}⟩ = {ideal:.6f}"
+        f"   1Q gates: {n1}   2Q gates: {n2}\n"
     )
     print(_HDR)
     print(_SEP)
@@ -610,7 +645,16 @@ def main() -> None:
                 shots=args.shots,
                 **extra,
             )
-            _row(display_name, ideal, noisy, mitigated, elapsed, n_circs, n1, n2)
+            _row(
+                display_name,
+                ideal,
+                noisy,
+                mitigated,
+                elapsed,
+                n_circs,
+                n1,
+                n2,
+            )
         except ImportError as exc:
             print(f"{display_name:<{_COL[0]}} SKIP (missing dep): {exc}")
         except RuntimeError as exc:
@@ -625,13 +669,15 @@ def main() -> None:
 
     print(_SEP)
     print(
-        "\nImprov = |noisy − ideal| / |mitigated − ideal|  "
-        "(>1 means mitigation helped)"
+        "\nImprov = |noisy − ideal| / |mitigated − ideal|"
+        "  (>1 means mitigation helped)"
     )
     print(
         "Qiskit PEC requires IBM Quantum cloud credentials (NoiseLearner).\n"
-        "qermit PEC: in-process patch applied for qermit 0.9.3 / pytket-qiskit 0.77 "
-        "qubit-mapping bug (see _patch_qermit_random_commuting_clifford)."
+        "qermit PEC: in-process patch applied for"
+        " qermit 0.9.3 / pytket-qiskit 0.77 "
+        "qubit-mapping bug"
+        " (see _patch_qermit_random_commuting_clifford)."
     )
 
 

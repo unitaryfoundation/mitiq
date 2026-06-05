@@ -125,13 +125,16 @@ def _count_gates(circuit) -> Tuple[int, int]:
 # ── noisy executor (readout bitflip) ─────────────────────────────────────────
 
 
-def _make_readout_executor(n_qubits: int, noise_level: float, shots: int) -> Callable:
+def _make_readout_executor(
+    n_qubits: int, noise_level: float, shots: int
+) -> Callable:
     """
     Return an executor that runs the circuit ideally then applies independent
     per-qubit bitflip noise at probability ``noise_level``.
     Returns a ``MeasurementResult`` (raw bitstrings).
     """
     import cirq
+
     from mitiq import MeasurementResult
 
     qubits = cirq.LineQubit.range(n_qubits)
@@ -193,7 +196,9 @@ def benchmark_mitiq_rem(
     noisy_counter = _Counter(executor)
     noisy_val = float(obs.expectation(circuit, noisy_counter).real)
 
-    icm = generate_inverse_confusion_matrix(n_qubits, p0=noise_level, p1=noise_level)
+    icm = generate_inverse_confusion_matrix(
+        n_qubits, p0=noise_level, p1=noise_level
+    )
     mit_executor = _make_readout_executor(n_qubits, noise_level, shots)
     mit_counter = _Counter(mit_executor)
 
@@ -226,7 +231,9 @@ def benchmark_mitiq_trex(
     from mitiq.experimental.trex import execute_with_trex
 
     obs = Observable(PauliString(spec="Z" * n_qubits))
-    noisy_counter = _Counter(_make_readout_executor(n_qubits, noise_level, shots))
+    noisy_counter = _Counter(
+        _make_readout_executor(n_qubits, noise_level, shots)
+    )
     noisy_val = float(obs.expectation(circuit, noisy_counter).real)
 
     trex_executor = _make_readout_executor(n_qubits, noise_level, shots)
@@ -361,7 +368,10 @@ def main() -> None:
         formatter_class=argparse.RawDescriptionHelpFormatter,
     )
     parser.add_argument(
-        "--circuit", choices=["ghz"], default="ghz", help="Circuit type (default: ghz)"
+        "--circuit",
+        choices=["ghz"],
+        default="ghz",
+        help="Circuit type (default: ghz)",
     )
     parser.add_argument(
         "--n-qubits", type=int, default=4, help="Number of qubits (default: 4)"
@@ -373,7 +383,10 @@ def main() -> None:
         help="Per-qubit readout bitflip probability (default: 0.05)",
     )
     parser.add_argument(
-        "--shots", type=int, default=8192, help="Shots per circuit (default: 8192)"
+        "--shots",
+        type=int,
+        default=8192,
+        help="Shots per circuit (default: 8192)",
     )
     parser.add_argument("--seed", type=int, default=42)
     parser.add_argument(
