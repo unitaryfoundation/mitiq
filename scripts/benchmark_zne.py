@@ -29,7 +29,7 @@ Arguments
 
 Dependencies
 ------------
-    pip install "mitiq>=1.0.0" "qermit>=0.9.0" pytket-qiskit qiskit-aer networkx
+    pip install -r scripts/requirements-benchmark.txt
 
 Output
 ------

@@ -21,7 +21,7 @@ Arguments
 
 Dependencies
 ------------
-    pip install "mitiq>=1.0.0" mthree qiskit-aer
+    pip install -r scripts/requirements-benchmark.txt
 
 Output
 ------

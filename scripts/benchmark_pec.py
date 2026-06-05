@@ -23,8 +23,7 @@ Arguments
 
 Dependencies
 ------------
-    pip install "mitiq>=1.0.0" "qermit>=0.9.0" pytket-qiskit qiskit-aer
-    pip install qiskit-ibm-runtime  # for Qiskit PEC (requires IBM Quantum account)
+    pip install -r scripts/requirements-benchmark.txt
 
 Output
 ------
@@ -205,6 +204,136 @@ def benchmark_mitiq_pec(
     return noisy_val, mitigated, elapsed, counter.n
 
 
+# ── qermit PEC — in-process bug fix ───────────────────────────────────────────
+#
+# Root cause (qermit 0.9.3 / pytket-qiskit 0.77):
+#   random_commuting_clifford() calls
+#       place_with_map(rand_cliff_circ, n_q_map)
+#   which renames the circuit's qubits in-place: node[i] → q[i].
+#   The returned Clifford circuit therefore has q[i] qubits, but the
+#   ObservableTracker was already relabelled to node[i] by the outer
+#   gen_initial_compilation_task.  The mismatch triggers:
+#       "ObservableTracker qubits {node[...]} are not found in circuit."
+#
+# Fix strategy — approach 3 (explicit qubit mapping via in-process patch):
+#   Replace random_commuting_clifford in the module's __dict__ with a
+#   corrected version that works on eval_circ = rand_cliff_circ.copy()
+#   before calling place_with_map, leaving the original circuit's qubit
+#   register intact.
+#
+#   Because the call site inside gen_get_clifford_training_set uses a bare
+#   name (not a module-qualified reference), replacing the name in the
+#   module's namespace is sufficient — Python's bare-name lookup goes through
+#   the module __dict__ at call time.
+#
+#   This patch is idempotent (guarded by _patched_by_benchmark attribute) and
+#   does not modify any installed file, so it survives pip reinstalls.
+
+def _patch_qermit_random_commuting_clifford() -> bool:
+    """Apply in-process fix for the qermit random_commuting_clifford qubit bug.
+
+    Returns True if the patch was applied, False if it was already in place.
+    """
+    import qermit.probabilistic_error_cancellation.pec_learning_based as _mod
+
+    if getattr(_mod.random_commuting_clifford, "_patched_by_benchmark", False):
+        return False  # already applied this session
+
+    # ── imports needed by the patched function ────────────────────────────────
+    from typing import List, cast
+    from pytket.circuit import CircBox, Node
+    from pytket.passes import DecomposeBoxes
+    from pytket.placement import place_with_map
+    from pytket.predicates import CliffordCircuitPredicate
+    from pytket.utils import get_pauli_expectation_value
+    from pytket.pauli import QubitPauliString
+    from pytket.unit_id import Qubit
+
+    # Keep a reference to the module-level random_clifford_circ helper
+    _random_clifford_circ = _mod.random_clifford_circ
+
+    def _fixed_random_commuting_clifford(
+        circ, qps, simulator_backend, max_count: int = 1000, n_shots: int = 1000
+    ):
+        """Fixed random_commuting_clifford: uses a copy for place_with_map.
+
+        Identical to the original except that place_with_map is applied to
+        eval_circ = rand_cliff_circ.copy() so the returned circuit retains
+        its original node[i] qubit register.
+        """
+        comp_opgroup_list = [
+            i["opgroup"]
+            for i in circ.to_dict()["commands"]
+            if "Computing" in i["opgroup"]
+        ]
+        if not comp_opgroup_list:
+            raise ValueError(
+                "This circuit contains no computing gates (i.e. single qubit "
+                "gates). Training is not possible."
+            )
+
+        count = 0
+        expect_val = complex(0)
+        while round(abs(expect_val)) == 0:
+            rand_cliff_circ = circ.copy()
+            rand_cliff_list = [
+                CircBox(_random_clifford_circ(1)) for _ in comp_opgroup_list
+            ]
+            for opgroup, rand_cliff in zip(comp_opgroup_list, rand_cliff_list):
+                rand_cliff_circ.substitute_named(rand_cliff, opgroup)
+            DecomposeBoxes().apply(rand_cliff_circ)
+
+            cc_qns = rand_cliff_circ.qubits
+            n_q_map = {cc_qns[i]: Node("q", i) for i in range(len(cc_qns))}
+
+            new_qps_qbs: List[Qubit] = []
+            qps_paulis = []
+            for x in qps.map:
+                new_qps_qbs.append(n_q_map[x])
+                qps_paulis.append(qps.map[x])
+            new_qps = QubitPauliString(cast(List[Qubit], new_qps_qbs), qps_paulis)
+
+            # ── THE FIX ───────────────────────────────────────────────────────
+            # Work on a copy so that place_with_map does not rename
+            # rand_cliff_circ's qubits in-place (node[i] → q[i]).
+            eval_circ = rand_cliff_circ.copy()
+            place_with_map(eval_circ, n_q_map)
+            # ─────────────────────────────────────────────────────────────────
+
+            if simulator_backend.supports_state:
+                expect_val = get_pauli_expectation_value(
+                    eval_circ, new_qps, simulator_backend
+                )
+            elif simulator_backend.supports_shots or simulator_backend.supports_counts:
+                expect_val = get_pauli_expectation_value(
+                    eval_circ, new_qps, simulator_backend, n_shots=n_shots
+                )
+            else:
+                raise RuntimeError(
+                    "The simulator backend does not support state, shots or counts."
+                )
+
+            count += 1
+            if count == max_count:
+                raise RuntimeError(
+                    "Could not find circuit with non-zero expectation. "
+                    "It's possible there are none."
+                )
+
+        if not CliffordCircuitPredicate().verify(rand_cliff_circ):
+            raise RuntimeError(
+                "The resulting circuit is not a Clifford circuit. This could be "
+                "because not all Computing gates in the original circuit were "
+                "labelled as such."
+            )
+
+        return rand_cliff_circ
+
+    _fixed_random_commuting_clifford._patched_by_benchmark = True  # type: ignore[attr-defined]
+    _mod.random_commuting_clifford = _fixed_random_commuting_clifford
+    return True
+
+
 # ── qermit PEC ────────────────────────────────────────────────────────────────
 
 def benchmark_qermit_pec(
@@ -219,9 +348,13 @@ def benchmark_qermit_pec(
     giving the ideal backend an epsilon-small noise model, forcing pytket to
     compile both backends to the same ``node[i]`` qubit register.
 
-    NOTE: This approach may fail on some qermit/pytket-qiskit version
-    combinations — the function is wrapped in a try/except at call time.
+    Applies _patch_qermit_random_commuting_clifford() before running to fix
+    the in-place qubit-renaming bug present in qermit 0.9.3 / pytket-qiskit 0.77.
+    The patch is idempotent and does not modify any installed file.
     """
+    # Apply in-process fix for the node[i]/q[i] qubit-mapping bug.
+    _patch_qermit_random_commuting_clifford()
+
     from pytket import Circuit as TKCircuit, Qubit
     from pytket.pauli import Pauli, QubitPauliString
     from pytket.utils import QubitPauliOperator
@@ -254,7 +387,7 @@ def benchmark_qermit_pec(
     # Epsilon noise forces AerBackend to compile to node[i] qubits, matching noisy_backend
     ideal_backend = _make_aer_backend(1e-9, 1e-9)
 
-    # Observable on LOGICAL q[i] qubits so qermit ZNE/PEC can remap
+    # Observable on LOGICAL q[i] qubits so qermit PEC can remap
     q_qubits = [Qubit(i) for i in range(n_qubits)]
     pauli_str = QubitPauliString(q_qubits, [Pauli.Z] * n_qubits)
     observable = QubitPauliOperator({pauli_str: 1.0})
@@ -270,19 +403,9 @@ def benchmark_qermit_pec(
         num_cliff=5,
         optimisation_level=0,
     )
-    try:
-        t0 = time.perf_counter()
-        pec_result = pec.run([exp])
-        elapsed = time.perf_counter() - t0
-    except Exception as exc:
-        msg = str(exc)
-        if "not found in circuit" in msg or "KeyError" in msg:
-            raise RuntimeError(
-                "qermit PEC qubit-mapping incompatibility between noisy and ideal "
-                "backends (known issue with pytket-qiskit). "
-                "See https://github.com/CQCL/Qermit/issues for updates."
-            ) from exc
-        raise
+    t0 = time.perf_counter()
+    pec_result = pec.run([exp])
+    elapsed = time.perf_counter() - t0
 
     mitigated = float(pec_result[0][pauli_str])
     # num_cliff random Clifford circuits per main circuit (approximate)
@@ -485,8 +608,8 @@ def main() -> None:
     )
     print(
         "Qiskit PEC requires IBM Quantum cloud credentials (NoiseLearner).\n"
-        "qermit PEC may fail with some pytket-qiskit versions; "
-        "see SKIP/ERROR message for details."
+        "qermit PEC: in-process patch applied for qermit 0.9.3 / pytket-qiskit 0.77 "
+        "qubit-mapping bug (see _patch_qermit_random_commuting_clifford)."
     )
 
 
