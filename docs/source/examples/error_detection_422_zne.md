@@ -20,13 +20,21 @@ Error detection and error mitigation are complementary strategies for dealing wi
 The [[4,2,2]] code is the smallest quantum error detecting code. It encodes 2 logical qubits into 4 physical qubits and can detect (but not correct) any single-qubit error. The code has two stabilizer generators: XXXX and ZZZZ. Any single-qubit error anticommutes with at least one of these stabilizers, flipping its measurement outcome from +1 to -1 and revealing that an error occurred.
 
 The four logical codewords are:
+
 $$
-\begin{align}
-|0_L 0_L\rangle = \frac{1}{\sqrt{2}}(|0000\rangle + |1111\rangle) \\
-|0_L 1_L\rangle = \frac{1}{\sqrt{2}}(|0011\rangle + |1100\rangle) \\
-|1_L 0_L\rangle = \frac{1}{\sqrt{2}}(|0101\rangle + |1010\rangle) \\
+|0_L 0_L\rangle = \frac{1}{\sqrt{2}}(|0000\rangle + |1111\rangle)
+$$
+
+$$
+|0_L 1_L\rangle = \frac{1}{\sqrt{2}}(|0011\rangle + |1100\rangle)
+$$
+
+$$
+|1_L 0_L\rangle = \frac{1}{\sqrt{2}}(|0101\rangle + |1010\rangle)
+$$
+
+$$
 |1_L 1_L\rangle = \frac{1}{\sqrt{2}}(|0110\rangle + |1001\rangle)
-\end{align}
 $$
 
 ## Setup
