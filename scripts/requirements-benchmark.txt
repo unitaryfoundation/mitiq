@@ -1,0 +1,6 @@
+mitiq>=1.0.0
+mthree
+qermit
+qiskit
+qiskit-aer
+qiskit-ibm-runtime
