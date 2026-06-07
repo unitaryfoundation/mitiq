@@ -209,6 +209,42 @@ class Factory(ABC):
         self._outstack: list[float] = []
         self._opt_params: list[float] | None = None
         self._params_cov: npt.NDArray[np.float64] | None = None
+        
+class AdaRichardsonFactory(AdaptiveFactory):
+    """Adaptive factory object implementing Richardson extrapolation."""
+
+    def __init__(
+        self,
+        scale_factors: Sequence[float],
+        steps: int = 2,
+    ) -> None:
+        super().__init__(scale_factors=scale_factors)
+        self.steps = steps
+
+    @staticmethod
+    def extrapolate(
+        scale_factors: Sequence[float],
+        exp_values: Sequence[float],
+        full_output: bool = False,
+    ) -> ExtrapolationResult:
+        return RichardsonFactory.extrapolate(
+            scale_factors, exp_values, full_output=full_output
+        )
+
+    def reduce(self) -> float:
+        """Returns the zero-noise limit found by fitting an adaptive Richardson model."""
+        (
+            self._zne_limit,
+            self._zne_error,
+            *_,
+        ) = self.extrapolate(
+            self.get_scale_factors()[:self.steps],
+            self.get_expectation_values()[:self.steps],
+            full_output=True,
+        )
+        self._already_reduced = True
+        return self._zne_limit
+
         self._zne_limit: float | None = None
         self._zne_error: float | None = None
         self._zne_curve: Callable[[float], float] | None = None
