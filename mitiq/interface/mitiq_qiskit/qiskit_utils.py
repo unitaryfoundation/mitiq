@@ -278,16 +278,34 @@ def compute_expectation_value_on_noisy_backend(
     Returns:
         The noisy expectation value.
     """
-    execute = partial(
-        sample_bitstrings,
-        backend=backend,
-        noise_model=noise_model,
-        shots=shots,
-        measure_all=measure_all,
+
+
+def execute_with_estimator(
+    circuit: QuantumCircuit,
+    obs: Observable,
+    backend_options: dict | None = None,
+) -> float:
+    """Returns the expectation value using Qiskit Estimator primitive."""
+    from qiskit.primitives import Estimator
+
+    estimator = Estimator(options=backend_options)
+    qiskit_obs = obs.to_matrix() if hasattr(obs, "to_matrix") else obs
+
+    job = estimator.run(circuit, qiskit_obs)
+    result = job.result()
+    return float(result.values[0])
+
+
+def compute_expectation_value_with_estimator(
+    circuit: QuantumCircuit,
+    obs: Observable,
+    backend_options: dict | None = None,
+) -> float:
+    """Computes expectation value using the new Qiskit Estimator interface."""
+    execute_func = partial(
+        execute_with_estimator,
+        obs=obs,
         backend_options=backend_options,
-
-        qubit_indices=qubit_indices,
     )
-    executor = Executor(execute)
-
-    return executor.evaluate(circuit, obs)[0]
+    executor = Executor(execute_func)
+    return executor(circuit)
