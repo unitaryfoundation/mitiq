@@ -103,6 +103,15 @@ print(f"Error with PEA: {abs(ideal_value - mitigated_result):.3f}")
 
 Here we observe that the application of PEA reduces the estimation error when compared to the unmitigated result.
 In the example above, both the noise amplification and extrapolation steps were taken behind the scenes thanks to the default options of {func}`.execute_with_pea`.
+
+```{note}
+Above we let Mitiq build the noise representations from the `noise_model` string. This is the legacy
+interface and emits a `DeprecationWarning`. The recommended way is to pass `representations`, a list of
+{class}`.OperationRepresentation` objects (one per operation), which also lets PEA work with noise
+learned from hardware. See [What additional options are available in PEA?](pea-3-options.md) for
+details.
+```
+
 In the following pages, we describe additional options and show how to apply the two steps of PEA independently.
 
 ## Two-stage PEA workflow

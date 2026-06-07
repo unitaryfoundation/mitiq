@@ -15,8 +15,10 @@ from mitiq.experimental.pea import (
     execute_with_pea,
 )
 from mitiq.experimental.pea.amplifications.amplify_depolarizing import (
+    amplify_noisy_ops_in_circuit_with_global_depolarizing_noise,
     amplify_noisy_ops_in_circuit_with_local_depolarizing_noise,
 )
+from mitiq.experimental.pea.scale_amplifications import scale_representations
 from mitiq.interface import convert_from_mitiq, convert_to_mitiq
 from mitiq.interface.mitiq_cirq import compute_density_matrix
 from mitiq.pec import (
@@ -222,3 +224,191 @@ def test_pea_data_with_full_output():
     assert np.allclose(
         pea_data["scaled_expectation_values"], scaled_exp_values
     )
+
+
+# Representations interface (issue #2936).
+
+
+def global_depolarizing_representations(circuit, base_noise):
+    """Base (unscaled) global-depolarizing representations for a circuit."""
+    return amplify_noisy_ops_in_circuit_with_global_depolarizing_noise(
+        circuit, base_noise
+    )
+
+
+@pytest.mark.parametrize("scale_factor", [1, 3, 5])
+def test_scale_representations_matches_global_rebuild(scale_factor):
+    """The canonical scaler reproduces the legacy global-depolarizing rebuild
+    at every scale factor, not only at scale_factor=1."""
+    base = global_depolarizing_representations(twoq_circ, BASE_NOISE)
+    scaled = scale_representations(base, scale_factor)
+    rebuilt = amplify_noisy_ops_in_circuit_with_global_depolarizing_noise(
+        twoq_circ, scale_factor * BASE_NOISE
+    )
+    assert scaled == rebuilt
+    for rep in scaled:
+        assert np.isclose(sum(rep.coeffs), 1.0)
+
+
+@pytest.mark.parametrize("scale_factor", [0.5, 1, 3, 5])
+def test_scale_representations_preserves_unit_sum(scale_factor):
+    """Scaling keeps the quasi-probability coefficients summing to one, even
+    for two-qubit local depolarizing where the legacy rebuild is not linear."""
+    base = amplify_noisy_ops_in_circuit_with_local_depolarizing_noise(
+        twoq_circ, BASE_NOISE
+    )
+    for rep in scale_representations(base, scale_factor):
+        assert np.isclose(sum(rep.coeffs), 1.0)
+
+
+def test_scale_representations_requires_identity_term():
+    """A representation with no identity term cannot be scaled."""
+    base = global_depolarizing_representations(oneq_circ, BASE_NOISE)[0]
+    # Drop the identity term (first coeff/op) so the deviation is undefined.
+    broken = OperationRepresentation(
+        base.ideal,
+        base.noisy_operations[1:],
+        [c / sum(base.coeffs[1:]) for c in base.coeffs[1:]],
+        base.is_qubit_dependent,
+    )
+    with pytest.raises(ValueError, match="without a non-zero identity term"):
+        scale_representations([broken], 3)
+
+
+def test_scale_representations_requires_nonzero_identity_weight():
+    """A representation whose identity term has zero weight cannot scale."""
+    base = global_depolarizing_representations(oneq_circ, BASE_NOISE)[0]
+    coeffs = list(base.coeffs)
+    # Move all weight off the identity term while keeping the unit sum.
+    coeffs[1] += coeffs[0]
+    coeffs[0] = 0.0
+    zero_identity = OperationRepresentation(
+        base.ideal,
+        base.noisy_operations,
+        coeffs,
+        base.is_qubit_dependent,
+    )
+    with pytest.raises(ValueError, match="without a non-zero identity term"):
+        scale_representations([zero_identity], 3)
+
+
+def test_construct_circuits_raises_on_empty_representations():
+    with pytest.raises(ValueError, match="'representations' is empty"):
+        construct_circuits(oneq_circ, scale_factors=[1], representations=[])
+
+
+@pytest.mark.parametrize("scale_factors", [[1], [1, 3, 5]])
+def test_construct_circuits_representations_equivalent_to_noise_model(
+    scale_factors,
+):
+    """Passing global-depolarizing representations yields the exact same
+    sampled circuits, signs and norms as the noise_model path, at every scale
+    factor (acceptance criterion of issue #2936)."""
+    reps = global_depolarizing_representations(twoq_circ, BASE_NOISE)
+
+    circuits_reps, signs_reps, norms_reps = construct_circuits(
+        twoq_circ,
+        scale_factors=scale_factors,
+        representations=reps,
+        num_samples=40,
+        random_state=7,
+    )
+    circuits_nm, signs_nm, norms_nm = construct_circuits(
+        twoq_circ,
+        scale_factors=scale_factors,
+        noise_model="global_depolarizing",
+        epsilon=BASE_NOISE,
+        num_samples=40,
+        random_state=7,
+    )
+
+    assert circuits_reps == circuits_nm
+    assert signs_reps == signs_nm
+    assert np.allclose(norms_reps, norms_nm)
+
+
+def test_construct_circuits_with_representations_shape():
+    """construct_circuits accepts representations and returns one entry per
+    scale factor."""
+    reps = global_depolarizing_representations(oneq_circ, BASE_NOISE)
+    scaled_circuits, _, _ = construct_circuits(
+        oneq_circ,
+        scale_factors=[1, 3, 5],
+        representations=reps,
+        num_samples=30,
+        random_state=1,
+    )
+    assert len(scaled_circuits) == 3
+    assert all(len(c) == 30 for c in scaled_circuits)
+
+
+def test_construct_circuits_raises_if_both_provided():
+    reps = global_depolarizing_representations(oneq_circ, BASE_NOISE)
+    with pytest.raises(ValueError, match="not both"):
+        construct_circuits(
+            oneq_circ,
+            scale_factors=[1],
+            representations=reps,
+            noise_model="global_depolarizing",
+            epsilon=BASE_NOISE,
+        )
+
+
+def test_construct_circuits_raises_if_neither_provided():
+    with pytest.raises(ValueError, match="either 'representations'"):
+        construct_circuits(oneq_circ, scale_factors=[1])
+
+
+def test_construct_circuits_raises_if_noise_model_without_epsilon():
+    with pytest.raises(ValueError, match="'epsilon' must be given"):
+        construct_circuits(
+            oneq_circ,
+            scale_factors=[1],
+            noise_model="global_depolarizing",
+        )
+
+
+def test_construct_circuits_noise_model_emits_deprecation_warning():
+    with pytest.warns(DeprecationWarning, match="legacy"):
+        construct_circuits(
+            oneq_circ,
+            scale_factors=[1],
+            noise_model="global_depolarizing",
+            epsilon=BASE_NOISE,
+            num_samples=10,
+            random_state=1,
+        )
+
+
+def test_execute_with_pea_with_representations():
+    """execute_with_pea accepts representations and mitigates noise as well as
+    the equivalent noise_model call."""
+    reps = amplify_noisy_ops_in_circuit_with_local_depolarizing_noise(
+        twoq_circ, BASE_NOISE
+    )
+    true_value = executor(twoq_circ, noise=0.0)
+
+    mitigated = execute_with_pea(
+        twoq_circ,
+        executor,
+        scale_factors=[1, 1.2, 1.6],
+        extrapolation_method=LinearFactory.extrapolate,
+        representations=reps,
+        random_state=101,
+    )
+    assert isinstance(mitigated, float)
+    assert np.isclose(mitigated, true_value, atol=0.1)
+
+
+def test_execute_with_pea_raises_if_both_provided():
+    reps = global_depolarizing_representations(oneq_circ, BASE_NOISE)
+    with pytest.raises(ValueError, match="not both"):
+        execute_with_pea(
+            oneq_circ,
+            executor,
+            scale_factors=[1, 1.2, 1.6],
+            extrapolation_method=LinearFactory.extrapolate,
+            representations=reps,
+            noise_model="global_depolarizing",
+            epsilon=BASE_NOISE,
+        )
