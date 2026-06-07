@@ -215,7 +215,8 @@ def sample_bitstrings(
         circuit = circuit.measure_all(inplace=False)
 
     if backend:
-        job = backend.run(circuit, shots=shots)
+        job = backend.run(exec_circuit, shots=shots, **(backend_options or {}))
+
     elif noise_model:
         backend = AerSimulator(
             method="density_matrix", noise_model=noise_model
@@ -228,7 +229,8 @@ def sample_bitstrings(
             # so we skip any circuit optimization
             optimization_level=0,
         )
-        job = backend.run(exec_circuit, shots=shots)
+        job = backend.run(circuit, shots=shots, **(backend_options or {}))
+
     else:
         raise ValueError(
             "Either a backend or a noise model must be given as input."
@@ -254,7 +256,10 @@ def compute_expectation_value_on_noisy_backend(
     shots: int = 10000,
     measure_all: bool = False,
     qubit_indices: tuple[int] | None = None,
+    backend_options: dict | None = None,
 ) -> complex:
+
+
     """Returns the noisy expectation value of the input Mitiq observable
     obtained from executing the input circuit on a Qiskit backend.
 
@@ -279,6 +284,8 @@ def compute_expectation_value_on_noisy_backend(
         noise_model=noise_model,
         shots=shots,
         measure_all=measure_all,
+        backend_options=backend_options,
+
         qubit_indices=qubit_indices,
     )
     executor = Executor(execute)
