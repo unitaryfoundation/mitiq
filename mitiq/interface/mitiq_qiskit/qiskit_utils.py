@@ -248,64 +248,17 @@ def sample_bitstrings(
     )
 
 
-def compute_expectation_value_on_noisy_backend(
-    circuit: QuantumCircuit,
-    obs: Observable,
-    backend: Backend | None = None,
-    noise_model: NoiseModel | None = None,
-    shots: int = 10000,
-    measure_all: bool = False,
-    qubit_indices: tuple[int] | None = None,
-    backend_options: dict | None = None,
-) -> complex:
-
-
-    """Returns the noisy expectation value of the input Mitiq observable
-    obtained from executing the input circuit on a Qiskit backend.
-
-    Args:
-        circuit: The input Qiskit circuit.
-        obs: The Mitiq observable to compute the expectation value of.
-        backend: A real or fake Qiskit backend. The input circuit
-            should be transpiled into a compatible gate set.
-        noise_model: A valid Qiskit ``NoiseModel`` object. This option is used
-            if and only if ``backend`` is ``None``. In this case a default
-            density matrix simulator is used with ``optimization_level=0``.
-        shots: The number of measurements.
-        measure_all: If True, measurement gates are applied to all qubits.
-        qubit_indices: Optional qubit indices associated to bitstrings.
-
-    Returns:
-        The noisy expectation value.
-    """
-
-
-def execute_with_estimator(
-    circuit: QuantumCircuit,
-    obs: Observable,
-    backend_options: dict | None = None,
-) -> float:
+def execute_with_estimator(circuit, obs, backend_options=None):
     """Returns the expectation value using Qiskit Estimator primitive."""
     from qiskit.primitives import Estimator
-
-    estimator = Estimator(options=backend_options)
+    est = Estimator(options=backend_options)
     qiskit_obs = obs.to_matrix() if hasattr(obs, "to_matrix") else obs
+    job = est.run(circuit, qiskit_obs)
+    return float(job.result().values[0])
 
-    job = estimator.run(circuit, qiskit_obs)
-    result = job.result()
-    return float(result.values[0])
-
-
-def compute_expectation_value_with_estimator(
-    circuit: QuantumCircuit,
-    obs: Observable,
-    backend_options: dict | None = None,
-) -> float:
-    """Computes expectation value using the new Qiskit Estimator interface."""
-    execute_func = partial(
-        execute_with_estimator,
-        obs=obs,
-        backend_options=backend_options,
-    )
-    executor = Executor(execute_func)
-    return executor(circuit)
+def compute_expectation_value_with_estimator(circuit, obs, backend_options=None):
+    """Computes expectation value using Estimator."""
+    from functools import partial
+    from mitiq.interface.mitiq_qiskit import Executor
+    func = partial(execute_with_estimator, circuit=circuit, obs=obs, backend_options=backend_options)
+    return Executor(func)(circuit)
