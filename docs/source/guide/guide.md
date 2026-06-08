@@ -34,4 +34,5 @@ maxdepth: 2
 vd.md
 pea.md
 shadows.md
+deb.md
 ```
