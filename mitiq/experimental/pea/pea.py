@@ -275,11 +275,10 @@ def execute_with_pea(
             from mitiq.pec import (
                 represent_operations_in_circuit_with_local_depolarizing_noise,
             )
-            reps = (
+            reps = \
                 represent_operations_in_circuit_with_local_depolarizing_noise(
                     circuit, noise_level=0.01
                 )
-            )
             pea_value = execute_with_pea(
                 circuit,
                 executor,
