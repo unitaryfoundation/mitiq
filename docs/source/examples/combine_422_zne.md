@@ -178,6 +178,8 @@ ps_result = post_select(noisy_mr, lambda bits: bits[4] == 0 and bits[5] == 0)
 retained_pct = 100 * ps_result.shots / noisy_mr.shots
 print(f"Shots retained after post-selection: {ps_result.shots} / {noisy_mr.shots} ({retained_pct:.1f}%)")
 print("Mitigated value obtained with error detection:", "{:.5f}".format(expect_zzzz(ps_result)))
+# Sanity check: should be close to the unmitigated noisy value printed above
+print("Value without post-selection (sanity check):", "{:.5f}".format(noisy))
 ```
 
 We can see that error detection improves the results, but errors that escaped detection (two-qubit correlated errors commuting with both stabilizers) still remain.
@@ -258,5 +260,21 @@ plt.show()
 From this example we can see that each technique affords some improvement, and the combination of [[4,2,2]] error detection and ZNE is more effective in suppressing errors than either technique applied alone.
 
 We encourage users to experiment with different noise levels and scale factor sets to explore the trade-off between shot overhead (from post-selection) and the accuracy gains of the combined approach.
+
+### Shot overhead of error detection
+
+Post-selection discards any shot where an error was detected, so the number of usable shots is always smaller than the number of raw shots collected.
+If a fraction $r$ of raw shots pass the syndrome check, then to obtain $N$ clean shots you must collect $N / r$ raw shots in total.
+The percentage increase in required shots relative to running without error detection is $(1/r - 1) \times 100\%$.
+
+```{code-cell} ipython3
+overhead_factor = 1.0 / (retained_pct / 100)
+overhead_pct = (overhead_factor - 1) * 100
+print(f"Retention rate: {retained_pct:.1f}%")
+print(f"Overhead factor: {overhead_factor:.2f}x  ({overhead_pct:.1f}% more raw shots needed)")
+```
+
+At a gate error rate of 1%, roughly {math}`\sim 10\text{–}20\%` of shots are flagged and discarded, requiring about 10–25% more raw shots to match the clean-shot count of an unprotected run.
+At higher error rates the discarded fraction grows quickly — at 3% per gate, well over half the shots may be rejected — so the shot overhead can become the dominant practical cost of the combined protocol.
 
 
