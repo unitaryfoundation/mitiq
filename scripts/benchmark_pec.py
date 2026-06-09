@@ -6,13 +6,12 @@ GHZ circuit with synthetic depolarising gate noise.
 
 Usage
 -----
-    python scripts/benchmark_pec.py
-    python scripts/benchmark_pec.py \
-        --circuit ghz --n-qubits 4 --noise-level 0.01
+    python scripts/benchmark_pec.py               # runs ghz, qv, mirror
+    python scripts/benchmark_pec.py --circuit ghz # runs one circuit
 
 Arguments
 ---------
-    --circuit        Circuit type: ghz | qv | mirror             (default: ghz)
+    --circuit        Circuit type: ghz | qv | mirror | all       (default: all)
     --n-qubits       Number of qubits                            (default: 4)
     --depth          Circuit depth for qv / mirror               (default: 4)
     --noise-level    Single-qubit depolarising error            (default: 0.01)
@@ -64,28 +63,15 @@ import time
 from typing import Callable, Tuple
 
 import numpy as np
-
-# ── helpers ──────────────────────────────────────────────────────────────────
-
-
-class _Counter:
-    """Callable wrapper that counts invocations."""
-
-    def __init__(self, fn: Callable) -> None:
-        self._fn = fn
-        self.n = 0
-
-    def __call__(self, *args, **kwargs):
-        self.n += 1
-        return self._fn(*args, **kwargs)
-
-
-def _zn_eigenvalue(n: int) -> np.ndarray:
-    """Return eigenvalues of Z⊗n: (-1)^popcount(i) for i in [0, 2^n)."""
-    return np.array(
-        [(-1) ** bin(i).count("1") for i in range(2**n)], dtype=float
-    )
-
+from benchmark_utils import (
+    _COL,
+    _HDR,
+    _SEP,
+    _count_gates,
+    _Counter,
+    _row,
+    _zn_eigenvalue,
+)
 
 # ── circuit generation ───────────────────────────────────────────────────────
 
@@ -132,22 +118,6 @@ def _ideal_expval(circuit, n_qubits: int) -> float:
     return float(np.real(np.dot(ev, np.abs(sv) ** 2)))
 
 
-def _count_gates(circuit) -> Tuple[int, int]:
-    """Return (n_1q_gates, n_2q_gates), ignoring measurements."""
-    import cirq
-
-    n1 = n2 = 0
-    for op in circuit.all_operations():
-        if isinstance(op.gate, cirq.MeasurementGate):
-            continue
-        nq = len(op.qubits)
-        if nq == 1:
-            n1 += 1
-        elif nq == 2:
-            n2 += 1
-    return n1, n2
-
-
 # ── shared cirq noisy executor (density matrix) ──────────────────────────────
 
 
@@ -171,6 +141,10 @@ def _make_dm_executor(n_qubits: int, noise_level: float) -> Callable:
         rho = sim.simulate(clean).final_density_matrix
         return float(np.real(np.sum(np.diag(rho) * ev)))
 
+    # Override string annotations produced by `from __future__ import
+    # annotations` with real type objects so mitiq's Executor can
+    # identify the return type (float in FloatLike).
+    executor.__annotations__ = {"circuit": cirq.Circuit, "return": float}
     return executor
 
 
@@ -314,7 +288,7 @@ def _patch_qermit_random_commuting_clifford() -> bool:
                 cast(List[Qubit], new_qps_qbs), qps_paulis
             )
 
-            # ── THE FIX ─────────────────────────────────────────────────────
+            # ── THE FIX ──────────────────────────────────────────────────────
             # Work on a copy so that place_with_map does not rename
             # rand_cliff_circ's qubits in-place (node[i] → q[i]).
             eval_circ = rand_cliff_circ.copy()
@@ -382,10 +356,10 @@ def benchmark_qermit_pec(
     # Apply in-process fix for the node[i]/q[i] qubit-mapping bug.
     _patch_qermit_random_commuting_clifford()
 
-    from pytket import Circuit as TKCircuit
     from pytket import Qubit
     from pytket.extensions.qiskit import AerBackend
     from pytket.pauli import Pauli, QubitPauliString
+    from pytket.qasm import circuit_from_qasm_str
     from pytket.utils import QubitPauliOperator
     from qermit import (
         AnsatzCircuit,
@@ -399,11 +373,8 @@ def benchmark_qermit_pec(
     )
     from qiskit_aer.noise import NoiseModel, depolarizing_error
 
-    # ── pytket GHZ circuit ──────────────────────────────────────────────────
-    tk_circuit = TKCircuit(n_qubits)
-    tk_circuit.H(0)
-    for i in range(n_qubits - 1):
-        tk_circuit.CX(i, i + 1)
+    # Convert mitiq benchmarks circuit → pytket via QASM
+    tk_circuit = circuit_from_qasm_str(circuit.to_qasm())
 
     def _make_aer_backend(error_1q: float, error_2q: float) -> AerBackend:
         nm = NoiseModel()
@@ -468,6 +439,7 @@ def benchmark_qiskit_pec(
     Without credentials this function raises RuntimeError, which is caught at
     the call site and printed as SKIP.
     """
+    import cirq
     from qiskit import QuantumCircuit, transpile
     from qiskit.quantum_info import SparsePauliOp
     from qiskit_ibm_runtime import EstimatorV2, QiskitRuntimeService
@@ -488,11 +460,14 @@ def benchmark_qiskit_pec(
         operational=True, simulator=False, min_num_qubits=n_qubits
     )
 
-    # ── Qiskit GHZ + transpile to backend ISA ────────────────────────────────
-    qc = QuantumCircuit(n_qubits)
-    qc.h(0)
-    for i in range(n_qubits - 1):
-        qc.cx(i, i + 1)
+    # Convert mitiq benchmarks circuit to Qiskit via QASM
+    clean = cirq.Circuit(
+        op
+        for op in circuit.all_operations()
+        if not isinstance(op.gate, cirq.MeasurementGate)
+    )
+    qasm_str = clean.to_qasm()
+    qc = QuantumCircuit.from_qasm_str(qasm_str)
 
     qc_isa = transpile(qc, backend, optimization_level=1)
     obs_raw = SparsePauliOp("Z" * n_qubits)
@@ -522,33 +497,104 @@ def benchmark_qiskit_pec(
     return noisy_val, mitigated, elapsed, shots
 
 
-# ── table output ─────────────────────────────────────────────────────────────
-
-_COL = (25, 8, 8, 10, 8, 9, 7, 5, 5)
-_HDR = (
-    f"{'Tool':<{_COL[0]}} {'Ideal':>{_COL[1]}} {'Noisy':>{_COL[2]}} "
-    f"{'Mitigated':>{_COL[3]}} {'Improv':>{_COL[4]}} "
-    f"{'Time(s)':>{_COL[5]}} {'Circs':>{_COL[6]}} "
-    f"{'1Q':>{_COL[7]}} {'2Q':>{_COL[8]}}"
-)
-_SEP = "-" * len(_HDR)
+# ── per-circuit runner ───────────────────────────────────────────────────────
 
 
-def _improv(noisy: float, mitigated: float, ideal: float) -> str:
-    denom = abs(mitigated - ideal)
-    if denom < 1e-10:
-        return "∞"
-    return f"{abs(noisy - ideal) / denom:.2f}×"
-
-
-def _row(name, ideal, noisy, mitigated, elapsed, n_circs, n1, n2):
-    factor = _improv(noisy, mitigated, ideal)
-    print(
-        f"{name:<{_COL[0]}} {ideal:>{_COL[1]}.4f} {noisy:>{_COL[2]}.4f} "
-        f"{mitigated:>{_COL[3]}.4f} {factor:>{_COL[4]}} "
-        f"{elapsed:>{_COL[5]}.2f} {n_circs:>{_COL[6]}} "
-        f"{n1:>{_COL[7]}} {n2:>{_COL[8]}}"
+def _run_circuit(circuit_type: str, args) -> None:
+    """Run PEC benchmark for one circuit type and print its table."""
+    circuit, ideal = get_benchmark_circuit(
+        circuit_type, args.n_qubits, args.depth, args.seed
     )
+    n1, n2 = _count_gates(circuit)
+
+    print(f"\ncircuit: {circuit_type}")
+    print(
+        f"Ideal ⟨Z⊗{args.n_qubits}⟩ = {ideal:.6f}"
+        f"   1Q gates: {n1}   2Q gates: {n2}"
+    )
+    print(_HDR)
+    print(_SEP)
+
+    benchmarks_map = {
+        "mitiq": ("mitiq.pec", benchmark_mitiq_pec),
+        "qermit": ("qermit PEC", benchmark_qermit_pec),
+        "qiskit": ("Qiskit PEC (cloud)", benchmark_qiskit_pec),
+    }
+    tools_to_run = (
+        list(benchmarks_map.items())
+        if args.tool == "all"
+        else [(args.tool, benchmarks_map[args.tool])]
+    )
+
+    for key, (display_name, fn) in tools_to_run:
+        # mitiq.pec uses DensityMatrixSimulator, which raises a tensor-view
+        # error on QV/mirror circuits ("target_tensor and available_buffer
+        # must be views").  GHZ only.
+        if key == "mitiq" and circuit_type != "ghz":
+            print(
+                f"  {display_name}: NOTE: mitiq.pec"
+                " DensityMatrixSimulator not compatible with"
+                " deep circuits (QV/mirror) — skipping"
+            )
+            continue
+        # qermit PEC hangs on QV/mirror (Clifford training loop does not
+        # converge for deep circuits).  GHZ only.
+        if key == "qermit" and circuit_type != "ghz":
+            print(
+                f"{'qermit PEC':<{_COL[0]}} NOTE: qermit PEC skipped"
+                " for deep circuits (QV/mirror)"
+                " — use --circuit ghz"
+            )
+            continue
+        # Qiskit PEC (cloud) requires credentials; no point submitting
+        # cloud jobs for QV/mirror circuits.  GHZ only.
+        if key == "qiskit" and circuit_type != "ghz":
+            print(
+                f"{'Qiskit PEC (cloud)':<{_COL[0]}} NOTE: Qiskit PEC"
+                " skipped for deep circuits (QV/mirror)"
+                " — use --circuit ghz"
+            )
+            continue
+        try:
+            extra: dict = {}
+            if key == "mitiq":
+                extra = {
+                    "num_samples": args.pec_samples,
+                    "seed": args.seed,
+                }
+            elif key in ("qermit", "qiskit"):
+                extra = {"seed": args.seed}
+
+            noisy, mitigated, elapsed, n_circs = fn(
+                circuit=circuit,
+                n_qubits=args.n_qubits,
+                noise_level=args.noise_level,
+                shots=args.shots,
+                **extra,
+            )
+            _row(
+                display_name,
+                ideal,
+                noisy,
+                mitigated,
+                elapsed,
+                n_circs,
+                n1,
+                n2,
+            )
+        except ImportError as exc:
+            print(f"{display_name:<{_COL[0]}} SKIP (missing dep): {exc}")
+        except RuntimeError as exc:
+            print(f"{display_name:<{_COL[0]}} SKIP: {exc}")
+        except Exception as exc:
+            import traceback
+
+            msg = str(exc).splitlines()[0][:80]
+            print(f"{display_name:<{_COL[0]}} ERROR: {msg}")
+            if "--debug" in __import__("sys").argv:
+                traceback.print_exc()
+
+    print(_SEP)
 
 
 # ── main ─────────────────────────────────────────────────────────────────────
@@ -560,7 +606,10 @@ def main() -> None:
         formatter_class=argparse.RawDescriptionHelpFormatter,
     )
     parser.add_argument(
-        "--circuit", choices=["ghz", "qv", "mirror"], default="ghz"
+        "--circuit",
+        choices=["ghz", "qv", "mirror", "all"],
+        default="all",
+        help="Circuit type, or 'all' to run ghz/qv/mirror (default: all)",
     )
     parser.add_argument("--n-qubits", type=int, default=4)
     parser.add_argument("--depth", type=int, default=4)
@@ -599,6 +648,10 @@ def main() -> None:
 
     np.random.seed(args.seed)
 
+    circuit_types = (
+        ["ghz", "qv", "mirror"] if args.circuit == "all" else [args.circuit]
+    )
+
     print(
         f"\nPEC Benchmark\n"
         f"circuit={args.circuit}  n_qubits={args.n_qubits}"
@@ -608,66 +661,9 @@ def main() -> None:
     )
     print("=" * len(_HDR))
 
-    circuit, ideal = get_benchmark_circuit(
-        args.circuit, args.n_qubits, args.depth, args.seed
-    )
-    n1, n2 = _count_gates(circuit)
-    print(
-        f"Ideal ⟨Z⊗{args.n_qubits}⟩ = {ideal:.6f}"
-        f"   1Q gates: {n1}   2Q gates: {n2}\n"
-    )
-    print(_HDR)
-    print(_SEP)
+    for ct in circuit_types:
+        _run_circuit(ct, args)
 
-    benchmarks_map = {
-        "mitiq": ("mitiq.pec", benchmark_mitiq_pec),
-        "qermit": ("qermit PEC", benchmark_qermit_pec),
-        "qiskit": ("Qiskit PEC (cloud)", benchmark_qiskit_pec),
-    }
-    tools_to_run = (
-        list(benchmarks_map.items())
-        if args.tool == "all"
-        else [(args.tool, benchmarks_map[args.tool])]
-    )
-
-    for key, (display_name, fn) in tools_to_run:
-        try:
-            extra: dict = {}
-            if key == "mitiq":
-                extra = {"num_samples": args.pec_samples, "seed": args.seed}
-            elif key in ("qermit", "qiskit"):
-                extra = {"seed": args.seed}
-
-            noisy, mitigated, elapsed, n_circs = fn(
-                circuit=circuit,
-                n_qubits=args.n_qubits,
-                noise_level=args.noise_level,
-                shots=args.shots,
-                **extra,
-            )
-            _row(
-                display_name,
-                ideal,
-                noisy,
-                mitigated,
-                elapsed,
-                n_circs,
-                n1,
-                n2,
-            )
-        except ImportError as exc:
-            print(f"{display_name:<{_COL[0]}} SKIP (missing dep): {exc}")
-        except RuntimeError as exc:
-            print(f"{display_name:<{_COL[0]}} SKIP: {exc}")
-        except Exception as exc:
-            import traceback
-
-            msg = str(exc).splitlines()[0][:80]
-            print(f"{display_name:<{_COL[0]}} ERROR: {msg}")
-            if "--debug" in __import__("sys").argv:
-                traceback.print_exc()
-
-    print(_SEP)
     print(
         "\nImprov = |noisy − ideal| / |mitigated − ideal|"
         "  (>1 means mitigation helped)"

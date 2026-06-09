@@ -6,18 +6,17 @@ workloads with synthetic depolarising gate noise.
 
 Usage
 -----
-    python scripts/benchmark_zne.py
-    python scripts/benchmark_zne.py \
-        --circuit ghz --n-qubits 4 --noise-level 0.01 --shots 8192
+    python scripts/benchmark_zne.py               # runs ghz, qv, mirror
+    python scripts/benchmark_zne.py --circuit ghz # runs one circuit
+    python scripts/benchmark_zne.py --factories   # all factories, all circuits
 
-    # Compare all extrapolation factories across every tool:
-    python scripts/benchmark_zne.py --factories
+    # Compare extrapolation factories for a specific tool:
     python scripts/benchmark_zne.py --factories --tool mitiq
     python scripts/benchmark_zne.py --factories --tool qermit
 
 Arguments
 ---------
-    --circuit      Circuit type: ghz | qv | mirror              (default: ghz)
+    --circuit      Circuit type: ghz | qv | mirror | all        (default: all)
     --n-qubits     Number of qubits                             (default: 4)
     --depth        Circuit depth for qv / mirror circuits        (default: 4)
     --noise-level  Single-qubit depolarizing error prob  (default: 0.01)
@@ -67,9 +66,6 @@ Notes
                (scales 1, 3, 5), linear extrapolation.
                With --factories: adds poly-deg2.
                No cloud credentials required.
-
-    Qiskit ZNE uses ``optimization_level=0`` during transpilation so that
-    the compiler does not cancel the deliberately repeated (folded) gates.
 """
 
 from __future__ import annotations
@@ -79,29 +75,15 @@ import time
 from typing import Callable, Tuple
 
 import numpy as np
-
-# ── helpers ──────────────────────────────────────────────────────────────────
-
-
-class _Counter:
-    """Callable wrapper that counts invocations."""
-
-    def __init__(self, fn: Callable) -> None:
-        self._fn = fn
-        self.n = 0
-
-    def __call__(self, *args, **kwargs):
-        self.n += 1
-        return self._fn(*args, **kwargs)
-
-
-def _zn_eigenvalue(n: int) -> np.ndarray:
-    """Return eigenvalues of Z⊗n: (-1)^popcount(i) for i in [0, 2^n)."""
-    return np.array(
-        [(-1) ** bin(i).count("1") for i in range(2**n)],
-        dtype=float,
-    )
-
+from benchmark_utils import (
+    _COL,
+    _HDR,
+    _SEP,
+    _count_gates,
+    _Counter,
+    _row,
+    _zn_eigenvalue,
+)
 
 # ── circuit generation ───────────────────────────────────────────────────────
 
@@ -146,22 +128,6 @@ def _ideal_expval(circuit, n_qubits: int) -> float:
     sv = cirq.Simulator().simulate(clean).final_state_vector.flatten()
     ev = _zn_eigenvalue(n_qubits)
     return float(np.real(np.dot(ev, np.abs(sv) ** 2)))
-
-
-def _count_gates(circuit) -> Tuple[int, int]:
-    """Return (n_1q_gates, n_2q_gates), ignoring measurements."""
-    import cirq
-
-    n1 = n2 = 0
-    for op in circuit.all_operations():
-        if isinstance(op.gate, cirq.MeasurementGate):
-            continue
-        nq = len(op.qubits)
-        if nq == 1:
-            n1 += 1
-        elif nq == 2:
-            n2 += 1
-    return n1, n2
 
 
 # ── shared helper ────────────────────────────────────────────────────────────
@@ -233,6 +199,10 @@ def _make_qiskit_executor(
         counts = sim.run(t_qc, shots=shots).result().get_counts()
         return _expval_from_counts(counts, n_qubits)
 
+    # Override string annotations produced by `from __future__ import
+    # annotations` with real type objects so mitiq's Executor can
+    # identify the return type (float in FloatLike).
+    executor.__annotations__ = {"circuit": cirq.Circuit, "return": float}
     return executor
 
 
@@ -279,15 +249,6 @@ def _get_qermit_fits() -> "dict[str, tuple]":
         "cube-root": (Fit.cube_root, scales),
         "richardson": (Fit.richardson, scales),  # Richardson with 3 pts
     }
-
-
-# ── Qiskit manual ZNE fits ───────────────────────────────────────────────────
-
-#  degree → (scale_factors, human_readable_label)
-_QISKIT_ZNE_FITS: "dict[str, tuple]" = {
-    "linear": (1, [1, 3, 5]),
-    "poly-deg2": (2, [1, 3, 5, 7]),  # 4 pts for stable deg-2 fit
-}
 
 
 # ── mitiq ZNE ────────────────────────────────────────────────────────────────
@@ -362,17 +323,16 @@ def benchmark_qermit_zne(
         Noise scale factors.  Default: ``[1, 2, 3]``.
 
     The benchmark circuit is converted cirq → QASM → pytket so that the same
-    workload (GHZ, QV, mirror) is used across all tools.  Falls back to a
-    native GHZ pytket circuit if QASM conversion fails.
+    workload (GHZ, QV, mirror) is used across all tools.
 
     The noise model uses ``noise_level`` for 1-qubit gates and
     ``10 × noise_level`` for 2-qubit gates (cx / cz).
     Observable: Z⊗n specified on logical qubits (q[0]…q[n-1]).
     """
-    from pytket import Circuit as TKCircuit
     from pytket import Qubit
     from pytket.extensions.qiskit import AerBackend
     from pytket.pauli import Pauli, QubitPauliString
+    from pytket.qasm import circuit_from_qasm_str
     from pytket.utils import QubitPauliOperator
     from qermit import (
         AnsatzCircuit,
@@ -385,19 +345,8 @@ def benchmark_qermit_zne(
     from qermit.zero_noise_extrapolation.zne import Fit
     from qiskit_aer.noise import NoiseModel, depolarizing_error
 
-    # ── convert cirq circuit → pytket via QASM ───────────────────────────────
-    # This ensures qermit benchmarks the same circuit as the other tools.
-    # GHZ / mirror / decomposed QV all export to valid QASM 2.0.
-    try:
-        from pytket.qasm import circuit_from_qasm_str
-
-        tk_circuit = circuit_from_qasm_str(circuit.to_qasm())
-    except Exception:
-        # Fallback: build GHZ natively (e.g. if circuit uses non-QASM gates)
-        tk_circuit = TKCircuit(n_qubits)
-        tk_circuit.H(0)
-        for i in range(n_qubits - 1):
-            tk_circuit.CX(i, i + 1)
+    # Convert mitiq benchmarks circuit → pytket via QASM
+    tk_circuit = circuit_from_qasm_str(circuit.to_qasm())
 
     # per-qubit noise model
     # (add_all_qubit_quantum_error is rejected by AerBackend)
@@ -449,6 +398,15 @@ def benchmark_qermit_zne(
     return noisy_val, mitigated, elapsed, len(noise_scaling_list)
 
 
+# ── Qiskit manual ZNE fits ───────────────────────────────────────────────────
+
+#  degree → (scale_factors, human_readable_label)
+_QISKIT_ZNE_FITS: "dict[str, tuple]" = {
+    "linear": (1, [1, 3, 5]),
+    "poly-deg2": (2, [1, 3, 5, 7]),  # 4 pts for stable deg-2 fit
+}
+
+
 # ── Qiskit ZNE ───────────────────────────────────────────────────────────────
 
 
@@ -469,16 +427,13 @@ def _fold_circuit_global(qc, scale: int):
 
 def _get_qiskit_circuit(circuit, n_qubits: int):
     """
-    Convert the benchmark circuit to a Qiskit QuantumCircuit.
+    Convert the benchmark circuit to a Qiskit QuantumCircuit via QASM.
 
-    For the GHZ circuit this is built natively.  For QV / mirror circuits the
-    function attempts a QASM conversion via cirq; falls back to a GHZ circuit
-    if conversion fails.
+    Falls back to a GHZ circuit if QASM conversion fails.
     """
     from qiskit import QuantumCircuit
 
     try:
-        # Use cirq's QASM export (works for Clifford + CX circuits)
         qasm_str = circuit.to_qasm()
         qc = QuantumCircuit.from_qasm_str(qasm_str)
         qc.remove_final_measurements(inplace=True)
@@ -510,11 +465,9 @@ def benchmark_qiskit_zne(
     degree : int, optional
         Polynomial degree for extrapolation (default 1 = linear).
         Requires at least ``degree + 1`` scale factors.
-        ``degree=1`` → linear (numpy.polyfit order 1)
-        ``degree=2`` → quadratic (numpy.polyfit order 2, needs ≥ 3 pts)
     scale_factors : list of odd ints, optional
         Default: ``[1, 3, 5]`` for ``degree=1``;
-        ``[1, 3, 5, 7]`` for ``degree=2`` (4 pts for a stable quadratic fit).
+        ``[1, 3, 5, 7]`` for ``degree=2`` (4 pts for stable quadratic fit).
 
     Noise model: all-qubit depolarising, 1Q = noise_level, 2Q = 10×noise_level.
     Uses ``optimization_level=0`` in transpile to prevent gate cancellations.
@@ -557,33 +510,92 @@ def benchmark_qiskit_zne(
     return noisy_val, mitigated, elapsed, len(scale_factors)
 
 
-# ── table output ─────────────────────────────────────────────────────────────
-
-_COL = (25, 8, 8, 10, 8, 9, 7, 5, 5)
-_HDR = (
-    f"{'Tool':<{_COL[0]}} {'Ideal':>{_COL[1]}} {'Noisy':>{_COL[2]}} "
-    f"{'Mitigated':>{_COL[3]}} {'Improv':>{_COL[4]}} "
-    f"{'Time(s)':>{_COL[5]}} {'Circs':>{_COL[6]}} "
-    f"{'1Q':>{_COL[7]}} {'2Q':>{_COL[8]}}"
-)
-_SEP = "-" * len(_HDR)
+# ── per-circuit runner ───────────────────────────────────────────────────────
 
 
-def _improv(noisy: float, mitigated: float, ideal: float) -> str:
-    denom = abs(mitigated - ideal)
-    if denom < 1e-10:
-        return "∞"
-    return f"{abs(noisy - ideal) / denom:.2f}×"
-
-
-def _row(name, ideal, noisy, mitigated, elapsed, n_circs, n1, n2):
-    factor = _improv(noisy, mitigated, ideal)
-    print(
-        f"{name:<{_COL[0]}} {ideal:>{_COL[1]}.4f} {noisy:>{_COL[2]}.4f} "
-        f"{mitigated:>{_COL[3]}.4f} {factor:>{_COL[4]}} "
-        f"{elapsed:>{_COL[5]}.2f} {n_circs:>{_COL[6]}} "
-        f"{n1:>{_COL[7]}} {n2:>{_COL[8]}}"
+def _run_circuit(circuit_type: str, args) -> None:
+    """Run ZNE benchmark for one circuit type and print its table."""
+    circuit, ideal = get_benchmark_circuit(
+        circuit_type, args.n_qubits, args.depth, args.seed
     )
+    n1, n2 = _count_gates(circuit)
+
+    print(f"\ncircuit: {circuit_type}")
+    print(
+        f"Ideal ⟨Z⊗{args.n_qubits}⟩ = {ideal:.6f}"
+        f"   1Q gates: {n1}   2Q gates: {n2}"
+    )
+    print(_HDR)
+    print(_SEP)
+
+    tools_to_run = (
+        ["mitiq", "qermit", "qiskit"] if args.tool == "all" else [args.tool]
+    )
+
+    def _run_row(display_name, fn, extra_kwargs=None):
+        try:
+            kw = dict(
+                circuit=circuit,
+                n_qubits=args.n_qubits,
+                noise_level=args.noise_level,
+                shots=args.shots,
+            )
+            if extra_kwargs:
+                kw.update(extra_kwargs)
+            noisy, mitigated, elapsed, n_circs = fn(**kw)
+            _row(
+                display_name,
+                ideal,
+                noisy,
+                mitigated,
+                elapsed,
+                n_circs,
+                n1,
+                n2,
+            )
+        except ImportError as exc:
+            print(f"{display_name:<{_COL[0]}} SKIP (missing dep): {exc}")
+        except Exception as exc:
+            print(f"{display_name:<{_COL[0]}} ERROR: {str(exc)[:60]}")
+
+    for key in tools_to_run:
+        if key == "mitiq":
+            if args.factories:
+                print(f"\n── mitiq.zne factories ({'─' * 40})")
+                for fname, fac in _get_mitiq_factories().items():
+                    _run_row(
+                        f"mitiq.zne ({fname})",
+                        benchmark_mitiq_zne,
+                        {"factory": fac},
+                    )
+            else:
+                _run_row("mitiq.zne", benchmark_mitiq_zne)
+
+        elif key == "qermit":
+            if args.factories:
+                print(f"\n── qermit ZNE fits ({'─' * 43})")
+                for fname, (fit_t, scales) in _get_qermit_fits().items():
+                    _run_row(
+                        f"qermit ({fname})",
+                        benchmark_qermit_zne,
+                        {"fit_type": fit_t, "noise_scaling_list": scales},
+                    )
+            else:
+                _run_row("qermit ZNE", benchmark_qermit_zne)
+
+        elif key == "qiskit":
+            if args.factories:
+                print(f"\n── Qiskit ZNE (manual) fits ({'─' * 35})")
+                for fname, (deg, scales) in _QISKIT_ZNE_FITS.items():
+                    _run_row(
+                        f"Qiskit ZNE ({fname})",
+                        benchmark_qiskit_zne,
+                        {"degree": deg, "scale_factors": scales},
+                    )
+            else:
+                _run_row("Qiskit ZNE (manual)", benchmark_qiskit_zne)
+
+    print(_SEP)
 
 
 # ── main ─────────────────────────────────────────────────────────────────────
@@ -596,9 +608,9 @@ def main() -> None:
     )
     parser.add_argument(
         "--circuit",
-        choices=["ghz", "qv", "mirror"],
-        default="ghz",
-        help="Circuit type (default: ghz)",
+        choices=["ghz", "qv", "mirror", "all"],
+        default="all",
+        help="Circuit type, or 'all' to run ghz/qv/mirror (default: all)",
     )
     parser.add_argument(
         "--n-qubits", type=int, default=4, help="Number of qubits (default: 4)"
@@ -658,6 +670,10 @@ def main() -> None:
 
     np.random.seed(args.seed)
 
+    circuit_types = (
+        ["ghz", "qv", "mirror"] if args.circuit == "all" else [args.circuit]
+    )
+
     print(
         f"\nZNE Benchmark\n"
         f"circuit={args.circuit}  n_qubits={args.n_qubits}  "
@@ -666,87 +682,9 @@ def main() -> None:
     )
     print("=" * len(_HDR))
 
-    circuit, ideal = get_benchmark_circuit(
-        args.circuit, args.n_qubits, args.depth, args.seed
-    )
-    n1, n2 = _count_gates(circuit)
-    print(
-        f"Ideal ⟨Z⊗{args.n_qubits}⟩ = {ideal:.6f}"
-        f"   1Q gates: {n1}   2Q gates: {n2}\n"
-    )
-    print(_HDR)
-    print(_SEP)
+    for ct in circuit_types:
+        _run_circuit(ct, args)
 
-    tools_to_run = (
-        ["mitiq", "qermit", "qiskit"] if args.tool == "all" else [args.tool]
-    )
-
-    # ── helper to emit one row ───────────────────────────────────────────────
-    def _run_row(display_name, fn, extra_kwargs=None):
-        try:
-            kw = dict(
-                circuit=circuit,
-                n_qubits=args.n_qubits,
-                noise_level=args.noise_level,
-                shots=args.shots,
-            )
-            if extra_kwargs:
-                kw.update(extra_kwargs)
-            noisy, mitigated, elapsed, n_circs = fn(**kw)
-            _row(
-                display_name,
-                ideal,
-                noisy,
-                mitigated,
-                elapsed,
-                n_circs,
-                n1,
-                n2,
-            )
-        except ImportError as exc:
-            print(f"{display_name:<{_COL[0]}} SKIP (missing dep): {exc}")
-        except Exception as exc:
-            print(f"{display_name:<{_COL[0]}} ERROR: {str(exc)[:60]}")
-
-    # ── per-tool dispatch ────────────────────────────────────────────────────
-    for key in tools_to_run:
-        if key == "mitiq":
-            if args.factories:
-                print(f"\n── mitiq.zne factories ({'─' * 40})")
-                for fname, fac in _get_mitiq_factories().items():
-                    _run_row(
-                        f"mitiq.zne ({fname})",
-                        benchmark_mitiq_zne,
-                        {"factory": fac},
-                    )
-            else:
-                _run_row("mitiq.zne", benchmark_mitiq_zne)
-
-        elif key == "qermit":
-            if args.factories:
-                print(f"\n── qermit ZNE fits ({'─' * 43})")
-                for fname, (fit_t, scales) in _get_qermit_fits().items():
-                    _run_row(
-                        f"qermit ({fname})",
-                        benchmark_qermit_zne,
-                        {"fit_type": fit_t, "noise_scaling_list": scales},
-                    )
-            else:
-                _run_row("qermit ZNE", benchmark_qermit_zne)
-
-        elif key == "qiskit":
-            if args.factories:
-                print(f"\n── Qiskit ZNE (manual) fits ({'─' * 35})")
-                for fname, (deg, scales) in _QISKIT_ZNE_FITS.items():
-                    _run_row(
-                        f"Qiskit ZNE ({fname})",
-                        benchmark_qiskit_zne,
-                        {"degree": deg, "scale_factors": scales},
-                    )
-            else:
-                _run_row("Qiskit ZNE (manual)", benchmark_qiskit_zne)
-
-    print(_SEP)
     print(
         "\nImprov = |noisy − ideal| / |mitigated − ideal|"
         "  (>1 means mitigation helped)"
