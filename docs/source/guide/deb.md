@@ -1,16 +1,15 @@
 # Debiasing
 
 Debiasing, also called symmetrization, is a noise-tailoring technique for
-reducing the effect of coherent errors. The circuit of interest is run as
-several randomized variants, each one conjugated by a layer of random
-single-qubit Pauli gates: a Pauli is applied to a qubit before the circuit and
-the same Pauli is applied again afterwards. Because Pauli gates are their own
-inverse the layer cancels on a noiseless device, so every variant computes the
-same ideal result. Coherent errors, on the other hand, are dressed differently
-in each variant and partially average out when the measurement distributions
-are combined. The technique adds no extra qubits or two-qubit gates beyond the
-pre- and post-circuit Pauli layer. See {cite}`Maksymov_2023_arxiv` for the
-original description.
+reducing the effect of qubit-dependent errors. The circuit of interest is run
+as several randomized variants, each one relabeled onto a different, randomly
+permuted set of qubits ($C \rightarrow \pi C$ for a permutation $\pi$). The
+permutation is undone on the measured bitstrings before the results are
+combined, so on a noiseless device every variant reproduces the same ideal
+distribution. On hardware, each variant assigns the logical qubits to a
+different set of physical qubits, so errors that depend on which qubit is used
+are sampled differently and average out when the unscrambled distributions are
+combined. See {cite}`Maksymov_2023_arxiv` for the original description.
 
 Mitiq also implements the optional *sharpening* step. Instead of averaging the
 variant distributions, sharpening performs a shot-wise plurality vote and keeps

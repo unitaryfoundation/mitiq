@@ -3,23 +3,21 @@
 # This source code is licensed under the GPL license (v3) found in the
 # LICENSE file in the root directory of this source tree.
 
-"""Construction of symmetrized (debiasing) circuit variants.
+"""Construction of permuted (debiasing) circuit variants.
 
-Debiasing reduces the effect of coherent errors by running many variants of
-a circuit that are equivalent in the noiseless case but accumulate coherent
-errors differently. Each variant is built by conjugating the circuit with a
-layer of random single-qubit Pauli gates: the same Pauli is applied to a
-qubit before and after the circuit. Since Pauli gates are self-inverse the
-layer cancels for an ideal execution, so no extra qubits or gates are needed
-beyond the pre/post Pauli layer. See :cite:`Maksymov_2023_arxiv`.
+Debiasing reduces the effect of qubit-dependent errors by running several
+variants of a circuit, each one with the qubits relabeled by a random
+permutation. A variant maps the circuit ``C`` onto a permuted set of qubits,
+``C -> pi C`` for a permutation ``pi``. On a noiseless device the permutation
+is undone in post-processing, so every variant reproduces the ideal result.
+On hardware each variant samples a different assignment of logical qubits to
+physical qubits, so qubit-dependent biases are averaged out when the results
+are combined. See :cite:`Maksymov_2023_arxiv`.
 """
 
 import random
 
 import cirq
-
-# Single-qubit Paulis sampled (uniformly) to build each symmetrization layer.
-_PAULIS = (cirq.I, cirq.X, cirq.Y, cirq.Z)
 
 
 def _random_generator(
@@ -32,27 +30,27 @@ def _random_generator(
     return random.Random(random_state)
 
 
-def construct_circuits(
+def _permute(
     circuit: cirq.Circuit,
-    num_variants: int = 10,
-    *,
-    random_state: int | random.Random | None = None,
-) -> list[cirq.Circuit]:
-    r"""Return symmetrized variants of ``circuit`` for debiasing.
+    qubits: list[cirq.Qid],
+    permutation: list[int],
+) -> cirq.Circuit:
+    """Relabel ``circuit`` so the operation on ``qubits[i]`` acts on
+    ``qubits[permutation[i]]``."""
+    qubit_map = {qubits[i]: qubits[permutation[i]] for i in range(len(qubits))}
+    return circuit.transform_qubits(qubit_map)
 
-    Each variant prepends and appends the same layer of random single-qubit
-    Pauli gates, sampled uniformly from :math:`\{I, X, Y, Z\}` per qubit. The
-    input circuit should not contain terminal measurements; measurement is
-    expected to be handled by the executor.
 
-    Args:
-        circuit: The circuit to symmetrize.
-        num_variants: Number of Pauli-symmetrized variants to generate.
-        random_state: Seed or ``random.Random`` instance for reproducible
-            sampling of the Pauli layers.
+def _construct_variants(
+    circuit: cirq.Circuit,
+    num_variants: int,
+    random_state: int | random.Random | None,
+) -> list[tuple[cirq.Circuit, list[int]]]:
+    """Return ``(variant, permutation)`` pairs for debiasing.
 
-    Returns:
-        A list of ``num_variants`` symmetrized copies of ``circuit``.
+    ``permutation[i]`` is the index of the qubit that logical qubit ``i`` is
+    mapped onto, which is also what post-processing uses to unscramble the
+    measured bitstrings.
     """
     if num_variants < 1:
         raise ValueError("num_variants must be a positive integer.")
@@ -62,12 +60,39 @@ def construct_circuits(
 
     variants = []
     for _ in range(num_variants):
-        layer = [rng.choice(_PAULIS) for _ in qubits]
-        pauli_moment = cirq.Circuit(
-            gate.on(qubit)
-            for gate, qubit in zip(layer, qubits)
-            if gate is not cirq.I
-        )
-        variants.append(pauli_moment + circuit + pauli_moment)
+        permutation = list(range(len(qubits)))
+        rng.shuffle(permutation)
+        variants.append((_permute(circuit, qubits, permutation), permutation))
 
     return variants
+
+
+def construct_circuits(
+    circuit: cirq.Circuit,
+    num_variants: int = 10,
+    *,
+    random_state: int | random.Random | None = None,
+) -> list[cirq.Circuit]:
+    r"""Return permuted variants of ``circuit`` for debiasing.
+
+    Each variant relabels the circuit onto a randomly permuted set of qubits,
+    ``C -> pi C``. The input circuit should not contain terminal measurements;
+    measurement is expected to be handled by the executor. To recover the ideal
+    result, the permutation applied to each variant must be undone on the
+    measured bitstrings (see :func:`.execute_with_debiasing`).
+
+    Args:
+        circuit: The circuit to permute.
+        num_variants: Number of permuted variants to generate.
+        random_state: Seed or ``random.Random`` instance for reproducible
+            sampling of the permutations.
+
+    Returns:
+        A list of ``num_variants`` permuted copies of ``circuit``.
+    """
+    return [
+        variant
+        for variant, _ in _construct_variants(
+            circuit, num_variants, random_state
+        )
+    ]
