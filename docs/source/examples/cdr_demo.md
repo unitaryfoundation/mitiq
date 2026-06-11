@@ -14,19 +14,20 @@ kernelspec:
 ```{tags} cdr, cirq, basic
 ```
 
-# CDR with a local noisy simulator
+# CDR with a compiled Cirq circuit
 
 Clifford Data Regression (CDR) learns a correction for a noisy quantum
 computer from circuits that are similar to the target circuit, but easier to
-simulate classically. In this worked example, we use CDR to recover the
-expectation value of a three-qubit variational circuit affected by
-depolarizing noise.
+simulate classically. In this worked example, we start from a four-qubit Cirq
+circuit with a mix of high-level rotations and entangling gates, compile it to
+a CDR-compatible gate set, and then mitigate a local depolarizing-noise
+simulation.
 
-Unlike zero-noise extrapolation, CDR does not fit results obtained at several
-noise levels. It creates near-Clifford training circuits, evaluates them on
-both the noisy executor and a noiseless simulator, and learns a map from noisy
-to ideal expectation values. See the [CDR user guide](../guide/cdr.md) for a
-complete description of the method and its options.
+CDR requires the non-Clifford content of the circuit to be contained in
+single-qubit $R_Z$ rotations. This example makes that compilation step
+explicit by translating the $R_Y$ rotations in the original circuit into the
+$\{R_Z, \sqrt{X}, \mathrm{CNOT}\}$ basis before calling
+{func}`.cdr.execute_with_cdr`.
 
 ## Setup
 
@@ -46,45 +47,135 @@ from mitiq.interface.mitiq_cirq import compute_density_matrix
 warnings.simplefilter("ignore", np.exceptions.ComplexWarning)
 ```
 
-## Define the target circuit
+## Define a circuit before compilation
 
-CDR requires circuits whose non-Clifford gates are single-qubit $R_Z$
-rotations. The layer below combines those rotations with Clifford gates and
-entangling CNOTs. Repeating it four times makes the effect of noise visible
-while keeping the example quick to run.
+The circuit below has four qubits, alternating entangling layers, and several
+single-qubit rotations. It is intentionally written in a convenient Cirq form
+first, using $R_Y$ rotations that are not part of the CDR-compatible basis.
 
 ```{code-cell} ipython3
-q0, q1, q2 = cirq.LineQubit.range(3)
+q0, q1, q2, q3 = cirq.LineQubit.range(4)
 
-variational_layer = cirq.Circuit(
-    cirq.H(q0),
+problem_layer = cirq.Circuit(
+    cirq.ry(0.41)(q0),
+    cirq.ry(-0.27)(q1),
+    cirq.ry(0.62)(q2),
+    cirq.ry(-0.35)(q3),
     cirq.CNOT(q0, q1),
-    cirq.rz(0.37)(q1),
+    cirq.CNOT(q2, q3),
+    cirq.rz(0.53)(q1),
+    cirq.rz(-0.71)(q2),
     cirq.CNOT(q1, q2),
-    cirq.rz(-0.51)(q2),
-    cirq.rx(np.pi / 2)(q0),
-    cirq.rz(0.83)(q0),
+    cirq.rz(0.37)(q0),
+    cirq.rz(-0.49)(q3),
+    cirq.CNOT(q2, q3),
 )
-circuit = variational_layer * 4
+problem_circuit = problem_layer * 3
+
+print(problem_circuit)
+```
+
+We measure a small Hamiltonian made from three Pauli strings,
+
+$$
+O = Z_0 Z_1 + 0.5 X_1 X_2 - 0.25 Z_2 Z_3.
+$$
+
+The ideal expectation value is classically computable because this example
+has only four qubits.
+
+```{code-cell} ipython3
+observable = Observable(
+    PauliString("ZZII"),
+    PauliString("IXXI", coeff=0.5),
+    PauliString("IIZZ", coeff=-0.25),
+)
+print(observable)
+```
+
+## Compile to a CDR-compatible gate set
+
+The circuit of interest must be compiled so that all non-Clifford gates are
+$R_Z$ rotations. For this example, the only unsupported gates in the original
+circuit are $R_Y$ rotations. In circuit order, we transpile each one as
+$\sqrt{X}$, then $R_Z(\theta)$, then $\sqrt{X}^{\dagger}$. Equivalently,
+as a matrix product,
+
+$$
+R_Y(\theta) = \sqrt{X}^{\dagger}\, R_Z(\theta)\, \sqrt{X},
+$$
+
+up to a global phase. The resulting circuit uses only $R_Z$, $\sqrt{X}$, and
+CNOT gates, which is one of the standard CDR-compatible bases.
+
+```{code-cell} ipython3
+def ry_to_cdr_basis(theta: float, qubit: cirq.Qid) -> list[cirq.Operation]:
+    """Decompose RY(theta) into sqrt(X), RZ(theta), and sqrt(X)^-1."""
+    return [
+        cirq.X(qubit) ** 0.5,
+        cirq.rz(theta)(qubit),
+        cirq.X(qubit) ** -0.5,
+    ]
+
+
+def compile_operation(op: cirq.Operation) -> list[cirq.Operation]:
+    """Compile the gates used in this example to the CDR basis."""
+    gate = op.gate
+
+    if isinstance(gate, cirq.YPowGate):
+        theta = float(gate.exponent) * np.pi
+        return ry_to_cdr_basis(theta, op.qubits[0])
+    if isinstance(gate, cirq.ZPowGate):
+        return [op]
+    if isinstance(gate, cirq.CNotPowGate) and np.isclose(gate.exponent, 1.0):
+        return [op]
+
+    raise ValueError(f"Unsupported operation for this example: {op!r}")
+
+
+circuit = cirq.Circuit(
+    compiled_op
+    for op in problem_circuit.all_operations()
+    for compiled_op in compile_operation(op)
+)
 
 print(circuit)
 ```
 
-We measure a small Hamiltonian made from two Pauli strings,
-
-$$
-O = Z_0 Z_1 + 0.5 X_1 X_2.
-$$
-
-The ideal expectation value is classically computable because this example
-has only three qubits.
+Check that the compiled circuit has the expected basis. The inverse
+$\sqrt{X}$ gate is also Clifford, so it is allowed.
 
 ```{code-cell} ipython3
-observable = Observable(
-    PauliString("ZZI"),
-    PauliString("IXX", coeff=0.5),
-)
-print(observable)
+def is_cdr_basis_operation(op: cirq.Operation) -> bool:
+    gate = op.gate
+    return (
+        isinstance(gate, cirq.ZPowGate)
+        or (
+            isinstance(gate, cirq.XPowGate)
+            and np.isclose(abs(float(gate.exponent)), 0.5)
+        )
+        or isinstance(gate, cirq.CNotPowGate)
+    )
+
+
+print(all(is_cdr_basis_operation(op) for op in circuit.all_operations()))
+```
+
+The compilation preserves the ideal expectation value up to numerical
+precision.
+
+```{code-cell} ipython3
+def ideal_executor(circuit: cirq.Circuit) -> np.ndarray:
+    """Return the noiseless final density matrix."""
+    return compute_density_matrix(circuit, noise_level=(0.0,))
+
+
+uncompiled_value = observable.expectation(problem_circuit, ideal_executor).real
+compiled_value = observable.expectation(circuit, ideal_executor).real
+
+print(f"Uncompiled ideal value: {uncompiled_value:.6f}")
+print(f"Compiled ideal value:   {compiled_value:.6f}")
+print(f"Absolute difference:    {abs(uncompiled_value - compiled_value):.2e}")
 ```
 
 ## Define ideal and noisy executors
@@ -94,21 +185,8 @@ compute the observable's expectation value. Here both executors return a
 density matrix. The noisy executor adds single-qubit depolarizing noise after
 each circuit moment, while the ideal executor has no noise.
 
-The ideal executor serves two purposes:
-
-1. It gives us a reference value for this small target circuit.
-2. CDR uses it to label the near-Clifford training circuits.
-
-For a larger problem, the second role could instead be handled by a dedicated
-near-Clifford simulator.
-
 ```{code-cell} ipython3
-noise_level = 0.03
-
-
-def ideal_executor(circuit: cirq.Circuit) -> np.ndarray:
-    """Return the noiseless final density matrix."""
-    return compute_density_matrix(circuit, noise_level=(0.0,))
+noise_level = 0.018
 
 
 def noisy_executor(circuit: cirq.Circuit) -> np.ndarray:
@@ -131,7 +209,7 @@ print(f"Noisy expectation value: {noisy_value:.3f}")
 
 The four essential arguments to {func}`.cdr.execute_with_cdr` are:
 
-- `circuit`: the target circuit whose expectation value we want.
+- `circuit`: the compiled target circuit whose expectation value we want.
 - `executor`: the noisy device or simulator.
 - `observable`: the Hermitian operator to measure.
 - `simulator`: a noiseless simulator for the near-Clifford training circuits.
@@ -147,8 +225,8 @@ cdr_value = cdr.execute_with_cdr(
     noisy_executor,
     observable=observable,
     simulator=ideal_executor,
-    num_training_circuits=20,
-    fraction_non_clifford=0.1,
+    num_training_circuits=24,
+    fraction_non_clifford=0.12,
     random_state=0,
 ).real
 
@@ -157,9 +235,8 @@ print(f"CDR-mitigated expectation value: {cdr_value:.3f}")
 
 ## Compare the results
 
-The mitigated value is much closer to the ideal value than the raw noisy
-result. The plot makes the correction visible, and the error comparison
-quantifies the improvement.
+The plot and error comparison show how the CDR correction changes the raw
+noisy estimate after the circuit has been compiled to a compatible basis.
 
 ```{code-cell} ipython3
 noisy_error = abs(noisy_value - ideal_value)
@@ -179,8 +256,8 @@ fig, ax = plt.subplots(figsize=(7, 4))
 ax.bar(labels, values, color=colors)
 ax.axhline(ideal_value, color="#4C72B0", linestyle="--", alpha=0.7)
 ax.set_ylabel("Expectation value")
-ax.set_title("CDR recovers the ideal expectation value")
-ax.set_ylim(0, 1)
+ax.set_title("CDR after compiling to a compatible gate set")
+ax.set_ylim(min(values) - 0.1, max(values) + 0.1)
 plt.show()
 ```
 
