@@ -41,7 +41,7 @@ def pec_representations(circuit: cirq.Circuit, noise_level: float):
 
 
 def run_qermit_placeholder(ideal: float, noisy: float) -> BenchmarkResult:
-    """Records whether Qermit PEC is importable in this environment."""
+    """Records why Qermit learning-based PEC is not run locally."""
 
     try:
         from qermit.probabilistic_error_cancellation import (  # noqa: F401
@@ -67,7 +67,7 @@ def run_qermit_placeholder(ideal: float, noisy: float) -> BenchmarkResult:
         improvement=None,
         runtime=0.0,
         executions=0,
-        notes="requires paired device/simulator backends",
+        notes="learning PEC needs paired noisy/ideal backends",
     )
 
 
