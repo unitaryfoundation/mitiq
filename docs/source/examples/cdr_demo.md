@@ -96,54 +96,13 @@ print(observable)
 ## Compile to a CDR-compatible gate set
 
 The circuit of interest must be compiled so that all non-Clifford gates are
-$R_Z$ rotations. For this example, the only unsupported gates in the original
-circuit are $R_Y$ rotations. In circuit order, we transpile each one as
-$\sqrt{X}$, then $R_Z(\theta)$, then $\sqrt{X}^{\dagger}$. Equivalently,
-as a matrix product,
+$R_Z$ rotations. Instead of manually rewriting individual gates, we use the
+general `cirq.decompose` utility and tell it which operations should be kept
+in the compiled circuit.
 
-$$
-R_Y(\theta) = \sqrt{X}^{\dagger}\, R_Z(\theta)\, \sqrt{X},
-$$
-
-up to a global phase. The resulting circuit uses only $R_Z$, $\sqrt{X}$, and
-CNOT gates, which is one of the standard CDR-compatible bases.
-
-```{code-cell} ipython3
-def ry_to_cdr_basis(theta: float, qubit: cirq.Qid) -> list[cirq.Operation]:
-    """Decompose RY(theta) into sqrt(X), RZ(theta), and sqrt(X)^-1."""
-    return [
-        cirq.X(qubit) ** 0.5,
-        cirq.rz(theta)(qubit),
-        cirq.X(qubit) ** -0.5,
-    ]
-
-
-def compile_operation(op: cirq.Operation) -> list[cirq.Operation]:
-    """Compile the gates used in this example to the CDR basis."""
-    gate = op.gate
-
-    if isinstance(gate, cirq.YPowGate):
-        theta = float(gate.exponent) * np.pi
-        return ry_to_cdr_basis(theta, op.qubits[0])
-    if isinstance(gate, cirq.ZPowGate):
-        return [op]
-    if isinstance(gate, cirq.CNotPowGate) and np.isclose(gate.exponent, 1.0):
-        return [op]
-
-    raise ValueError(f"Unsupported operation for this example: {op!r}")
-
-
-circuit = cirq.Circuit(
-    compiled_op
-    for op in problem_circuit.all_operations()
-    for compiled_op in compile_operation(op)
-)
-
-print(circuit)
-```
-
-Check that the compiled circuit has the expected basis. The inverse
-$\sqrt{X}$ gate is also Clifford, so it is allowed.
+The predicate below keeps $R_Z$, $\sqrt{X}$, and CNOT operations. Cirq then
+decomposes the unsupported $R_Y$ rotations from the original circuit into
+that CDR-compatible basis.
 
 ```{code-cell} ipython3
 def is_cdr_basis_operation(op: cirq.Operation) -> bool:
@@ -154,10 +113,30 @@ def is_cdr_basis_operation(op: cirq.Operation) -> bool:
             isinstance(gate, cirq.XPowGate)
             and np.isclose(abs(float(gate.exponent)), 0.5)
         )
-        or isinstance(gate, cirq.CNotPowGate)
+        or (
+            isinstance(gate, cirq.CNotPowGate)
+            and np.isclose(float(gate.exponent), 1.0)
+        )
     )
 
 
+circuit = cirq.Circuit(
+    cirq.decompose(
+        problem_circuit,
+        keep=is_cdr_basis_operation,
+        on_stuck_raise=lambda op: ValueError(
+            f"Could not compile {op!r} to the CDR basis."
+        ),
+    )
+)
+
+print(circuit)
+```
+
+Check that the compiled circuit has the expected basis. The inverse
+$\sqrt{X}$ gate is also Clifford, so it is allowed.
+
+```{code-cell} ipython3
 print(all(is_cdr_basis_operation(op) for op in circuit.all_operations()))
 ```
 
