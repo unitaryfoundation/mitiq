@@ -14,7 +14,7 @@ kernelspec:
 ```{tags} rem, pennylane, basic
 ```
 
-# Error mitigation with PennyLane: Readout Error Mitigation (REM)
+# Use readout error mitigation with PennyLane.
 
 Mitiq already has a PennyLane tutorial demonstrating [zero-noise extrapolation (ZNE)](pennylane-ibmq-backends.md) via `pennylane.mitigate_with_zne`.
 This example complements it by showing how to use [readout error mitigation (REM)](../guide/rem.md) with a circuit defined in PennyLane.
