@@ -27,7 +27,7 @@ In this tutorial we:
 1. Define a simple PennyLane circuit.
 2. Convert it to a Mitiq circuit with {func}`mitiq.interface.mitiq_pennylane.from_pennylane`.
 3. Simulate readout noise with a custom [executor](../guide/executors.md).
-4. Apply REM and compare ideal, noisy, and mitigated $\langle Z \rangle$ values.
+4. Apply REM and compare ideal, noisy, and mitigated measurement distributions.
 
 ## Setup
 
@@ -41,15 +41,12 @@ from cirq.experiments.single_qubit_readout_calibration_test import (
 
 from mitiq import MeasurementResult, rem
 from mitiq.interface.mitiq_pennylane import from_pennylane
-from mitiq.observable.observable import Observable
-from mitiq.observable.pauli import PauliString
-from mitiq.raw import execute as raw_execute
 ```
 
 ## Define a PennyLane circuit
 
 We use the same single-qubit circuit as in the PennyLane + ZNE tutorial: ten Pauli $X$ gates on one wire.
-The noiseless expectation value of $Z$ **should evaluate to one**, matching the ZNE example linked above.
+The circuit is the identity in the noiseless setting, so measuring in the computational basis should always return `0`.
 
 ```{code-cell} ipython3
 def pennylane_circuit():
@@ -59,7 +56,10 @@ def pennylane_circuit():
 
 tape = qml.tape.make_qscript(pennylane_circuit)()
 circuit = from_pennylane(tape)
-observable = Observable(PauliString("Z"))
+qubits = sorted(circuit.all_qubits())
+
+measured_circuit = circuit.copy()
+measured_circuit.append(cirq.measure(*qubits, key="result"))
 
 print(circuit)
 ```
@@ -67,7 +67,7 @@ print(circuit)
 ## Noisy readout executor
 
 REM requires an executor that returns raw measurement results as a {class}`mitiq.MeasurementResult`.
-When using an {class}`mitiq.Observable`, Mitiq automatically appends the correct measurement operations before calling the executor.
+Here we explicitly measure the circuit so that we can compare full probability distributions.
 
 We model independent single-qubit readout errors with Cirq's `NoisySingleQubitReadoutSampler`.
 The executor factory below keeps the `-> MeasurementResult` return annotation, which Mitiq uses to route results correctly.
@@ -94,29 +94,32 @@ noisy_executor = make_readout_executor(p0=P0, p1=P1)
 
 ## Compare ideal, noisy, and REM-mitigated results
 
-We first evaluate the ideal and noisy expectation values, then apply REM using an inverse confusion matrix generated with {func}`mitiq.rem.generate_inverse_confusion_matrix`.
+We first evaluate the ideal and noisy measurement distributions, then apply REM using an inverse confusion matrix generated with {func}`mitiq.rem.generate_inverse_confusion_matrix`.
 
 ```{code-cell} ipython3
-ideal = raw_execute(circuit, ideal_executor, observable)
-noisy = raw_execute(circuit, noisy_executor, observable)
+ideal_result = ideal_executor(measured_circuit)
+noisy_result = noisy_executor(measured_circuit)
 
 inverse_confusion_matrix = rem.generate_inverse_confusion_matrix(
     1, p0=P0, p1=P1
 )
-mitigated = rem.execute_with_rem(
-    circuit,
+mitigated_executor = rem.mitigate_executor(
     noisy_executor,
-    observable,
     inverse_confusion_matrix=inverse_confusion_matrix,
 )
+mitigated_result = mitigated_executor(measured_circuit)
 
-print(f"Ideal <Z>:      {ideal.real:.5f}")
-print(f"Noisy <Z>:      {noisy.real:.5f}")
-print(f"REM <Z>:        {mitigated.real:.5f}")
-print(f"Error (noisy):  {abs((ideal - noisy) / ideal).real:.3f}")
-print(f"Error (REM):    {abs((ideal - mitigated) / ideal).real:.3f}")
+
+def display_distribution(result: MeasurementResult) -> dict[str, float]:
+    distribution = result.prob_distribution()
+    return {state: round(distribution.get(state, 0.0), 3) for state in ("0", "1")}
+
+
+print("Ideal distribution:     ", display_distribution(ideal_result))
+print("Noisy distribution:     ", display_distribution(noisy_result))
+print("REM distribution:       ", display_distribution(mitigated_result))
 ```
 
-REM recovers the ideal expectation value in this example because the simulated readout noise matches the confusion model used to build the inverse matrix.
+REM recovers the ideal distribution in this example because the simulated readout noise matches the confusion model used to build the inverse matrix.
 
 More options for generating and applying confusion matrices are described in the [REM user guide](../guide/rem.md).
