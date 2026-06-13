@@ -147,7 +147,7 @@ simulator a natural choice for generating the reference values required during
 training. Rather than using a general-purpose statevector or density-matrix
 simulator for every training circuit, we can exploit the fact that these circuits
 live in a regime where specialized algorithms are particularly effective. Clifft
-is a simulator designed for exactly this setting.
+is a simulator designed for exactly this setting {cite}`Chase_2026_Clifft`.
 
 To use Clifft, we first translate the transpiled Cirq circuit into Clifft's
 text-based circuit format. Since our native gate set consists only of `rz`, `sx`,
