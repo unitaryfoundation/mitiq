@@ -476,6 +476,21 @@ wheels = [
 ]
 
 [[package]]
+name = "clifft"
+version = "0.4.1"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "numpy", marker = "python_full_version >= '3.12'" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/5e/c9/4f38b2d3037a1387d5260159404c86ddb8c69fbffa88ee3c1ffa562352d4/clifft-0.4.1.tar.gz", hash = "sha256:518c9d961a8e0caf4ff2eb90bdff30ece2fa4a982764d1b2e0a462d4f77319ef", size = 1704196, upload-time = "2026-05-19T15:34:05Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/3e/ed/3d226ad392787446733fb3be1609792bb95f4a7514de82128a30f8955812/clifft-0.4.1-cp312-abi3-macosx_14_0_arm64.whl", hash = "sha256:6e86c19832dc841a054a56575d1db78d3daa0128a472d5ec4ae7aefb015a7b02", size = 667412, upload-time = "2026-05-19T15:33:57.55Z" },
+    { url = "https://files.pythonhosted.org/packages/ed/d7/79d609676f70884f348ea645a5a036594b637f80fb786137eda472f12bd0/clifft-0.4.1-cp312-abi3-manylinux_2_28_aarch64.whl", hash = "sha256:10f6871fe35a79ab45d0581cdd82c09750de1df1e7e2bace4e5c8c6b18857502", size = 610385, upload-time = "2026-05-19T15:33:59.428Z" },
+    { url = "https://files.pythonhosted.org/packages/e9/71/8c7349677d22bb835ce51db75e8e1dbf54096ec070d6bd4dd04e6460a358/clifft-0.4.1-cp312-abi3-manylinux_2_28_x86_64.whl", hash = "sha256:0633ecef5c40df717fe6028b549ca5fdc290e3ba61ca570fe59d8ad13f896391", size = 737740, upload-time = "2026-05-19T15:34:01.498Z" },
+    { url = "https://files.pythonhosted.org/packages/63/da/8437613294bb78ed215ec3a4e2fe88ca104cd571ed62738543b9cc51c9e6/clifft-0.4.1-cp312-abi3-win_amd64.whl", hash = "sha256:cf85ef0ba9ee2dbfa9e63b629ee7c1759967dd51f163d8792d5dbe62af6ce3cc", size = 371264, upload-time = "2026-05-19T15:34:03.49Z" },
+]
+
+[[package]]
 name = "cloudpickle"
 version = "2.2.1"
 source = { registry = "https://pypi.org/simple" }
@@ -1670,6 +1685,7 @@ dev = [
 ]
 docs = [
     { name = "bqskit" },
+    { name = "clifft", marker = "python_full_version >= '3.12'" },
     { name = "jupytext" },
     { name = "myst-nb" },
     { name = "myst-parser" },
@@ -1728,6 +1744,7 @@ dev = [
 ]
 docs = [
     { name = "bqskit", specifier = "==1.2.1" },
+    { name = "clifft", marker = "python_full_version == '3.12.*'", specifier = "==0.4.1" },
     { name = "jupytext", specifier = "==1.18.1" },
     { name = "myst-nb", specifier = "==1.3.0" },
     { name = "myst-parser", specifier = "==5.0.0" },
