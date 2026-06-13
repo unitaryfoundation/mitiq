@@ -25,9 +25,10 @@ simulation.
 
 CDR requires the non-Clifford content of the circuit to be contained in
 single-qubit $R_Z$ rotations. This example makes that compilation step
-explicit by translating the $R_Y$ rotations in the original circuit into the
-$\{R_Z, \sqrt{X}, \mathrm{CNOT}\}$ basis before calling
-{func}`.cdr.execute_with_cdr`.
+explicit by translating the unsupported operations in the original circuit
+into Clifford operations and $R_Z$ rotations before calling
+{func}`.cdr.execute_with_cdr`. If a hardware target requires a smaller native
+gate set, that restriction can be applied as a later compilation step.
 
 ## Setup
 
@@ -100,32 +101,22 @@ $R_Z$ rotations. Instead of manually rewriting individual gates, we use the
 general `cirq.decompose` utility and tell it which operations should be kept
 in the compiled circuit.
 
-The predicate below keeps $R_Z$, $\sqrt{X}$, and CNOT operations. Cirq then
-decomposes the unsupported $R_Y$ rotations from the original circuit into
-that CDR-compatible basis.
+The predicate below keeps arbitrary $R_Z$ rotations and any operation that
+Cirq recognizes as Clifford. Cirq then decomposes the unsupported $R_Y$
+rotations from the original circuit into that CDR-compatible basis.
 
 ```{code-cell} ipython3
-def is_cdr_basis_operation(op: cirq.Operation) -> bool:
+def is_clifford_or_rz_operation(op: cirq.Operation) -> bool:
     gate = op.gate
-    return (
-        isinstance(gate, cirq.ZPowGate)
-        or (
-            isinstance(gate, cirq.XPowGate)
-            and np.isclose(abs(float(gate.exponent)), 0.5)
-        )
-        or (
-            isinstance(gate, cirq.CNotPowGate)
-            and np.isclose(float(gate.exponent), 1.0)
-        )
-    )
+    return isinstance(gate, cirq.ZPowGate) or cirq.has_stabilizer_effect(op)
 
 
 circuit = cirq.Circuit(
     cirq.decompose(
         problem_circuit,
-        keep=is_cdr_basis_operation,
+        keep=is_clifford_or_rz_operation,
         on_stuck_raise=lambda op: ValueError(
-            f"Could not compile {op!r} to the CDR basis."
+            f"Could not compile {op!r} to Clifford + Rz operations."
         ),
     )
 )
@@ -133,11 +124,11 @@ circuit = cirq.Circuit(
 print(circuit)
 ```
 
-Check that the compiled circuit has the expected basis. The inverse
-$\sqrt{X}$ gate is also Clifford, so it is allowed.
+Check that the compiled circuit has the expected Clifford + $R_Z$ structure.
+The inverse $\sqrt{X}$ gate is also Clifford, so it is allowed.
 
 ```{code-cell} ipython3
-print(all(is_cdr_basis_operation(op) for op in circuit.all_operations()))
+print(all(is_clifford_or_rz_operation(op) for op in circuit.all_operations()))
 ```
 
 The compilation preserves the ideal expectation value up to numerical
@@ -162,7 +153,9 @@ print(f"Absolute difference:    {abs(uncompiled_value - compiled_value):.2e}")
 An executor accepts a circuit and returns a result from which Mitiq can
 compute the observable's expectation value. Here both executors return a
 density matrix. The noisy executor adds single-qubit depolarizing noise after
-each circuit moment, while the ideal executor has no noise.
+each circuit moment, while the ideal executor has no noise. Because
+{func}`.compute_density_matrix` uses Cirq's local density-matrix simulator,
+this example does not need any additional hardware-native gate restriction.
 
 ```{code-cell} ipython3
 noise_level = 0.018
