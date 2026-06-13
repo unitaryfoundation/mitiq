@@ -12,7 +12,7 @@ kernelspec:
   name: python3
 ---
 
-```{tags} cdr, clifft, qiskit, cirq, intermediate
+```{tags} cdr, clifft, cirq, intermediate
 ```
 
 # Clifford data regression with the Clifft near-Clifford simulator
@@ -20,9 +20,8 @@ kernelspec:
 Clifford data regression (CDR) is an error mitigation technique that learns a
 correction from noisy circuit outputs to their ideal values by training on
 classically simulable near-Clifford circuits. In this tutorial, we run CDR
-end-to-end on a hardware-native variational circuit, using the Clifft
-near-Clifford simulator to provide the ideal training data needed for the
-regression.
+end-to-end on a layered variational circuit, using the Clifft near-Clifford
+simulator to provide the ideal training data needed for the regression.
 
 CDR occupies a different niche from other error mitigation methods. Zero-noise
 extrapolation (ZNE) estimates the zero-noise answer by executing the same circuit
@@ -38,68 +37,64 @@ natural fit for generating the reference data that CDR requires.
 
 ## Setup
 
-In addition to Mitiq and Cirq, this tutorial uses Qiskit (to build and transpile
-a hardware-native circuit) and Clifft (to simulate the near-Clifford training
-circuits used by CDR).
+In addition to Mitiq and Cirq, this tutorial uses Clifft to simulate the
+near-Clifford training circuits used by CDR.
 
 ```{code-cell}
 import cirq
 import clifft
 import matplotlib.pyplot as plt
 import numpy as np
-from qiskit import QuantumCircuit, transpile
 
 from mitiq import Observable, PauliString, cdr
-from mitiq.interface import convert_to_mitiq
 from mitiq.interface.mitiq_cirq import compute_density_matrix
 from mitiq.zne.scaling import fold_global
 
 N_QUBITS = 4
-N_LAYERS = 6
+N_LAYERS = 4
 NOISE = 0.02
 ```
 
 ## The circuit we want to run
 
-Our target circuit is a hardware-efficient ansatz consisting of alternating
-layers of single-qubit $R_y(\theta)$ rotations and a nearest-neighbor CNOT
-ladder. We use $R_y$ rotations because they directly affect measurements of
-$Z$-type observables: rotating a qubit around the $y$-axis changes its projection
-onto the $z$-axis, making observables such as $\langle Z_0 Z_3 \rangle$ sensitive
-to the variational parameters. The CNOT ladder then spreads those local rotations
-into multi-qubit correlations across the device.
+Our target circuit is a hardware-efficient ansatz: alternating layers of
+single-qubit rotations and a nearest-neighbor CNOT ladder. We build each rotation
+as $H \cdot R_z(\theta) \cdot H$, which rotates the qubit so that measurements of
+$Z$-type observables such as $\langle Z_0 Z_3 \rangle$ depend on the variational
+angle $\theta$. The CNOT ladder then spreads those local rotations into
+multi-qubit correlations across the register.
 
-To connect this abstract circuit to real hardware, we transpile it into IBM's
-native gate set `{rz, sx, cx}`. This decomposition exposes an important
-structural feature: after transpilation, the arbitrary $R_y$ rotations have been
-rewritten into sequences of `rz` and `sx` gates, while entanglement remains in
-the `cx` gates. Since `sx` (the $\sqrt{X}$ gate) and `cx` are Clifford
-operations, the only generic non-Clifford content left in the circuit resides in
-the continuous `rz` rotation angles. That separation is the key idea behind this
-tutorial: it is what allows CDR to generate near-Clifford training circuits by
-modifying a small number of non-Clifford rotations, and it is precisely the
-regime where a near-Clifford simulator such as Clifft can provide a substantial
-advantage over general-purpose simulation methods.
+CDR requires the circuit to be compiled into a gateset whose only non-Clifford
+gates are single-qubit $R_z$ rotations (see the [CDR guide](../guide/cdr.md)). We
+build the ansatz directly in such a gateset: the Hadamards and CNOTs are Clifford,
+so the only non-Clifford content lives in the continuous `rz` rotation angles.
+That separation is the key idea behind this tutorial — it is what lets CDR
+generate near-Clifford training circuits by adjusting a small number of
+non-Clifford rotations, and it is precisely the regime where a near-Clifford
+simulator such as Clifft provides an advantage over general-purpose simulation.
 
 ```{code-cell}
-def build_ansatz(n_qubits, n_layers, angles):
-    qc = QuantumCircuit(n_qubits)
+def build_ansatz(qubits, n_layers, angles):
+    circuit = cirq.Circuit()
     for layer in range(n_layers):
-        for q in range(n_qubits):
-            qc.ry(angles[layer][q], q)
-        for q in range(n_qubits - 1):
-            qc.cx(q, q + 1)
-    return qc
+        for i, q in enumerate(qubits):
+            circuit.append([cirq.H(q), cirq.rz(angles[layer][i]).on(q), cirq.H(q)])
+        for i in range(len(qubits) - 1):
+            circuit.append(cirq.CNOT(qubits[i], qubits[i + 1]))
+    return circuit
 
 
+qubits = cirq.LineQubit.range(N_QUBITS)
 rng = np.random.default_rng(42)
 angles = rng.uniform(-np.pi / 2, np.pi / 2, size=(N_LAYERS, N_QUBITS))
-qc = build_ansatz(N_QUBITS, N_LAYERS, angles)
-native = transpile(qc, basis_gates=["rz", "sx", "cx"], optimization_level=1)
-cirq_circuit = convert_to_mitiq(native)[0]
+cirq_circuit = build_ansatz(qubits, N_LAYERS, angles)
 
-print("logical gate counts:", dict(qc.count_ops()))
-print("native gate counts: ", dict(native.count_ops()))
+n_total = len(list(cirq_circuit.all_operations()))
+n_rz = sum(
+    1 for op in cirq_circuit.all_operations() if isinstance(op.gate, cirq.ZPowGate)
+)
+print(f"{n_total} gates total; {n_rz} are non-Clifford Rz rotations")
+print("(the H and CNOT gates are Clifford)")
 ```
 
 ## The observable, and the problem that noise causes
@@ -115,9 +110,9 @@ using two executors: a noisy executor with depolarizing noise and an ideal
 executor with noise disabled. Both return density matrices (hence the
 `-> np.ndarray` type hints), allowing Mitiq to compute expectation values
 directly. The output below shows the effect of noise clearly: the ideal
-correlation is substantially suppressed, with the noisy value retaining only a
-small fraction of the original signal. Recovering that lost correlation is
-exactly the task that CDR will take on in the next section.
+correlation is substantially suppressed, with the noisy value retaining only part
+of the original signal. Recovering that lost correlation is exactly the task that
+CDR will take on in the next section.
 
 ```{code-cell}
 obs = Observable(PauliString("ZIIZ"))
@@ -149,11 +144,11 @@ simulator for every training circuit, we can exploit the fact that these circuit
 live in a regime where specialized algorithms are particularly effective. Clifft
 is a simulator designed for exactly this setting {cite}`Chase_2026_Clifft`.
 
-To use Clifft, we first translate the transpiled Cirq circuit into Clifft's
-text-based circuit format. Since our native gate set consists only of `rz`, `sx`,
-and `cx`, the conversion is straightforward. Two implementation details are worth
-noting. First, Clifft expresses $R_Z$ rotations in half-turn units rather than
-radians; fortunately, Cirq already stores this quantity as `gate.exponent` for
+To use Clifft, we first translate the Cirq circuit into Clifft's text-based
+circuit format. Since our gateset consists only of `H`, `Rz`, and `CNOT`, the
+conversion is straightforward. Two implementation details are worth noting.
+First, Clifft expresses $R_Z$ rotations in half-turn units rather than radians;
+fortunately, Cirq already stores this quantity as `gate.exponent` for
 `ZPowGate`s. Second, Clifft and Cirq use opposite qubit-ordering conventions when
 constructing statevectors, so after simulation we reverse the tensor axes to
 match Cirq's ordering. These are purely representational differences—the
@@ -170,10 +165,10 @@ def to_clifft_text(circuit, qubits):
     lines = []
     for op in circuit.all_operations():
         g, qs = op.gate, op.qubits
-        if isinstance(g, cirq.ZPowGate):
+        if isinstance(g, cirq.HPowGate) and abs(g.exponent - 1) < 1e-9:
+            lines.append(f"H {idx[qs[0]]}")
+        elif isinstance(g, cirq.ZPowGate):
             lines.append(f"R_Z({g.exponent}) {idx[qs[0]]}")
-        elif isinstance(g, cirq.XPowGate) and abs(g.exponent - 0.5) < 1e-9:
-            lines.append(f"SQRT_X {idx[qs[0]]}")
         elif g == cirq.CNOT:
             lines.append(f"CX {idx[qs[0]]} {idx[qs[1]]}")
         else:
@@ -227,10 +222,10 @@ relying on a full density-matrix simulation to provide ideal training data, we
 use Clifft, which is specialized for the near-Clifford circuits generated during
 CDR's training phase. The output shows the learned correction in action: the
 mitigated estimate moves substantially closer to the ideal value, reducing the
-error by roughly an order of magnitude. The exact numbers will vary slightly with
-circuit parameters, but the qualitative result is the same—the noisy observable
-is systematically biased, and CDR learns a correction from classically simulable
-cousins of the target circuit.
+error by several times. The exact numbers will vary with circuit parameters, but
+the qualitative result is the same—the noisy observable is systematically biased,
+and CDR learns a correction from classically simulable cousins of the target
+circuit.
 
 ```{code-cell}
 mitigated = cdr.execute_with_cdr(
@@ -301,6 +296,14 @@ plt.legend()
 plt.show()
 ```
 
+CDR assumes the relationship between noisy and ideal expectation values is simple
+enough for the regression to capture — here, a linear fit. That assumption holds
+well in the regime used above, but it is not guaranteed. For deeper circuits,
+strong noise can compress the noisy values into a narrow range, making the linear
+fit steep enough to *overshoot* the true value even when the target lies inside
+the training data. Choosing a circuit and noise range where the linear
+approximation is valid is part of applying CDR well.
+
 ## Variable-noise CDR (vnCDR)
 
 Variable-noise CDR (vnCDR) {cite}`Lowe_2021_PRR` extends the basic idea by
@@ -339,13 +342,13 @@ print(f"vnCDR error:     {abs(vncdr - ideal_val):.4f}")
 
 ## Conclusion
 
-In this tutorial, we ran Clifford data regression end-to-end on a hardware-native
+In this tutorial, we ran Clifford data regression end-to-end on a layered
 variational circuit and used Clifft as the simulator responsible for evaluating
-the near-Clifford training circuits. After transpilation exposed the circuit's
-non-Clifford content as a collection of continuous `rz` rotations, CDR learned a
-correction from noisy expectation values to ideal ones and substantially reduced
-the observable error. We then examined how that correction behaves as noise
-increases and compared standard CDR with its variable-noise extension.
+the near-Clifford training circuits. Because we built the circuit so that its
+only non-Clifford gates are `rz` rotations, CDR could learn a correction from
+noisy expectation values to ideal ones and substantially reduce the observable
+error. We then examined how that correction behaves as noise increases and
+compared standard CDR with its variable-noise extension.
 
 There are several natural directions to explore from here. Increasing the circuit
 depth or qubit count makes the near-Clifford structure increasingly important and
