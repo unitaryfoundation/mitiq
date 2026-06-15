@@ -6,9 +6,14 @@
 from collections import Counter
 
 import cirq
+import numpy as np
 import pytest
 
-from mitiq.experimental.deb.symmetrization import construct_circuits
+from mitiq.experimental.deb.symmetrization import (
+    _construct_variants,
+    _permute,
+    construct_circuits,
+)
 
 qubits = cirq.LineQubit.range(3)
 base_circuit = cirq.Circuit(
@@ -51,6 +56,19 @@ def test_variants_relabel_the_same_qubits_and_gates():
 def test_permutation_actually_changes_some_variants():
     variants = construct_circuits(base_circuit, 10, random_state=4)
     assert any(variant != base_circuit for variant in variants)
+
+
+def test_variants_are_unitarily_equivalent():
+    # Each variant is a relabeling of the circuit, so undoing its permutation
+    # recovers the original unitary exactly.
+    sorted_qubits = sorted(base_circuit.all_qubits())
+    base_unitary = cirq.unitary(base_circuit)
+    for variant, permutation in _construct_variants(base_circuit, 8, 1):
+        inverse = [0] * len(permutation)
+        for i, target in enumerate(permutation):
+            inverse[target] = i
+        restored = _permute(variant, sorted_qubits, inverse)
+        assert np.allclose(cirq.unitary(restored), base_unitary)
 
 
 def test_single_qubit_circuit_has_only_the_identity_permutation():

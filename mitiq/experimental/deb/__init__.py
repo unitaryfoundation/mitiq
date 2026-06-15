@@ -6,6 +6,7 @@
 from mitiq.experimental.deb.symmetrization import construct_circuits
 from mitiq.experimental.deb.sharpening import sharpen
 from mitiq.experimental.deb.deb import (
+    combine_results,
     execute_with_debiasing,
     execute_with_debiasing_and_sharpening,
 )

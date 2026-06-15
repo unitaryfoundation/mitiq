@@ -15,19 +15,18 @@ physical qubits, so qubit-dependent biases are averaged out when the results
 are combined. See :cite:`Maksymov_2023_arxiv`.
 """
 
-import random
-
 import cirq
+import numpy as np
 
 
 def _random_generator(
-    random_state: int | random.Random | None,
-) -> random.Random:
-    """Return a ``random.Random`` from a seed, an existing generator, or
+    random_state: int | np.random.Generator | None,
+) -> np.random.Generator:
+    """Return a ``numpy`` generator from a seed, an existing generator, or
     ``None``."""
-    if isinstance(random_state, random.Random):
+    if isinstance(random_state, np.random.Generator):
         return random_state
-    return random.Random(random_state)
+    return np.random.default_rng(random_state)
 
 
 def _permute(
@@ -44,7 +43,7 @@ def _permute(
 def _construct_variants(
     circuit: cirq.Circuit,
     num_variants: int,
-    random_state: int | random.Random | None,
+    random_state: int | np.random.Generator | None,
 ) -> list[tuple[cirq.Circuit, list[int]]]:
     """Return ``(variant, permutation)`` pairs for debiasing.
 
@@ -60,8 +59,7 @@ def _construct_variants(
 
     variants = []
     for _ in range(num_variants):
-        permutation = list(range(len(qubits)))
-        rng.shuffle(permutation)
+        permutation = [int(i) for i in rng.permutation(len(qubits))]
         variants.append((_permute(circuit, qubits, permutation), permutation))
 
     return variants
@@ -71,7 +69,7 @@ def construct_circuits(
     circuit: cirq.Circuit,
     num_variants: int = 10,
     *,
-    random_state: int | random.Random | None = None,
+    random_state: int | np.random.Generator | None = None,
 ) -> list[cirq.Circuit]:
     r"""Return permuted variants of ``circuit`` for debiasing.
 
@@ -84,7 +82,7 @@ def construct_circuits(
     Args:
         circuit: The circuit to permute.
         num_variants: Number of permuted variants to generate.
-        random_state: Seed or ``random.Random`` instance for reproducible
+        random_state: Seed or ``numpy.random.Generator`` for reproducible
             sampling of the permutations.
 
     Returns:

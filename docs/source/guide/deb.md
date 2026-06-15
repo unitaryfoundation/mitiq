@@ -29,7 +29,6 @@ the executor returns a {class}`.MeasurementResult` rather than a float.
 
 ```python
 import cirq
-import numpy as np
 
 from mitiq import MeasurementResult
 from mitiq.experimental.deb import execute_with_debiasing
@@ -47,9 +46,9 @@ def executor(circuit: cirq.Circuit) -> MeasurementResult:
 
 
 distribution = execute_with_debiasing(circuit, executor, num_variants=10)
-print(np.round(distribution, 3))
+print({bits: round(prob, 3) for bits, prob in distribution.items()})
 ```
 
-The returned array is the averaged probability over the computational basis. To
-apply the sharpening step instead, use
+The returned dictionary maps each measured bitstring to its averaged
+probability. To apply the sharpening step instead, use
 {func}`.execute_with_debiasing_and_sharpening` with the same signature.

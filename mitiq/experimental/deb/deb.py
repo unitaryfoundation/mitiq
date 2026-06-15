@@ -9,17 +9,14 @@ Debiasing (also called symmetrization) mitigates qubit-dependent errors by
 executing several variants of a circuit, each one relabeled onto a randomly
 permuted set of qubits, and combining their results. Each variant's
 permutation is undone on the measured bitstrings before they are combined.
-Averaging the unscrambled distributions reduces qubit-dependent bias; an
-optional sharpening step instead keeps the shot-wise majority outcome.
-See :cite:`Maksymov_2023_arxiv`.
+The combined result is obtained either by averaging the variant distributions
+or by a shot-wise plurality vote (sharpening). See :cite:`Maksymov_2023_arxiv`.
 """
 
-import random
-from collections.abc import Callable
+from collections.abc import Callable, Sequence
 
 import cirq
 import numpy as np
-import numpy.typing as npt
 
 from mitiq import MeasurementResult
 from mitiq.experimental.deb.sharpening import sharpen
@@ -29,7 +26,7 @@ Executor = Callable[[cirq.Circuit], MeasurementResult]
 
 
 def _unscramble(
-    result: MeasurementResult, permutation: list[int]
+    result: MeasurementResult, permutation: Sequence[int]
 ) -> MeasurementResult:
     """Undo a variant's qubit permutation on its measured bitstrings.
 
@@ -43,15 +40,56 @@ def _unscramble(
     return MeasurementResult(unscrambled)
 
 
-def _probability_vector(
-    result: MeasurementResult, num_qubits: int
-) -> npt.NDArray[np.float64]:
-    """Return the probability vector (length ``2 ** num_qubits``) of a
-    measurement result."""
-    vector = np.zeros(2**num_qubits)
-    for bitstring, probability in result.prob_distribution().items():
-        vector[int(bitstring, 2)] += probability
-    return vector
+def _average(distributions: Sequence[dict[str, float]]) -> dict[str, float]:
+    """Average a list of probability distributions over the same basis."""
+    total: dict[str, float] = {}
+    for distribution in distributions:
+        for bitstring, probability in distribution.items():
+            total[bitstring] = total.get(bitstring, 0.0) + probability
+    return {
+        bitstring: probability / len(distributions)
+        for bitstring, probability in total.items()
+    }
+
+
+def combine_results(
+    results: Sequence[MeasurementResult],
+    permutations: Sequence[Sequence[int]],
+    method: str = "averaging",
+) -> dict[str, float]:
+    """Combine the measurement results of debiasing variants.
+
+    Each result is first unscrambled with its variant's permutation. The
+    unscrambled results are then combined either by averaging their probability
+    distributions (``"averaging"``) or by a shot-wise plurality vote
+    (``"sharpening"``, see :func:`.sharpen`).
+
+    Args:
+        results: One ``MeasurementResult`` per variant, in the same order as
+            the variants returned by :func:`.construct_circuits`.
+        permutations: The permutation applied to each variant, in the same
+            order as ``results``.
+        method: Either ``"averaging"`` or ``"sharpening"``.
+
+    Returns:
+        The combined probability distribution over the computational basis.
+    """
+    unscrambled = [
+        _unscramble(result, permutation)
+        for result, permutation in zip(results, permutations)
+    ]
+
+    if method == "averaging":
+        return _average([result.prob_distribution() for result in unscrambled])
+    if method == "sharpening":
+        sharpened = sharpen(unscrambled)
+        if sharpened.shots == 0:
+            return {}
+        return sharpened.prob_distribution()
+
+    raise ValueError(
+        f"Unknown method {method!r}. Use 'averaging' or 'sharpening'."
+    )
 
 
 def execute_with_debiasing(
@@ -59,8 +97,8 @@ def execute_with_debiasing(
     executor: Executor,
     num_variants: int = 10,
     *,
-    random_state: int | random.Random | None = None,
-) -> npt.NDArray[np.float64]:
+    random_state: int | np.random.Generator | None = None,
+) -> dict[str, float]:
     """Return the debiased probability distribution of ``circuit``.
 
     The circuit is relabeled onto ``num_variants`` randomly permuted sets of
@@ -72,21 +110,15 @@ def execute_with_debiasing(
             measurements; the executor is responsible for measurement.
         executor: A function mapping a circuit to a ``MeasurementResult``.
         num_variants: Number of permuted variants to average over.
-        random_state: Seed or ``random.Random`` for reproducible sampling.
+        random_state: Seed or ``numpy.random.Generator`` for reproducibility.
 
     Returns:
-        The averaged probability vector over the computational basis.
+        The averaged probability distribution over the computational basis.
     """
-    num_qubits = len(circuit.all_qubits())
     variants = _construct_variants(circuit, num_variants, random_state)
-
-    distributions = [
-        _probability_vector(
-            _unscramble(executor(variant), permutation), num_qubits
-        )
-        for variant, permutation in variants
-    ]
-    return np.mean(distributions, axis=0)
+    results = [executor(variant) for variant, _ in variants]
+    permutations = [permutation for _, permutation in variants]
+    return combine_results(results, permutations, method="averaging")
 
 
 def execute_with_debiasing_and_sharpening(
@@ -94,8 +126,8 @@ def execute_with_debiasing_and_sharpening(
     executor: Executor,
     num_variants: int = 10,
     *,
-    random_state: int | random.Random | None = None,
-) -> npt.NDArray[np.float64]:
+    random_state: int | np.random.Generator | None = None,
+) -> dict[str, float]:
     """Return the debiased and sharpened probability distribution.
 
     Like :func:`execute_with_debiasing`, but the unscrambled variant results
@@ -108,16 +140,12 @@ def execute_with_debiasing_and_sharpening(
             measurements; the executor is responsible for measurement.
         executor: A function mapping a circuit to a ``MeasurementResult``.
         num_variants: Number of permuted variants to combine.
-        random_state: Seed or ``random.Random`` for reproducible sampling.
+        random_state: Seed or ``numpy.random.Generator`` for reproducibility.
 
     Returns:
-        The sharpened probability vector over the computational basis.
+        The sharpened probability distribution over the computational basis.
     """
-    num_qubits = len(circuit.all_qubits())
     variants = _construct_variants(circuit, num_variants, random_state)
-
-    results = [
-        _unscramble(executor(variant), permutation)
-        for variant, permutation in variants
-    ]
-    return _probability_vector(sharpen(results), num_qubits)
+    results = [executor(variant) for variant, _ in variants]
+    permutations = [permutation for _, permutation in variants]
+    return combine_results(results, permutations, method="sharpening")

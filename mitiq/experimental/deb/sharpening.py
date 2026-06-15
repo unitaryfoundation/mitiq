@@ -23,16 +23,17 @@ from mitiq import MeasurementResult
 def sharpen(results: Sequence[MeasurementResult]) -> MeasurementResult:
     """Combine per-variant measurement results by shot-wise plurality voting.
 
-    The variant results are expected to be aligned shot by shot and to share
-    the same number of shots and qubits. For each shot, the most common
-    bitstring across the variants is selected; ties are broken by the order in
-    which the bitstrings are first encountered.
+    The variant results are expected to be aligned shot by shot. When variants
+    have different shot counts the result is truncated to the smallest count.
+    For each shot the bitstring that occurs most often across the variants is
+    kept. A shot with no unique winner (a tie for the most common bitstring) is
+    discarded, so the sharpened result may contain fewer shots than the inputs.
 
     Args:
         results: One ``MeasurementResult`` per symmetrized variant.
 
     Returns:
-        A single ``MeasurementResult`` holding the sharpened shots.
+        A single ``MeasurementResult`` holding the surviving sharpened shots.
     """
     if not results:
         raise ValueError("sharpen requires at least one MeasurementResult.")
@@ -45,7 +46,9 @@ def sharpen(results: Sequence[MeasurementResult]) -> MeasurementResult:
             tuple(int(bit) for bit in result.result[shot])
             for result in results
         ]
-        winner = Counter(votes).most_common(1)[0][0]
-        sharpened.append(list(winner))
+        ranking = Counter(votes).most_common(2)
+        tie = len(ranking) > 1 and ranking[0][1] == ranking[1][1]
+        if not tie:
+            sharpened.append(list(ranking[0][0]))
 
     return MeasurementResult(sharpened)
