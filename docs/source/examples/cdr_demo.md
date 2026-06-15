@@ -41,12 +41,14 @@ In addition to Mitiq and Cirq, this tutorial uses Clifft to simulate the
 near-Clifford training circuits used by CDR.
 
 ```{code-cell}
+from functools import reduce
+
 import cirq
 import clifft
 import matplotlib.pyplot as plt
 import numpy as np
 
-from mitiq import Observable, PauliString, cdr
+from mitiq import cdr
 from mitiq.interface.mitiq_cirq import compute_density_matrix
 from mitiq.zne.scaling import fold_global
 
@@ -106,28 +108,35 @@ rotations and entangling gates, this quantity is sensitive to both the circuit
 parameters and the propagation of quantum correlations across the device.
 
 To illustrate the challenge that motivates CDR, we evaluate the same observable
-using two executors: a noisy executor with depolarizing noise and an ideal
-executor with noise disabled. Both return density matrices (hence the
-`-> np.ndarray` type hints), allowing Mitiq to compute expectation values
-directly. The output below shows the effect of noise clearly: the ideal
-correlation is substantially suppressed, with the noisy value retaining only part
-of the original signal. Recovering that lost correlation is exactly the task that
-CDR will take on in the next section.
+two ways: a noisy executor with depolarizing noise, and an ideal executor with
+noise disabled. Each returns the expectation value $\langle Z_0 Z_3 \rangle$
+directly (hence the `-> float` type hints) — the form Mitiq's CDR uses when the
+executors compute the observable themselves rather than being handed one
+separately. The output shows the effect of noise clearly: the ideal correlation
+is substantially suppressed, with the noisy value retaining only part of the
+original signal. Recovering that lost correlation is exactly the task that CDR
+will take on in the next section.
 
 ```{code-cell}
-obs = Observable(PauliString("ZIIZ"))
+# Z0 Z3 (Z on qubits 0 and 3) is diagonal, so its expectation value is a
+# parity-weighted sum of the basis-state populations — no matrix multiply needed.
+z03_diag = reduce(
+    np.kron, [np.array([1.0, -1.0]), np.ones(2), np.ones(2), np.array([1.0, -1.0])]
+)
 
 
-def noisy(c: cirq.Circuit) -> np.ndarray:
-    return compute_density_matrix(c, noise_level=(NOISE,))
+def noisy(c: cirq.Circuit) -> float:
+    rho = compute_density_matrix(c, noise_level=(NOISE,))
+    return float(np.sum(np.real(np.diagonal(rho)) * z03_diag))
 
 
-def ideal(c: cirq.Circuit) -> np.ndarray:
-    return compute_density_matrix(c, noise_level=(0.0,))
+def ideal(c: cirq.Circuit) -> float:
+    rho = compute_density_matrix(c, noise_level=(0.0,))
+    return float(np.sum(np.real(np.diagonal(rho)) * z03_diag))
 
 
-ideal_val = obs.expectation(cirq_circuit, ideal).real
-noisy_val = obs.expectation(cirq_circuit, noisy).real
+ideal_val = ideal(cirq_circuit)
+noisy_val = noisy(cirq_circuit)
 print(f"ideal <Z0 Z3> = {ideal_val:+.4f}")
 print(f"noisy <Z0 Z3> = {noisy_val:+.4f}")
 print(f"error         = {abs(noisy_val - ideal_val):.4f}")
@@ -142,22 +151,20 @@ simulator a natural choice for generating the reference values required during
 training. Rather than using a general-purpose statevector or density-matrix
 simulator for every training circuit, we can exploit the fact that these circuits
 live in a regime where specialized algorithms are particularly effective. Clifft
-is a simulator designed for exactly this setting {cite}`Chase_2026_Clifft`.
+is a simulator designed for exactly this setting {cite}`Chase_2026_Clifft`
+([arXiv:2604.27058](https://arxiv.org/abs/2604.27058)).
 
-To use Clifft, we first translate the Cirq circuit into Clifft's text-based
-circuit format. Since our gateset consists only of `H`, `Rz`, and `CNOT`, the
-conversion is straightforward. Two implementation details are worth noting.
-First, Clifft expresses $R_Z$ rotations in half-turn units rather than radians;
-fortunately, Cirq already stores this quantity as `gate.exponent` for
-`ZPowGate`s. Second, Clifft and Cirq use opposite qubit-ordering conventions when
-constructing statevectors, so after simulation we reverse the tensor axes to
-match Cirq's ordering. These are purely representational differences—the
-underlying quantum state is unchanged.
+To use Clifft, we translate the Cirq circuit into Clifft's text-based format — our
+gateset is just `H`, `Rz`, and `CNOT`, so the conversion is direct — and append an
+`EXP_VAL` probe that asks Clifft for $\langle Z_0 Z_3 \rangle$ directly. This
+matters: materializing the full statevector or density matrix would cost $2^n$ and
+defeat the purpose of a near-Clifford simulator, whereas Clifft evaluates the
+expectation value natively, so the same code generalizes cleanly to far larger
+circuits. One conversion detail: Clifft expresses $R_z$ rotations in half-turns,
+which Cirq already stores in `gate.exponent`.
 
-The fidelity check below confirms that the conversion is correct. A fidelity
-essentially equal to one means that Clifft and Cirq produce the same noiseless
-quantum state, giving us confidence that Clifft can serve as the simulator inside
-the CDR workflow.
+The check below confirms Clifft's `EXP_VAL` result matches the exact value from a
+density-matrix simulation.
 
 ```{code-cell}
 def to_clifft_text(circuit, qubits):
@@ -176,35 +183,15 @@ def to_clifft_text(circuit, qubits):
     return "\n".join(lines)
 
 
-def clifft_statevector(circuit, qubits):
-    prog = clifft.compile(to_clifft_text(circuit, qubits))
-    state = clifft.State(
-        peak_rank=prog.peak_rank,
-        num_measurements=prog.num_measurements,
-        num_detectors=prog.num_detectors,
-        num_observables=prog.num_observables,
-        num_exp_vals=prog.num_exp_vals,
-    )
-    clifft.execute(prog, state)  # required before reading when peak_rank > 0
-    psi = clifft.get_statevector(prog, state)
-    n = len(qubits)
-    psi = psi.reshape([2] * n).transpose(range(n - 1, -1, -1)).reshape(-1)
-    return psi
-
-
-def clifft_sim(c: cirq.Circuit) -> np.ndarray:
+def clifft_sim(c: cirq.Circuit) -> float:
     qubits = sorted(c.all_qubits())
-    psi = clifft_statevector(c, qubits)
-    return np.outer(psi, psi.conj())  # density matrix of a pure state
+    text = to_clifft_text(c, qubits) + "\nEXP_VAL Z0*Z3"
+    result = clifft.sample(clifft.compile(text), 1)
+    return float(result.exp_vals[0, 0])  # exact expectation, no statevector
 
 
-# sanity check: Clifft and cirq agree on the (noiseless) state
-_qubits = sorted(cirq_circuit.all_qubits())
-_psi_cirq = cirq.final_state_vector(
-    cirq_circuit, qubit_order=_qubits, dtype=np.complex128
-)
-_fidelity = abs(np.vdot(clifft_statevector(cirq_circuit, _qubits), _psi_cirq)) ** 2
-print(f"clifft vs cirq state fidelity: {_fidelity:.7f}")
+print(f"clifft EXP_VAL <Z0 Z3> = {clifft_sim(cirq_circuit):+.6f}")
+print(f"exact (density matrix) = {ideal(cirq_circuit):+.6f}")
 ```
 
 ## Running CDR
@@ -212,26 +199,25 @@ print(f"clifft vs cirq state fidelity: {_fidelity:.7f}")
 With all the pieces in place, we can run CDR in a single call. The arguments
 mirror the conceptual ingredients of the method: the target circuit whose
 expectation value we want to estimate, a noisy executor representing the device,
-the observable of interest, and a simulator capable of evaluating the
-near-Clifford training circuits. We also choose how many training circuits to
-generate, what fraction of the original non-Clifford structure each training
-circuit retains, and a random seed for reproducibility.
+and a simulator capable of evaluating the near-Clifford training circuits.
+(Because our executors return $\langle Z_0 Z_3 \rangle$ directly, we don't pass a
+separate observable.) We also choose how many training circuits to generate, what
+fraction of the original non-Clifford structure each retains, and a random seed
+for reproducibility.
 
 The important difference from earlier CDR examples is the simulator. Instead of
-relying on a full density-matrix simulation to provide ideal training data, we
-use Clifft, which is specialized for the near-Clifford circuits generated during
-CDR's training phase. The output shows the learned correction in action: the
-mitigated estimate moves substantially closer to the ideal value, reducing the
-error by several times. The exact numbers will vary with circuit parameters, but
-the qualitative result is the same—the noisy observable is systematically biased,
-and CDR learns a correction from classically simulable cousins of the target
-circuit.
+relying on a full density-matrix simulation to provide ideal training data, we use
+Clifft, which is specialized for the near-Clifford circuits generated during CDR's
+training phase. The output shows the learned correction in action: the mitigated
+estimate moves substantially closer to the ideal value, reducing the error by
+several times. The exact numbers will vary with circuit parameters, but the
+qualitative result is the same—the noisy observable is systematically biased, and
+CDR learns a correction from classically simulable cousins of the target circuit.
 
 ```{code-cell}
 mitigated = cdr.execute_with_cdr(
     cirq_circuit,
     noisy,
-    observable=obs,
     simulator=clifft_sim,
     num_training_circuits=100,
     fraction_non_clifford=0.2,
@@ -269,15 +255,15 @@ noise_levels = [0.005, 0.01, 0.02, 0.04, 0.06, 0.08]
 noisy_curve, cdr_curve = [], []
 
 for p in noise_levels:
-    def noisy_p(c: cirq.Circuit) -> np.ndarray:
-        return compute_density_matrix(c, noise_level=(p,))
+    def noisy_p(c: cirq.Circuit) -> float:
+        rho = compute_density_matrix(c, noise_level=(p,))
+        return float(np.sum(np.real(np.diagonal(rho)) * z03_diag))
 
-    noisy_curve.append(obs.expectation(cirq_circuit, noisy_p).real)
+    noisy_curve.append(noisy_p(cirq_circuit))
     cdr_curve.append(
         cdr.execute_with_cdr(
             cirq_circuit,
             noisy_p,
-            observable=obs,
             simulator=clifft_sim,
             num_training_circuits=100,
             fraction_non_clifford=0.2,
@@ -328,7 +314,6 @@ between noisy and ideal observables.
 vncdr = cdr.execute_with_cdr(
     cirq_circuit,
     noisy,
-    observable=obs,
     simulator=clifft_sim,
     num_training_circuits=100,
     fraction_non_clifford=0.2,
@@ -344,11 +329,13 @@ print(f"vnCDR error:     {abs(vncdr - ideal_val):.4f}")
 
 In this tutorial, we ran Clifford data regression end-to-end on a layered
 variational circuit and used Clifft as the simulator responsible for evaluating
-the near-Clifford training circuits. Because we built the circuit so that its
-only non-Clifford gates are `rz` rotations, CDR could learn a correction from
-noisy expectation values to ideal ones and substantially reduce the observable
-error. We then examined how that correction behaves as noise increases and
-compared standard CDR with its variable-noise extension.
+the near-Clifford training circuits. Because we built the circuit so that its only
+non-Clifford gates are `rz` rotations, CDR could learn a correction from noisy
+expectation values to ideal ones and substantially reduce the observable error.
+Reading the expectation value out of Clifft with `EXP_VAL` — rather than
+materializing a statevector — is what lets this approach scale to circuits far
+larger than this demo. We then examined how the correction behaves as noise
+increases and compared standard CDR with its variable-noise extension.
 
 There are several natural directions to explore from here. Increasing the circuit
 depth or qubit count makes the near-Clifford structure increasingly important and
