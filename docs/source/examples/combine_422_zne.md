@@ -274,7 +274,7 @@ print(f"Retention rate: {retained_pct:.1f}%")
 print(f"Overhead factor: {overhead_factor:.2f}x  ({overhead_pct:.1f}% more raw shots needed)")
 ```
 
-At a gate error rate of 1%, roughly {math}`\sim 10\text{–}20\%` of shots are flagged and discarded, requiring about 10–25% more raw shots to match the clean-shot count of an unprotected run.
-At higher error rates the discarded fraction grows quickly — at 3% per gate, well over half the shots may be rejected — so the shot overhead can become the dominant practical cost of the combined protocol.
+In this example at a gate error rate of 1%, the retention rate printed above is typically $\sim 65\text{–}70\%$, meaning roughly 30–35% of raw shots are discarded and about 40–50% more raw shots are needed to match the clean-shot count of an unprotected run.
+At higher error rates the discarded fraction grows quickly — at 3% per gate, well over half the shots are typically rejected and the raw-shot budget can more than double — so the shot overhead can become the dominant practical cost of the combined protocol.
 
 
