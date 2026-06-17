@@ -15,6 +15,7 @@ from mitiq.experimental.pea import (
     execute_with_pea,
 )
 from mitiq.experimental.pea.amplifications.amplify_depolarizing import (
+    amplify_noisy_ops_in_circuit_with_global_depolarizing_noise,
     amplify_noisy_ops_in_circuit_with_local_depolarizing_noise,
 )
 from mitiq.interface import convert_from_mitiq, convert_to_mitiq
@@ -131,6 +132,92 @@ def test_scale_factors(scale_factors):
     assert len(scaled_circuits) == len(scale_factors)
 
 
+@pytest.mark.parametrize(
+    "noise_model, representation_factory",
+    [
+        (
+            "global_depolarizing",
+            amplify_noisy_ops_in_circuit_with_global_depolarizing_noise,
+        ),
+        (
+            "local_depolarizing",
+            amplify_noisy_ops_in_circuit_with_local_depolarizing_noise,
+        ),
+    ],
+)
+def test_construct_circuits_with_representations(
+    noise_model, representation_factory
+):
+    representations = representation_factory(oneq_circ, 0.02)
+    random_state = 0
+    precision = 0.2
+    num_samples = 32
+
+    scaled_by_noise_model = construct_circuits(
+        oneq_circ,
+        scale_factors=[1, 3, 5],
+        noise_model=noise_model,
+        epsilon=0.02,
+        precision=precision,
+        num_samples=num_samples,
+        random_state=random_state,
+    )
+
+    scaled_by_representation = construct_circuits(
+        oneq_circ,
+        scale_factors=[1, 3, 5],
+        representations=representations,
+        precision=precision,
+        num_samples=num_samples,
+        random_state=random_state,
+    )
+
+    assert scaled_by_noise_model[0] == scaled_by_representation[0]
+    assert scaled_by_noise_model[1] == scaled_by_representation[1]
+    assert np.allclose(scaled_by_noise_model[2], scaled_by_representation[2])
+
+
+def test_construct_circuits_requires_input_variant():
+    with pytest.raises(ValueError, match="Either ``noise_model``"):
+        construct_circuits(
+            oneq_circ,
+            scale_factors=[1, 3],
+        )
+
+
+def test_construct_circuits_rejects_both_input_types():
+    representations = (
+        amplify_noisy_ops_in_circuit_with_global_depolarizing_noise(
+            oneq_circ, BASE_NOISE
+        )
+    )
+    with pytest.raises(
+        ValueError,
+        match="Either ``noise_model`` and ``epsilon`` or ``representations``",
+    ):
+        construct_circuits(
+            oneq_circ,
+            scale_factors=[1, 3],
+            noise_model="global_depolarizing",
+            epsilon=BASE_NOISE,
+            representations=representations,
+        )
+
+
+def test_construct_circuits_noise_model_warns_deprecated():
+    with pytest.warns(
+        DeprecationWarning,
+        match="noise_model is deprecated",
+    ):
+        construct_circuits(
+            oneq_circ,
+            scale_factors=[1, 2],
+            noise_model="global_depolarizing",
+            epsilon=BASE_NOISE,
+            num_samples=4,
+        )
+
+
 def test_combining_results():
     """simple arithmetic test"""
     pea_estimate = combine_results(
@@ -156,6 +243,10 @@ def executor(circuit: QPROGRAM, noise: float = BASE_NOISE) -> float:
     return compute_density_matrix(
         circuit, noise_model_function=cirq.depolarize, noise_level=(noise,)
     )[0, 0].real
+
+
+def constant_executor(_: QPROGRAM) -> float:
+    return 0.77
 
 
 @pytest.mark.parametrize("circuit", [oneq_circ, twoq_circ])
@@ -185,6 +276,92 @@ def test_execute_with_pea_mitigates_noise(circuit, circuit_type):
     assert np.isclose(mitigated, true_noiseless_value, atol=0.1)
 
 
+@pytest.mark.parametrize(
+    "noise_model, representation_factory",
+    [
+        (
+            "global_depolarizing",
+            amplify_noisy_ops_in_circuit_with_global_depolarizing_noise,
+        ),
+        (
+            "local_depolarizing",
+            amplify_noisy_ops_in_circuit_with_local_depolarizing_noise,
+        ),
+    ],
+)
+def test_execute_with_pea_with_representations_arg(
+    noise_model,
+    representation_factory,
+):
+    representations = representation_factory(oneq_circ, BASE_NOISE)
+    scale_factors = [1, 1.2, 1.6]
+
+    with_noise_model = execute_with_pea(
+        oneq_circ,
+        constant_executor,
+        scale_factors=scale_factors,
+        noise_model=noise_model,
+        epsilon=BASE_NOISE,
+        extrapolation_method=LinearFactory.extrapolate,
+        random_state=13,
+        num_samples=24,
+        precision=0.5,
+    )
+
+    with_representations = execute_with_pea(
+        oneq_circ,
+        constant_executor,
+        scale_factors=scale_factors,
+        representations=representations,
+        extrapolation_method=LinearFactory.extrapolate,
+        random_state=13,
+        num_samples=24,
+        precision=0.5,
+    )
+
+    assert with_noise_model == with_representations
+
+
+def test_execute_with_pea_rejects_both_input_types():
+    representations = (
+        amplify_noisy_ops_in_circuit_with_global_depolarizing_noise(
+            oneq_circ, BASE_NOISE
+        )
+    )
+    with pytest.raises(
+        ValueError,
+        match="Either ``noise_model`` and ``epsilon`` or ``representations``",
+    ):
+        execute_with_pea(
+            oneq_circ,
+            constant_executor,
+            scale_factors=[1, 3],
+            noise_model="global_depolarizing",
+            epsilon=BASE_NOISE,
+            representations=representations,
+            extrapolation_method=LinearFactory.extrapolate,
+            num_samples=4,
+            precision=0.5,
+        )
+
+
+def test_execute_with_pea_noise_model_warns_deprecated():
+    with pytest.warns(
+        DeprecationWarning,
+        match="noise_model is deprecated",
+    ):
+        execute_with_pea(
+            oneq_circ,
+            constant_executor,
+            scale_factors=[1],
+            noise_model="global_depolarizing",
+            epsilon=BASE_NOISE,
+            extrapolation_method=LinearFactory.extrapolate,
+            num_samples=4,
+            precision=0.5,
+        )
+
+
 def test_pea_data_with_full_output():
     """Tests that execute_with_pea mitigates the error of a noisy
     expectation value.
@@ -201,13 +378,17 @@ def test_pea_data_with_full_output():
         precision=precision,
         full_output=True,
     )
-    # Get num samples from precision
-    _, _, norm = sample_circuit(
-        twoq_circ,
-        amplify_noisy_ops_in_circuit_with_local_depolarizing_noise(
-            twoq_circ, epsilon
-        ),
-        num_samples=1,
+    # Get num samples from precision: the budget is deduced from the largest
+    # one-norm across the requested scale factors (see construct_circuits).
+    norm = max(
+        sample_circuit(
+            twoq_circ,
+            amplify_noisy_ops_in_circuit_with_local_depolarizing_noise(
+                twoq_circ, s * epsilon
+            ),
+            num_samples=1,
+        )[2]
+        for s in [1, 1.2, 1.6]
     )
     num_samples = int((norm / precision) ** 2)
 
