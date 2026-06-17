@@ -129,6 +129,38 @@ def test_trex_single_qubit():
     assert np.isclose(result, -1.0, atol=0.1)
 
 
+@pytest.mark.parametrize(
+    "spec, expected",
+    [
+        ("ZII", -1.0),
+        ("IZI", -1.0),
+        ("IIZ", -1.0),
+        ("ZZZ", -1.0),
+    ],
+)
+def test_trex_observable_on_subset_of_qubits(spec, expected):
+    """TREX must be correct when the observable acts on only a subset of the
+    circuit's qubits, including high-index qubits.
+
+    Regression test: ``combine_results`` previously indexed the randomization
+    string by ``sorted(observable._qubits())`` instead of by the circuit's
+    qubits, so the readout twirling was undone with the wrong bits whenever the
+    observable did not act on qubit 0, silently corrupting the result.
+    """
+    qreg = [cirq.LineQubit(i) for i in range(3)]
+    circuit = cirq.Circuit(cirq.X.on_each(*qreg))  # prepares |111>
+    obs = Observable(PauliString(spec))
+
+    result = execute_with_trex(
+        circuit,
+        noiseless_executor,
+        obs,
+        num_randomizations=16,
+        random_state=0,
+    )
+    assert np.isclose(result, expected, atol=0.1)
+
+
 def test_trex_identity_circuit():
     """TREX on an identity circuit should give expectation +1 for Z."""
     q = cirq.LineQubit(0)

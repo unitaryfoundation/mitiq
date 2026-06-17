@@ -227,8 +227,25 @@ def combine_results(
         raise ValueError(
             "At least one randomization string is required for TREX."
         )
-    all_qubits = sorted(observable._qubits())
-    qubit_to_idx = {q: i for i, q in enumerate(all_qubits)}
+
+    # The randomization strings are indexed by the *circuit's* qubits (the
+    # order in which ``construct_circuits`` applied the twirling), which is
+    # exactly the set of qubits measured by the calibration circuits. Recover
+    # that ordering from the calibration results so the randomization string is
+    # indexed consistently with how the twirling was applied. Indexing by
+    # ``observable._qubits()`` would be incorrect whenever the observable acts
+    # on only a subset of the circuit's qubits (e.g. a single-qubit Pauli on a
+    # high-index qubit), silently corrupting the mitigated value.
+    calibration_qubit_indices = calibration_results[0].qubit_indices
+    if calibration_qubit_indices is None:
+        calibration_qubit_indices = tuple(
+            range(calibration_results[0].nqubits)
+        )
+    circuit_qubit_indices = list(calibration_qubit_indices)
+    qubit_to_idx = {
+        q: circuit_qubit_indices.index(cast(cirq.LineQubit, q).x)
+        for q in observable._qubits()
+    }
 
     total: complex = 0.0
     for group_idx, group in enumerate(observable.groups):
