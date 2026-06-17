@@ -10,9 +10,8 @@ from mitiq import MeasurementResult
 from mitiq.experimental.deb.deb import (
     combine_results,
     execute_with_debiasing,
-    execute_with_debiasing_and_sharpening,
 )
-from mitiq.experimental.deb.symmetrization import _construct_variants
+from mitiq.experimental.deb.symmetrization import construct_circuits
 
 
 def sampling_executor(shots: int = 2000, seed: int = 7):
@@ -65,11 +64,15 @@ def test_debiasing_returns_a_normalized_distribution():
     assert abs(sum(distribution.values()) - 1.0) < 1e-9
 
 
-def test_debiasing_and_sharpening_returns_a_normalized_distribution():
+def test_debiasing_with_sharpening_returns_a_normalized_distribution():
     qubits = cirq.LineQubit.range(2)
     circuit = cirq.Circuit([cirq.H(qubits[0]), cirq.CNOT(*qubits)])
-    distribution = execute_with_debiasing_and_sharpening(
-        circuit, noisy_executor(), num_variants=6, random_state=5
+    distribution = execute_with_debiasing(
+        circuit,
+        noisy_executor(),
+        num_variants=6,
+        method="sharpening",
+        random_state=5,
     )
     assert abs(sum(distribution.values()) - 1.0) < 1e-9
 
@@ -77,10 +80,9 @@ def test_debiasing_and_sharpening_returns_a_normalized_distribution():
 def test_combine_results_supports_averaging_and_sharpening():
     qubits = cirq.LineQubit.range(2)
     circuit = cirq.Circuit([cirq.H(qubits[0]), cirq.CNOT(*qubits)])
-    variants = _construct_variants(circuit, 6, 5)
+    circuits, permutations = construct_circuits(circuit, 6, random_state=5)
     executor = noisy_executor()
-    results = [executor(variant) for variant, _ in variants]
-    permutations = [permutation for _, permutation in variants]
+    results = [executor(variant) for variant in circuits]
 
     averaged = combine_results(results, permutations, method="averaging")
     sharpened = combine_results(results, permutations, method="sharpening")
@@ -91,9 +93,8 @@ def test_combine_results_supports_averaging_and_sharpening():
 def test_combine_results_rejects_unknown_method():
     qubits = cirq.LineQubit.range(2)
     circuit = cirq.Circuit([cirq.H(qubits[0]), cirq.CNOT(*qubits)])
-    variants = _construct_variants(circuit, 2, 0)
+    circuits, permutations = construct_circuits(circuit, 2, random_state=0)
     executor = noisy_executor()
-    results = [executor(variant) for variant, _ in variants]
-    permutations = [permutation for _, permutation in variants]
+    results = [executor(variant) for variant in circuits]
     with pytest.raises(ValueError):
         combine_results(results, permutations, method="nope")

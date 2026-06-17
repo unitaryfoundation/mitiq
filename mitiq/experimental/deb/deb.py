@@ -11,6 +11,10 @@ permuted set of qubits, and combining their results. Each variant's
 permutation is undone on the measured bitstrings before they are combined.
 The combined result is obtained either by averaging the variant distributions
 or by a shot-wise plurality vote (sharpening). See :cite:`Maksymov_2023_arxiv`.
+
+Throughout, bitstrings are ordered to match ``sorted(circuit.all_qubits())``:
+the ``i``-th character of a bitstring corresponds to the ``i``-th qubit in that
+sorted order.
 """
 
 from collections.abc import Callable, Sequence
@@ -20,7 +24,7 @@ import numpy as np
 
 from mitiq import MeasurementResult
 from mitiq.experimental.deb.sharpening import sharpen
-from mitiq.experimental.deb.symmetrization import _construct_variants
+from mitiq.experimental.deb.symmetrization import construct_circuits
 
 Executor = Callable[[cirq.Circuit], MeasurementResult]
 
@@ -64,15 +68,21 @@ def combine_results(
     distributions (``"averaging"``) or by a shot-wise plurality vote
     (``"sharpening"``, see :func:`.sharpen`).
 
+    The ``"sharpening"`` method assumes every variant was run with the same
+    number of shots, since it votes across variants shot by shot; results with
+    differing shot counts are truncated to the smallest count.
+
     Args:
         results: One ``MeasurementResult`` per variant, in the same order as
             the variants returned by :func:`.construct_circuits`.
         permutations: The permutation applied to each variant, in the same
-            order as ``results``.
+            order as ``results`` (the second element returned by
+            :func:`.construct_circuits`).
         method: Either ``"averaging"`` or ``"sharpening"``.
 
     Returns:
-        The combined probability distribution over the computational basis.
+        The combined probability distribution over the computational basis,
+        with bitstrings ordered to match ``sorted(circuit.all_qubits())``.
     """
     unscrambled = [
         _unscramble(result, permutation)
@@ -97,55 +107,34 @@ def execute_with_debiasing(
     executor: Executor,
     num_variants: int = 10,
     *,
+    method: str = "averaging",
     random_state: int | np.random.Generator | None = None,
 ) -> dict[str, float]:
     """Return the debiased probability distribution of ``circuit``.
 
     The circuit is relabeled onto ``num_variants`` randomly permuted sets of
     qubits, each variant is executed, its permutation is undone on the measured
-    bitstrings, and the resulting probability distributions are averaged.
-
-    Args:
-        circuit: The circuit to execute. It should not contain terminal
-            measurements; the executor is responsible for measurement.
-        executor: A function mapping a circuit to a ``MeasurementResult``.
-        num_variants: Number of permuted variants to average over.
-        random_state: Seed or ``numpy.random.Generator`` for reproducibility.
-
-    Returns:
-        The averaged probability distribution over the computational basis.
-    """
-    variants = _construct_variants(circuit, num_variants, random_state)
-    results = [executor(variant) for variant, _ in variants]
-    permutations = [permutation for _, permutation in variants]
-    return combine_results(results, permutations, method="averaging")
-
-
-def execute_with_debiasing_and_sharpening(
-    circuit: cirq.Circuit,
-    executor: Executor,
-    num_variants: int = 10,
-    *,
-    random_state: int | np.random.Generator | None = None,
-) -> dict[str, float]:
-    """Return the debiased and sharpened probability distribution.
-
-    Like :func:`execute_with_debiasing`, but the unscrambled variant results
-    are combined with a shot-wise plurality vote (see :func:`.sharpen`) instead
-    of being averaged. This is useful when the target answer is concentrated on
-    a few bitstrings.
+    bitstrings, and the unscrambled results are combined. With
+    ``method="averaging"`` the variant distributions are averaged; with
+    ``method="sharpening"`` they are combined by a shot-wise plurality vote
+    (see :func:`.sharpen`), which is useful when the target answer is
+    concentrated on a few bitstrings.
 
     Args:
         circuit: The circuit to execute. It should not contain terminal
             measurements; the executor is responsible for measurement.
         executor: A function mapping a circuit to a ``MeasurementResult``.
         num_variants: Number of permuted variants to combine.
+        method: Either ``"averaging"`` or ``"sharpening"``.
         random_state: Seed or ``numpy.random.Generator`` for reproducibility.
 
     Returns:
-        The sharpened probability distribution over the computational basis.
+        The combined probability distribution over the computational basis. Its
+        bitstrings are ordered to match ``sorted(circuit.all_qubits())``: the
+        ``i``-th character corresponds to the ``i``-th sorted qubit.
     """
-    variants = _construct_variants(circuit, num_variants, random_state)
-    results = [executor(variant) for variant, _ in variants]
-    permutations = [permutation for _, permutation in variants]
-    return combine_results(results, permutations, method="sharpening")
+    circuits, permutations = construct_circuits(
+        circuit, num_variants, random_state=random_state
+    )
+    results = [executor(variant) for variant in circuits]
+    return combine_results(results, permutations, method=method)

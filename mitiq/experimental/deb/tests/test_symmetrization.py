@@ -9,11 +9,7 @@ import cirq
 import numpy as np
 import pytest
 
-from mitiq.experimental.deb.symmetrization import (
-    _construct_variants,
-    _permute,
-    construct_circuits,
-)
+from mitiq.experimental.deb.symmetrization import _permute, construct_circuits
 
 qubits = cirq.LineQubit.range(3)
 base_circuit = cirq.Circuit(
@@ -25,9 +21,13 @@ def _gate_multiset(circuit: cirq.Circuit) -> Counter:
     return Counter(str(op.gate) for op in circuit.all_operations())
 
 
-def test_construct_circuits_returns_requested_number():
-    variants = construct_circuits(base_circuit, num_variants=7, random_state=0)
-    assert len(variants) == 7
+def test_construct_circuits_returns_circuits_and_permutations():
+    circuits, permutations = construct_circuits(
+        base_circuit, num_variants=7, random_state=0
+    )
+    assert len(circuits) == 7
+    assert len(permutations) == 7
+    assert all(sorted(p) == [0, 1, 2] for p in permutations)
 
 
 def test_construct_circuits_is_reproducible():
@@ -45,17 +45,17 @@ def test_different_seeds_give_different_variants():
 def test_variants_relabel_the_same_qubits_and_gates():
     # A permutation only relabels qubits, so the qubit set and the multiset of
     # gates are unchanged.
-    variants = construct_circuits(base_circuit, 8, random_state=1)
+    circuits, _ = construct_circuits(base_circuit, 8, random_state=1)
     base_qubits = set(base_circuit.all_qubits())
     base_gates = _gate_multiset(base_circuit)
-    for variant in variants:
+    for variant in circuits:
         assert set(variant.all_qubits()) == base_qubits
         assert _gate_multiset(variant) == base_gates
 
 
 def test_permutation_actually_changes_some_variants():
-    variants = construct_circuits(base_circuit, 10, random_state=4)
-    assert any(variant != base_circuit for variant in variants)
+    circuits, _ = construct_circuits(base_circuit, 10, random_state=4)
+    assert any(variant != base_circuit for variant in circuits)
 
 
 def test_variants_are_unitarily_equivalent():
@@ -63,7 +63,10 @@ def test_variants_are_unitarily_equivalent():
     # recovers the original unitary exactly.
     sorted_qubits = sorted(base_circuit.all_qubits())
     base_unitary = cirq.unitary(base_circuit)
-    for variant, permutation in _construct_variants(base_circuit, 8, 1):
+    circuits, permutations = construct_circuits(
+        base_circuit, 8, random_state=1
+    )
+    for variant, permutation in zip(circuits, permutations):
         inverse = [0] * len(permutation)
         for i, target in enumerate(permutation):
             inverse[target] = i
@@ -73,8 +76,8 @@ def test_variants_are_unitarily_equivalent():
 
 def test_single_qubit_circuit_has_only_the_identity_permutation():
     circuit = cirq.Circuit(cirq.H(cirq.LineQubit(0)))
-    variants = construct_circuits(circuit, 5, random_state=0)
-    assert all(variant == circuit for variant in variants)
+    circuits, _ = construct_circuits(circuit, 5, random_state=0)
+    assert all(variant == circuit for variant in circuits)
 
 
 def test_non_positive_num_variants_raises():

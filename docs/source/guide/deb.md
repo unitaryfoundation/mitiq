@@ -50,5 +50,12 @@ print({bits: round(prob, 3) for bits, prob in distribution.items()})
 ```
 
 The returned dictionary maps each measured bitstring to its averaged
-probability. To apply the sharpening step instead, use
-{func}`.execute_with_debiasing_and_sharpening` with the same signature.
+probability. To apply the sharpening step instead, pass
+`method="sharpening"` to {func}`.execute_with_debiasing`.
+
+Bitstrings are ordered to match `sorted(circuit.all_qubits())`: the first
+character corresponds to the first qubit in that sorted order, and so on. The
+same ordering is used by {func}`.construct_circuits` and
+{func}`.combine_results`, which is why the permutation returned by
+`construct_circuits` must be passed to `combine_results` so it can be undone on
+the measured bitstrings.
