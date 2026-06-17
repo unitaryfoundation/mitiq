@@ -73,9 +73,7 @@ def test_scale_positive_representation_matches_amplified_depolarizing_path():
         gate, scaled_factor * epsilon
     )
 
-    assert scaled_representation.coeffs == pytest.approx(
-        expected.coeffs
-    )
+    assert scaled_representation.coeffs == pytest.approx(expected.coeffs)
 
 
 def test_scale_circuit_amplifications_with_representations_path():

@@ -105,6 +105,13 @@ Here we observe that the application of PEA reduces the estimation error when co
 In the example above, both the noise amplification and extrapolation steps were taken behind the scenes thanks to the default options of {func}`.execute_with_pea`.
 In the following pages, we describe additional options and show how to apply the two steps of PEA independently.
 
+```{note}
+The example above uses the legacy `noise_model` string, which now emits a `DeprecationWarning`. The
+recommended interface is to pass `representations`, a list of {class}`.OperationRepresentation` objects
+that can be learned from hardware characterization, which makes PEA usable on noise that is neither local
+nor global depolarizing. See [What additional options are available in PEA?](pea-3-options.md) for details.
+```
+
 ## Two-stage PEA workflow
 
 If you want more control over the process, you can split PEA into two stages:

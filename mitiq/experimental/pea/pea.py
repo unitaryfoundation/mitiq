@@ -186,9 +186,7 @@ def execute_with_pea(
     scale_factors: list[float],
     noise_model: str | None = None,
     epsilon: float | None = None,
-    extrapolation_method: Callable[
-        [Sequence[float], Sequence[float]], float
-    ]
+    extrapolation_method: Callable[[Sequence[float], Sequence[float]], float]
     | None = None,
     observable: Observable | None = None,
     random_state: int | np.random.RandomState | None = None,

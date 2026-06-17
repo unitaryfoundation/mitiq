@@ -60,23 +60,21 @@ def _make_scaled_representation_factory(
                 "``representations`` must be a non-empty list of "
                 "``OperationRepresentation`` objects."
             )
+        reps = representations
 
-        def scaled_representations(
+        def scale_supplied_representations(
             scale_factor: float,
         ) -> Sequence[OperationRepresentation]:
             _validate_scale_factor(scale_factor)
-            return [
-                scale_representation(rep, scale_factor)
-                for rep in representations
-            ]
+            return [scale_representation(rep, scale_factor) for rep in reps]
 
-        return scaled_representations
+        return scale_supplied_representations
 
     if epsilon is None:
         raise ValueError(
-            "``epsilon`` must be provided when using the ``noise_model`` "
-            "path."
+            "``epsilon`` must be provided when using the ``noise_model`` path."
         )
+    base_noise = epsilon
 
     if noise_model == "local_depolarizing":
         amp_fn = amplify_noisy_ops_in_circuit_with_local_depolarizing_noise
@@ -87,13 +85,13 @@ def _make_scaled_representation_factory(
         raise ValueError("Noise model not supported")
         # TODO allow use of custom noise model
 
-    def scaled_representations(
+    def rebuild_model_representations(
         scale_factor: float,
     ) -> Sequence[OperationRepresentation]:
         _validate_scale_factor(scale_factor)
-        return amp_fn(ideal_circuit, scale_factor * epsilon)
+        return amp_fn(ideal_circuit, scale_factor * base_noise)
 
-    return scaled_representations
+    return rebuild_model_representations
 
 
 def scale_circuit_amplifications(
@@ -137,9 +135,7 @@ def _find_identity_term_index(
     representation: OperationRepresentation,
 ) -> int:
     identity_term_index = None
-    for idx, (coeff, noisy_op) in enumerate(
-        representation.basis_expansion
-    ):
+    for idx, (coeff, noisy_op) in enumerate(representation.basis_expansion):
         if coeff > 0 and _equal(noisy_op.circuit, representation.ideal):
             identity_term_index = idx
             break
@@ -225,8 +221,10 @@ def _scale_signed_representation(
     neg_volume = -sum(coeff for coeff in coeffs if coeff < -_SIGN_TOL)
 
     if pos_volume <= 0:
-        raise ValueError("Canonical scaling requires a representation "
-                         "with positive total mass.")
+        raise ValueError(
+            "Canonical scaling requires a representation "
+            "with positive total mass."
+        )
     if neg_volume > 0:
         max_scale = pos_volume / neg_volume
         if scale_factor > max_scale:

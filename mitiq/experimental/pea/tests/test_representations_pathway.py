@@ -219,9 +219,7 @@ def test_sign_dispatch_tolerates_floating_point_dust():
         NoisyOperation(Circuit([X(q), Z(q)])),
     ]
     clean = OperationRepresentation(ideal, ops, [0.98, 0.02, 0.0])
-    dusted = OperationRepresentation(
-        ideal, ops, [0.98, 0.02 + 1e-16, -1e-16]
-    )
+    dusted = OperationRepresentation(ideal, ops, [0.98, 0.02 + 1e-16, -1e-16])
     s = 2.0
     assert scale_representation(dusted, s).coeffs == pytest.approx(
         scale_representation(clean, s).coeffs, abs=1e-9
