@@ -6,8 +6,9 @@ GHZ circuit with synthetic depolarising gate noise.
 
 Usage
 -----
-    python scripts/benchmark_pec.py               # runs ghz, qv, mirror
-    python scripts/benchmark_pec.py --circuit ghz # runs one circuit
+    python scripts/benchmark_pec.py           # local only, Qiskit PEC skipped
+    python scripts/benchmark_pec.py --circuit ghz # one circuit, local only
+    python scripts/benchmark_pec.py --ibm-account # adds real-HW row for GHZ
 
 Arguments
 ---------
@@ -20,10 +21,14 @@ Arguments
     --seed           Random seed                              (default: 42)
     --tool           Run a specific tool: mitiq | qermit | qiskit | all
                                                               (default: all)
+    --ibm-account    Connect to IBM Quantum and run Qiskit PEC on real
+                     hardware (GHZ only). Reads IBM_QUANTUM_TOKEN env var.
+                                                              (default: off)
 
 Dependencies
 ------------
-    pip install -r scripts/requirements-benchmark.txt
+    pip install -e ".[benchmarking]"
+    IBM_QUANTUM_TOKEN env var: required only with --ibm-account.
 
 Output
 ------
@@ -51,14 +56,14 @@ Notes
                 script handles this gracefully with a SKIP message.
 
     Qiskit PEC: qiskit-ibm-runtime EstimatorV2 with pec_mitigation=True.
-                Requires IBM Quantum cloud credentials.  Without credentials
-                the row is marked SKIP with a diagnostic message.
-                To configure: QiskitRuntimeService.save_account(token=...).
+                Only runs when --ibm-account is passed; skipped otherwise.
+                GHZ only — NoiseLearner cost scales badly with circuit depth.
 """
 
 from __future__ import annotations
 
 import argparse
+import math
 import time
 from typing import Callable, Tuple
 
@@ -68,7 +73,6 @@ from benchmark_utils import (
     _HDR,
     _SEP,
     _count_gates,
-    _Counter,
     _row,
     _zn_eigenvalue,
 )
@@ -163,6 +167,7 @@ def benchmark_mitiq_pec(
     Benchmark mitiq.pec using local depolarising
     quasi-probability representations.
     """
+    from mitiq import Executor
     from mitiq.pec import (
         execute_with_pec,
         represent_operations_in_circuit_with_local_depolarizing_noise,
@@ -175,8 +180,7 @@ def benchmark_mitiq_pec(
         circuit, noise_level
     )
 
-    pec_exec = _make_dm_executor(n_qubits, noise_level)
-    counter = _Counter(pec_exec)
+    counter = Executor(_make_dm_executor(n_qubits, noise_level))
 
     t0 = time.perf_counter()
     mitigated = execute_with_pec(
@@ -188,7 +192,7 @@ def benchmark_mitiq_pec(
     )
     elapsed = time.perf_counter() - t0
 
-    return noisy_val, mitigated, elapsed, counter.n
+    return noisy_val, mitigated, elapsed, counter.calls_to_executor
 
 
 # ── qermit PEC — in-process bug fix ──────────────────────────────────────────
@@ -426,18 +430,23 @@ def benchmark_qermit_pec(
 
 
 def benchmark_qiskit_pec(
-    circuit, n_qubits: int, noise_level: float, shots: int, seed: int
-) -> Tuple[float, float, float, int]:
+    circuit,
+    n_qubits: int,
+    noise_level: float,
+    shots: int,
+    seed: int,
+    backend=None,
+) -> Tuple[float, float, float, int, str, float]:
     """
     Benchmark qiskit-ibm-runtime PEC via NoiseLearner + EstimatorV2.
 
-    Requires IBM Quantum cloud credentials:
-        from qiskit_ibm_runtime import QiskitRuntimeService
-        QiskitRuntimeService.save_account(
-            channel="ibm_quantum", token="<API_TOKEN>")
+    When ``backend`` is None the function connects to IBM Quantum itself
+    (credentials must already be saved via
+    QiskitRuntimeService.save_account).  Pass a pre-connected backend
+    (obtained in main() via --ibm-account) to skip the connection step.
 
-    Without credentials this function raises RuntimeError, which is caught at
-    the call site and printed as SKIP.
+    Returns (noisy_val, mitigated, elapsed, n_circs, job_id, qpu_time_s).
+    qpu_time_s is NaN when the backend does not expose usage metrics.
     """
     import cirq
     from qiskit import QuantumCircuit, transpile
@@ -446,19 +455,19 @@ def benchmark_qiskit_pec(
     from qiskit_ibm_runtime.noise_learner import NoiseLearner
     from qiskit_ibm_runtime.options import NoiseLearnerOptions
 
-    # ── connect to IBM Quantum ──────────────────────────────────────────────
-    try:
-        service = QiskitRuntimeService()
-    except Exception as exc:
-        raise RuntimeError(
-            "IBM Quantum credentials not configured. "
-            "Run QiskitRuntimeService.save_account(token=...) first. "
-            f"Original error: {exc}"
+    if backend is None:
+        # ── connect to IBM Quantum ────────────────────────────────────────
+        try:
+            service = QiskitRuntimeService()
+        except Exception as exc:
+            raise RuntimeError(
+                "IBM Quantum credentials not configured. "
+                "Run QiskitRuntimeService.save_account(token=...) first."
+                f"  Original error: {exc}"
+            )
+        backend = service.least_busy(
+            operational=True, simulator=False, min_num_qubits=n_qubits
         )
-
-    backend = service.least_busy(
-        operational=True, simulator=False, min_num_qubits=n_qubits
-    )
 
     # Convert mitiq benchmarks circuit to Qiskit via QASM
     clean = cirq.Circuit(
@@ -491,16 +500,26 @@ def benchmark_qiskit_pec(
     est_pec.options.resilience.layer_noise_model = learned_noise
     est_pec.options.default_shots = shots
     t0 = time.perf_counter()
-    mitigated = float(est_pec.run([(qc_isa, obs_isa)]).result()[0].data.evs)
+    pec_job = est_pec.run([(qc_isa, obs_isa)])
+    pec_result = pec_job.result()
     elapsed = time.perf_counter() - t0
+    mitigated = float(pec_result[0].data.evs)
 
-    return noisy_val, mitigated, elapsed, shots
+    job_id = pec_job.job_id()
+    try:
+        qpu_time = pec_job.metrics()["usage"]["quantum_seconds"]
+    except Exception:
+        qpu_time = float("nan")
+
+    # IBM cloud PEC overhead isn't exposed via the API; count the two
+    # submitted jobs (noisy baseline + PEC mitigated).
+    return noisy_val, mitigated, elapsed, 2, job_id, qpu_time
 
 
 # ── per-circuit runner ───────────────────────────────────────────────────────
 
 
-def _run_circuit(circuit_type: str, args) -> None:
+def _run_circuit(circuit_type: str, args, backend=None) -> None:
     """Run PEC benchmark for one circuit type and print its table."""
     circuit, ideal = get_benchmark_circuit(
         circuit_type, args.n_qubits, args.depth, args.seed
@@ -546,15 +565,23 @@ def _run_circuit(circuit_type: str, args) -> None:
                 " — use --circuit ghz"
             )
             continue
-        # Qiskit PEC (cloud) requires credentials; no point submitting
-        # cloud jobs for QV/mirror circuits.  GHZ only.
+        # Qiskit PEC: GHZ only — NoiseLearner cost scales badly with depth.
         if key == "qiskit" and circuit_type != "ghz":
             print(
-                f"{'Qiskit PEC (cloud)':<{_COL[0]}} NOTE: Qiskit PEC"
+                f"{'Qiskit PEC':<{_COL[0]}} NOTE: Qiskit PEC"
                 " skipped for deep circuits (QV/mirror)"
                 " — use --circuit ghz"
             )
             continue
+        # Qiskit PEC requires --ibm-account; skip clearly when not set.
+        if key == "qiskit" and backend is None:
+            print(
+                f"{'Qiskit PEC':<{_COL[0]}} SKIP: Qiskit PEC requires"
+                " --ibm-account flag with IBM_QUANTUM_TOKEN set."
+            )
+            continue
+        if key == "qiskit":
+            display_name = "Qiskit PEC (real HW)"
         try:
             extra: dict = {}
             if key == "mitiq":
@@ -562,26 +589,47 @@ def _run_circuit(circuit_type: str, args) -> None:
                     "num_samples": args.pec_samples,
                     "seed": args.seed,
                 }
-            elif key in ("qermit", "qiskit"):
+            elif key == "qermit":
                 extra = {"seed": args.seed}
+            elif key == "qiskit":
+                extra = {"seed": args.seed, "backend": backend}
 
-            noisy, mitigated, elapsed, n_circs = fn(
+            result = fn(
                 circuit=circuit,
                 n_qubits=args.n_qubits,
                 noise_level=args.noise_level,
                 shots=args.shots,
                 **extra,
             )
-            _row(
-                display_name,
-                ideal,
-                noisy,
-                mitigated,
-                elapsed,
-                n_circs,
-                n1,
-                n2,
-            )
+
+            if key == "qiskit":
+                noisy, mitigated, elapsed, n_circs, job_id, qpu_time = result
+                _row(
+                    display_name,
+                    ideal,
+                    noisy,
+                    mitigated,
+                    elapsed,
+                    n_circs,
+                    n1,
+                    n2,
+                )
+                qpu_str = (
+                    f"{qpu_time:.1f}s" if not math.isnan(qpu_time) else "N/A"
+                )
+                print(f"  job_id={job_id}  QPU time: {qpu_str}")
+            else:
+                noisy, mitigated, elapsed, n_circs = result
+                _row(
+                    display_name,
+                    ideal,
+                    noisy,
+                    mitigated,
+                    elapsed,
+                    n_circs,
+                    n1,
+                    n2,
+                )
         except ImportError as exc:
             print(f"{display_name:<{_COL[0]}} SKIP (missing dep): {exc}")
         except RuntimeError as exc:
@@ -627,6 +675,15 @@ def main() -> None:
         choices=["all", "mitiq", "qermit", "qiskit"],
         default="all",
     )
+    parser.add_argument(
+        "--ibm-account",
+        action="store_true",
+        default=False,
+        help=(
+            "Connect to IBM Quantum and run Qiskit PEC on real hardware "
+            "(GHZ only). Requires IBM_QUANTUM_TOKEN env var."
+        ),
+    )
     args = parser.parse_args()
 
     import warnings
@@ -646,6 +703,26 @@ def main() -> None:
     except ImportError:
         pass
 
+    backend = None
+    if args.ibm_account:
+        import os
+
+        token = os.environ.get("IBM_QUANTUM_TOKEN")
+        if not token:
+            raise SystemExit(
+                "IBM_QUANTUM_TOKEN environment variable required when "
+                "--ibm-account is set."
+            )
+        from qiskit_ibm_runtime import QiskitRuntimeService
+
+        QiskitRuntimeService.save_account(token=token, overwrite=True)
+        service = QiskitRuntimeService()
+        backend = service.least_busy(
+            operational=True,
+            simulator=False,
+            min_num_qubits=args.n_qubits,
+        )
+
     np.random.seed(args.seed)
 
     circuit_types = (
@@ -662,14 +739,14 @@ def main() -> None:
     print("=" * len(_HDR))
 
     for ct in circuit_types:
-        _run_circuit(ct, args)
+        _run_circuit(ct, args, backend=backend)
 
     print(
         "\nImprov = |noisy − ideal| / |mitigated − ideal|"
         "  (>1 means mitigation helped)"
     )
     print(
-        "Qiskit PEC requires IBM Quantum cloud credentials (NoiseLearner).\n"
+        "Qiskit PEC requires --ibm-account with IBM_QUANTUM_TOKEN set.\n"
         "qermit PEC: in-process patch applied for"
         " qermit 0.9.3 / pytket-qiskit 0.77 "
         "qubit-mapping bug"

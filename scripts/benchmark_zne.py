@@ -9,6 +9,7 @@ Usage
     python scripts/benchmark_zne.py               # runs ghz, qv, mirror
     python scripts/benchmark_zne.py --circuit ghz # runs one circuit
     python scripts/benchmark_zne.py --factories   # all factories, all circuits
+    python scripts/benchmark_zne.py --ibm-account # adds real-HW row
 
     # Compare extrapolation factories for a specific tool:
     python scripts/benchmark_zne.py --factories --tool mitiq
@@ -26,10 +27,14 @@ Arguments
                                                                  (default: all)
     --factories    Run all extrapolation factories / fits for
                    each selected tool instead of the default.
+    --ibm-account  Connect to IBM Quantum and add a Qiskit Runtime ZNE
+                   row on real hardware. Reads IBM_QUANTUM_TOKEN from
+                   the environment.                      (default: off)
 
 Dependencies
 ------------
-    pip install -r scripts/requirements-benchmark.txt
+    pip install -e ".[benchmarking]"
+    IBM_QUANTUM_TOKEN env var: required only with --ibm-account.
 
 Output
 ------
@@ -71,6 +76,7 @@ Notes
 from __future__ import annotations
 
 import argparse
+import math
 import time
 from typing import Callable, Tuple
 
@@ -80,7 +86,6 @@ from benchmark_utils import (
     _HDR,
     _SEP,
     _count_gates,
-    _Counter,
     _row,
     _zn_eigenvalue,
 )
@@ -274,6 +279,7 @@ def benchmark_mitiq_zne(
     Uses a Qiskit AerSimulator executor (cirq → QASM → Qiskit) so that all
     circuit types — including QV — run without errors.
     """
+    from mitiq import Executor
     from mitiq.zne import execute_with_zne
     from mitiq.zne.inference import LinearFactory
     from mitiq.zne.scaling import fold_gates_at_random
@@ -284,7 +290,7 @@ def benchmark_mitiq_zne(
     exec_fn = _make_qiskit_executor(n_qubits, noise_level, shots)
     noisy_val = exec_fn(circuit)
 
-    counter = _Counter(_make_qiskit_executor(n_qubits, noise_level, shots))
+    counter = Executor(_make_qiskit_executor(n_qubits, noise_level, shots))
 
     t0 = time.perf_counter()
     mitigated = execute_with_zne(
@@ -295,7 +301,7 @@ def benchmark_mitiq_zne(
     )
     elapsed = time.perf_counter() - t0
 
-    return noisy_val, mitigated, elapsed, counter.n
+    return noisy_val, mitigated, elapsed, counter.calls_to_executor
 
 
 # ── qermit ZNE ───────────────────────────────────────────────────────────────
@@ -426,11 +432,7 @@ def _fold_circuit_global(qc, scale: int):
 
 
 def _get_qiskit_circuit(circuit, n_qubits: int):
-    """
-    Convert the benchmark circuit to a Qiskit QuantumCircuit via QASM.
-
-    Falls back to a GHZ circuit if QASM conversion fails.
-    """
+    """Convert the benchmark circuit to a Qiskit QuantumCircuit via QASM."""
     from qiskit import QuantumCircuit
 
     try:
@@ -438,15 +440,12 @@ def _get_qiskit_circuit(circuit, n_qubits: int):
         qc = QuantumCircuit.from_qasm_str(qasm_str)
         qc.remove_final_measurements(inplace=True)
         return qc
-    except Exception:
-        pass
-
-    # Fallback: build GHZ in Qiskit
-    qc = QuantumCircuit(n_qubits)
-    qc.h(0)
-    for i in range(n_qubits - 1):
-        qc.cx(i, i + 1)
-    return qc
+    except Exception as exc:
+        raise RuntimeError(
+            f"Failed to convert benchmark circuit to Qiskit via QASM: "
+            f"{exc}. Cannot proceed with Qiskit ZNE benchmark for this "
+            f"circuit type."
+        ) from exc
 
 
 def benchmark_qiskit_zne(
@@ -510,10 +509,68 @@ def benchmark_qiskit_zne(
     return noisy_val, mitigated, elapsed, len(scale_factors)
 
 
+# ── Qiskit Runtime ZNE (real hardware) ──────────────────────────────────────
+
+
+def benchmark_qiskit_runtime_zne(
+    circuit,
+    n_qubits: int,
+    shots: int,
+    backend,
+) -> Tuple[float, float, float, int, str, float]:
+    """
+    Benchmark Qiskit Runtime ZNE on a real IBM backend via EstimatorV2.
+
+    Runs two jobs: a noisy baseline (resilience_level=0) and a ZNE-mitigated
+    run (zne_mitigation=True, noise_factors=(1,3,5), linear extrapolation).
+    optimization_level=1 is required; level 3 would let the transpiler cancel
+    folded gates U U† U → U, destroying ZNE's noise amplification.
+
+    Returns (noisy_val, mitigated, elapsed, n_circs, job_id, qpu_time_s).
+    n_circs = 1 (noisy job) + 3 (ZNE scale factors).
+    qpu_time_s is NaN when the backend does not expose usage metrics.
+    """
+    from qiskit import transpile
+    from qiskit.quantum_info import SparsePauliOp
+    from qiskit_ibm_runtime import EstimatorV2
+
+    qc = _get_qiskit_circuit(circuit, n_qubits)
+    qc_isa = transpile(qc, backend, optimization_level=1)
+    obs_raw = SparsePauliOp("Z" * n_qubits)
+    obs_isa = obs_raw.apply_layout(qc_isa.layout)
+
+    # noisy baseline (resilience_level=0 — no mitigation)
+    est_noisy = EstimatorV2(mode=backend)
+    est_noisy.options.default_shots = shots
+    est_noisy.options.resilience_level = 0
+    noisy_val = float(est_noisy.run([(qc_isa, obs_isa)]).result()[0].data.evs)
+
+    # ZNE mitigated
+    est_zne = EstimatorV2(mode=backend)
+    est_zne.options.default_shots = shots
+    est_zne.options.resilience.zne_mitigation = True
+    est_zne.options.resilience.zne.noise_factors = (1, 3, 5)
+    est_zne.options.resilience.zne.extrapolator = "linear"
+    t0 = time.perf_counter()
+    zne_job = est_zne.run([(qc_isa, obs_isa)])
+    zne_result = zne_job.result()
+    elapsed = time.perf_counter() - t0
+    mitigated = float(zne_result[0].data.evs)
+
+    job_id = zne_job.job_id()
+    try:
+        qpu_time = zne_job.metrics()["usage"]["quantum_seconds"]
+    except Exception:
+        qpu_time = float("nan")
+
+    # 1 noisy job + 3 ZNE scale-factor circuits
+    return noisy_val, mitigated, elapsed, 4, job_id, qpu_time
+
+
 # ── per-circuit runner ───────────────────────────────────────────────────────
 
 
-def _run_circuit(circuit_type: str, args) -> None:
+def _run_circuit(circuit_type: str, args, backend=None) -> None:
     """Run ZNE benchmark for one circuit type and print its table."""
     circuit, ideal = get_benchmark_circuit(
         circuit_type, args.n_qubits, args.depth, args.seed
@@ -595,6 +652,45 @@ def _run_circuit(circuit_type: str, args) -> None:
             else:
                 _run_row("Qiskit ZNE (manual)", benchmark_qiskit_zne)
 
+            if backend is not None:
+                try:
+                    (
+                        noisy,
+                        mitigated,
+                        elapsed,
+                        n_circs,
+                        job_id,
+                        qpu_time,
+                    ) = benchmark_qiskit_runtime_zne(
+                        circuit, args.n_qubits, args.shots, backend
+                    )
+                    _row(
+                        "Qiskit Runtime ZNE",
+                        ideal,
+                        noisy,
+                        mitigated,
+                        elapsed,
+                        n_circs,
+                        n1,
+                        n2,
+                    )
+                    qpu_str = (
+                        f"{qpu_time:.1f}s"
+                        if not math.isnan(qpu_time)
+                        else "N/A"
+                    )
+                    print(f"  job_id={job_id}  QPU time: {qpu_str}")
+                except ImportError as exc:
+                    print(
+                        f"{'Qiskit Runtime ZNE':<{_COL[0]}}"
+                        f" SKIP (missing dep): {exc}"
+                    )
+                except Exception as exc:
+                    print(
+                        f"{'Qiskit Runtime ZNE':<{_COL[0]}}"
+                        f" ERROR: {str(exc)[:60]}"
+                    )
+
     print(_SEP)
 
 
@@ -648,6 +744,15 @@ def main() -> None:
             "instead of only the default linear one."
         ),
     )
+    parser.add_argument(
+        "--ibm-account",
+        action="store_true",
+        default=False,
+        help=(
+            "Connect to IBM Quantum and add a Qiskit Runtime ZNE row on "
+            "real hardware. Requires IBM_QUANTUM_TOKEN env var."
+        ),
+    )
     args = parser.parse_args()
 
     import warnings
@@ -668,6 +773,26 @@ def main() -> None:
     except ImportError:
         pass
 
+    backend = None
+    if args.ibm_account:
+        import os
+
+        token = os.environ.get("IBM_QUANTUM_TOKEN")
+        if not token:
+            raise SystemExit(
+                "IBM_QUANTUM_TOKEN environment variable required when "
+                "--ibm-account is set."
+            )
+        from qiskit_ibm_runtime import QiskitRuntimeService
+
+        QiskitRuntimeService.save_account(token=token, overwrite=True)
+        service = QiskitRuntimeService()
+        backend = service.least_busy(
+            operational=True,
+            simulator=False,
+            min_num_qubits=args.n_qubits,
+        )
+
     np.random.seed(args.seed)
 
     circuit_types = (
@@ -683,7 +808,7 @@ def main() -> None:
     print("=" * len(_HDR))
 
     for ct in circuit_types:
-        _run_circuit(ct, args)
+        _run_circuit(ct, args, backend=backend)
 
     print(
         "\nImprov = |noisy − ideal| / |mitigated − ideal|"

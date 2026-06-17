@@ -55,6 +55,13 @@ qiskit = [
     "qiskit-ibm-runtime~=0.41.1",
     "ply==3.11",
 ]
+benchmarking = [
+    "mthree",
+    "qermit",
+    "qiskit>=2.0.0,<3.0.0",
+    "qiskit-aer~=0.17.0",
+    "qiskit-ibm-runtime~=0.41.1",
+]
 
 [dependency-groups]
 dev = [
@@ -96,9 +103,6 @@ Homepage = "https://unitary.foundation"
 Documentation = "https://mitiq.readthedocs.io/en/stable/"
 Repository = "https://github.com/unitaryfoundation/mitiq/"
 Issues = "https://github.com/unitaryfoundation/mitiq/issues/"
-
-[tool.black]
-line-length = 79
 
 [tool.ruff]
 exclude = ["__init__.py"]

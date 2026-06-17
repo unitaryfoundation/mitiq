@@ -22,7 +22,7 @@ Arguments
 
 Dependencies
 ------------
-    pip install -r scripts/requirements-benchmark.txt
+    pip install -e ".[benchmarking]"
 
 Output
 ------
@@ -56,7 +56,6 @@ from benchmark_utils import (
     _HDR,
     _SEP,
     _count_gates,
-    _Counter,
     _row,
     _zn_eigenvalue,
 )
@@ -169,34 +168,34 @@ def benchmark_mitiq_rem(
     shots: int,
 ) -> Tuple[float, float, float, int]:
     """Benchmark mitiq.rem (inverse confusion matrix)."""
-    from mitiq import Observable, PauliString  # isort: skip
+    from mitiq import Executor, Observable, PauliString  # isort: skip
     from mitiq.rem import execute_with_rem, generate_inverse_confusion_matrix
 
     obs = Observable(PauliString(spec="Z" * n_qubits))
-    executor = _make_readout_executor(n_qubits, noise_level, shots)
 
-    # noisy baseline (no mitigation)
-    noisy_counter = _Counter(executor)
-    noisy_val = float(obs.expectation(circuit, noisy_counter).real)
+    noisy_val = float(
+        obs.expectation(
+            circuit, _make_readout_executor(n_qubits, noise_level, shots)
+        ).real
+    )
 
     icm = generate_inverse_confusion_matrix(
         n_qubits, p0=noise_level, p1=noise_level
     )
-    mit_executor = _make_readout_executor(n_qubits, noise_level, shots)
-    mit_counter = _Counter(mit_executor)
+    mit_exec = Executor(_make_readout_executor(n_qubits, noise_level, shots))
 
     t0 = time.perf_counter()
     mitigated = float(
         execute_with_rem(
             circuit,
-            mit_counter,
+            mit_exec,
             obs,
             inverse_confusion_matrix=icm,
         ).real
     )
     elapsed = time.perf_counter() - t0
 
-    return noisy_val, mitigated, elapsed, mit_counter.n
+    return noisy_val, mitigated, elapsed, mit_exec.calls_to_executor
 
 
 # ── mitiq.experimental.trex ──────────────────────────────────────────────────
@@ -210,23 +209,23 @@ def benchmark_mitiq_trex(
     seed: int = 42,
 ) -> Tuple[float, float, float, int]:
     """Benchmark mitiq.experimental.trex (twirled readout error mitigation)."""
-    from mitiq import Observable, PauliString  # isort: skip
+    from mitiq import Executor, Observable, PauliString  # isort: skip
     from mitiq.experimental.trex import execute_with_trex
 
     obs = Observable(PauliString(spec="Z" * n_qubits))
-    noisy_counter = _Counter(
-        _make_readout_executor(n_qubits, noise_level, shots)
+    noisy_val = float(
+        obs.expectation(
+            circuit, _make_readout_executor(n_qubits, noise_level, shots)
+        ).real
     )
-    noisy_val = float(obs.expectation(circuit, noisy_counter).real)
 
-    trex_executor = _make_readout_executor(n_qubits, noise_level, shots)
-    trex_counter = _Counter(trex_executor)
+    trex_exec = Executor(_make_readout_executor(n_qubits, noise_level, shots))
 
     t0 = time.perf_counter()
     mitigated = float(
         execute_with_trex(
             circuit,
-            trex_counter,
+            trex_exec,
             obs,
             num_randomizations=32,
             random_state=seed,
@@ -234,7 +233,7 @@ def benchmark_mitiq_trex(
     )
     elapsed = time.perf_counter() - t0
 
-    return noisy_val, mitigated, elapsed, trex_counter.n
+    return noisy_val, mitigated, elapsed, trex_exec.calls_to_executor
 
 
 # ── mthree ───────────────────────────────────────────────────────────────────

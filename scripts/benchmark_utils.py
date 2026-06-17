@@ -2,30 +2,9 @@
 
 from __future__ import annotations
 
-from typing import Callable, Tuple
+from typing import Tuple
 
 import numpy as np
-
-# ── callable counter ─────────────────────────────────────────────────────────
-
-
-class _Counter:
-    """Callable wrapper that counts invocations.
-
-    Copies ``__annotations__`` from the wrapped callable so that mitiq's
-    executor type-hint inspection still works correctly.
-    """
-
-    def __init__(self, fn: Callable) -> None:
-        self._fn = fn
-        self.n = 0
-        func = self.__call__.__func__  # type: ignore[attr-defined]
-        func.__annotations__ = getattr(fn, "__annotations__", {})
-
-    def __call__(self, *args, **kwargs):
-        self.n += 1
-        return self._fn(*args, **kwargs)
-
 
 # ── observable helpers ───────────────────────────────────────────────────────
 
