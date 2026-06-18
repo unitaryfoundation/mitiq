@@ -20,8 +20,9 @@ kernelspec:
 Clifford data regression (CDR) is an error mitigation technique that learns a
 correction from noisy circuit outputs to their ideal values by training on
 classically simulable near-Clifford circuits. In this tutorial, we run CDR
-end-to-end on a layered variational circuit, using the Clifft near-Clifford
-simulator to provide the ideal training data needed for the regression.
+end-to-end on a layered variational circuit, using the
+[Clifft](https://github.com/unitaryfoundation/clifft) near-Clifford simulator to
+provide the ideal training data needed for the regression.
 
 CDR occupies a different niche from other error mitigation methods. Zero-noise
 extrapolation (ZNE) estimates the zero-noise answer by executing the same circuit
@@ -61,7 +62,10 @@ NOISE = 0.02
 
 Our target circuit is a hardware-efficient ansatz: alternating layers of
 single-qubit rotations and a nearest-neighbor CNOT ladder. We build each rotation
-as $H \cdot R_z(\theta) \cdot H$, which rotates the qubit so that measurements of
+as $H \cdot R_z(\theta) \cdot H$ — equivalent to an $R_x(\theta)$ rotation, but
+written so the only non-Clifford gate is the $R_z$, as CDR requires. (A bare
+$R_x(\theta)$ is itself a non-Clifford gate that is not a $Z$-axis rotation, so it
+would not satisfy that constraint.) This rotates the qubit so that measurements of
 $Z$-type observables such as $\langle Z_0 Z_3 \rangle$ depend on the variational
 angle $\theta$. The CNOT ladder then spreads those local rotations into
 multi-qubit correlations across the register.
@@ -251,7 +255,7 @@ plot is therefore an important part of understanding the method, not a failure o
 it.
 
 ```{code-cell}
-noise_levels = [0.005, 0.01, 0.02, 0.04, 0.06, 0.08]
+noise_levels = [0.0, 0.005, 0.01, 0.02, 0.04, 0.06, 0.08]
 noisy_curve, cdr_curve = [], []
 
 for p in noise_levels:
