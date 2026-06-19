@@ -94,6 +94,7 @@ docs = [
     "stim==1.16.0",
     "stimcirq==1.16.0",
     "pyqrack==2.0.2",
+    "clifft==0.4.1; python_version == '3.12'",
     "ucc==0.4.12; python_version == '3.12'",
     "pytket-cirq==0.43.0",
 ]
