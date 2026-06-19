@@ -38,8 +38,7 @@ def _unscramble(
     so the unscrambled bit for logical qubit ``i`` is ``shot[permutation[i]]``.
     """
     unscrambled = [
-        [int(shot[permutation[i]]) for i in range(len(permutation))]
-        for shot in result.result
+        [shot[p] for p in permutation] for shot in result.result
     ]
     return MeasurementResult(unscrambled)
 
@@ -86,7 +85,7 @@ def combine_results(
     """
     unscrambled = [
         _unscramble(result, permutation)
-        for result, permutation in zip(results, permutations)
+        for result, permutation in zip(results, permutations, strict=True)
     ]
 
     if method == "averaging":
