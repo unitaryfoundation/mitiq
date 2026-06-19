@@ -18,6 +18,7 @@ sorted order.
 """
 
 from collections.abc import Callable, Sequence
+from typing import cast
 
 import cirq
 import numpy as np
@@ -37,9 +38,10 @@ def _unscramble(
     Logical qubit ``i`` is measured on the qubit at index ``permutation[i]``,
     so the unscrambled bit for logical qubit ``i`` is ``shot[permutation[i]]``.
     """
-    unscrambled = [
-        [shot[p] for p in permutation] for shot in result.result
-    ]
+    # ``MeasurementResult.__post_init__`` normalises every shot to a
+    # ``list[int]``, though the declared type stays the broader ``Bitstring``.
+    shots = cast(list[list[int]], result.result)
+    unscrambled = [[shot[p] for p in permutation] for shot in shots]
     return MeasurementResult(unscrambled)
 
 
