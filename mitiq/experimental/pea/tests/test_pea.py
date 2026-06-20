@@ -412,3 +412,84 @@ def test_execute_with_pea_raises_if_both_provided():
             noise_model="global_depolarizing",
             epsilon=BASE_NOISE,
         )
+
+
+def test_construct_circuits_raises_if_epsilon_with_representations():
+    """epsilon belongs to the legacy noise_model path. Passing it alongside
+    representations is a misuse and is rejected, mirroring the noise_model
+    mutual-exclusion check."""
+    reps = global_depolarizing_representations(oneq_circ, BASE_NOISE)
+    with pytest.raises(ValueError, match="only applies to the legacy"):
+        construct_circuits(
+            oneq_circ,
+            scale_factors=[1],
+            representations=reps,
+            epsilon=BASE_NOISE,
+        )
+
+
+# Signed (PEC-style) representations: canonical sign-partition noise scaling
+# (Mari_2021_PRA, Sec. VI D, Eqs. 38-44). Amplifying these by deviation
+# scaling would amplify error cancellation instead of noise, so they take a
+# separate branch.
+
+
+def signed_pec_representation(noise_level=0.1):
+    """A signed (PEC-style) global-depolarizing representation of an X gate.
+
+    Its quasi-probability coefficients are not all positive (one positive
+    volume term plus negative Pauli terms), so it exercises the canonical
+    sign-partition branch rather than deviation-from-identity scaling.
+    """
+    from mitiq.pec.representations.depolarizing import (
+        represent_operation_with_global_depolarizing_noise,
+    )
+
+    return represent_operation_with_global_depolarizing_noise(
+        cirq.Circuit(cirq.X.on(q0)), noise_level
+    )
+
+
+def _sign_volumes(coeffs):
+    pos = sum(c for c in coeffs if c > 0)
+    neg = -sum(c for c in coeffs if c < 0)
+    return pos, neg
+
+
+@pytest.mark.parametrize("scale_factor", [0.5, 1, 3, 5])
+def test_scale_signed_representation_matches_canonical(scale_factor):
+    """A signed representation is scaled by the canonical sign-partition rule
+    of Eq. (43): the positive volume by (gamma+ - s gamma-)/gamma+ and the
+    negative volume by (1 - s), not by deviation-from-identity scaling."""
+    base = signed_pec_representation()
+    gamma_plus, gamma_minus = _sign_volumes(base.coeffs)
+    pos_scaling = (gamma_plus - scale_factor * gamma_minus) / gamma_plus
+    neg_scaling = 1 - scale_factor
+    expected = [
+        c * pos_scaling if c > 0 else c * neg_scaling for c in base.coeffs
+    ]
+    (scaled,) = scale_representations([base], scale_factor)
+    assert np.allclose(scaled.coeffs, expected)
+    assert np.isclose(sum(scaled.coeffs), 1.0)
+
+
+@pytest.mark.parametrize("scale_factor", [1, 2, 5])
+def test_scale_signed_representation_reduces_negativity(scale_factor):
+    """Amplifying a signed representation (s >= 1) drives its negative volume
+    to zero rather than increasing it. Deviation scaling did the opposite,
+    scaling the signed coefficients by s and amplifying cancellation."""
+    base = signed_pec_representation()
+    _, base_neg = _sign_volumes(base.coeffs)
+    (scaled,) = scale_representations([base], scale_factor)
+    _, scaled_neg = _sign_volumes(scaled.coeffs)
+    assert base_neg > 0
+    assert scaled_neg <= 1e-12
+
+
+def test_scale_signed_representation_above_limit_raises():
+    """Scaling beyond the canonical limit gamma+/gamma- is rejected."""
+    base = signed_pec_representation()
+    gamma_plus, gamma_minus = _sign_volumes(base.coeffs)
+    too_large = gamma_plus / gamma_minus + 1.0
+    with pytest.raises(ValueError, match="canonical limit"):
+        scale_representations([base], too_large)

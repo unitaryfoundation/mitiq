@@ -53,7 +53,9 @@ def _resolve_amplifications(
 
     Raises:
         ValueError: If both ``representations`` and ``noise_model`` are given,
-            or if neither is given.
+            if neither is given, or if ``epsilon`` is passed together with
+            ``representations`` (``epsilon`` only applies to the legacy
+            ``noise_model`` path).
     """
     if representations is not None and noise_model is not None:
         raise ValueError(
@@ -64,6 +66,11 @@ def _resolve_amplifications(
             "Provide either 'representations' (a list of "
             "OperationRepresentation) or 'noise_model' together with "
             "'epsilon'."
+        )
+    if representations is not None and epsilon is not None:
+        raise ValueError(
+            "'epsilon' only applies to the legacy 'noise_model' path; do "
+            "not pass it together with 'representations'."
         )
 
     if representations is not None:
@@ -133,7 +140,7 @@ def construct_circuits(
             "global_depolarizing". Legacy: prefer ``representations``. Must be
             given together with ``epsilon``.
         epsilon: Baseline noise level for the legacy ``noise_model`` path.
-            Ignored when ``representations`` is given.
+            Must not be combined with ``representations``.
         random_state: The random state or seed for reproducibility.
         precision: The desired precision for the sampling process.
             Default is 0.1.
@@ -286,7 +293,7 @@ def execute_with_pea(
             "global_depolarizing". Legacy: prefer ``representations``. Must be
             given together with ``epsilon``.
         epsilon: Baseline noise level for the legacy ``noise_model`` path.
-            Ignored when ``representations`` is given.
+            Must not be combined with ``representations``.
         observable: Observable to compute the expectation value of. If None,
             the `executor` must return an expectation value. Otherwise,
             the `QuantumResult` returned by `executor` is used to compute the
