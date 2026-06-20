@@ -9,10 +9,12 @@ from collections.abc import Callable
 
 import numpy as np
 import numpy.typing as npt
+import cirq
 from cirq import Circuit, I, LineQubit, synchronize_terminal_measurements
 
 from mitiq import QPROGRAM
 from mitiq.interface import accept_qprogram_and_validate
+from mitiq.interface.conversions import convert_to_mitiq
 
 
 def _get_circuit_mask(circuit: Circuit) -> npt.NDArray[np.int64]:
@@ -88,7 +90,7 @@ def get_slack_matrix_from_circuit_mask(
 
 def insert_ddd_sequences(
     circuit: QPROGRAM,
-    rule: Callable[[int], Circuit],
+    rule: Callable[[int], QPROGRAM],
 ) -> QPROGRAM:
     """Returns the circuit with DDD sequences applied according to the input
     rule.
@@ -109,7 +111,7 @@ def insert_ddd_sequences(
 @accept_qprogram_and_validate
 def _insert_ddd_sequences(
     circuit: Circuit,
-    rule: Callable[[int], Circuit],
+    rule: Callable[[int], QPROGRAM],
 ) -> Circuit:
     """Returns the circuit with DDD sequences applied according to the input
     rule.
@@ -130,6 +132,14 @@ def _insert_ddd_sequences(
             "are not currently supported by DDD."
         )
 
+    def cirq_rule(slack_length: int) -> Circuit:
+        cirq_circuit, _ = convert_to_mitiq(rule(slack_length))
+        qubit_map: dict[cirq.Qid, cirq.Qid] = {
+            q: LineQubit(i)
+            for i, q in enumerate(sorted(cirq_circuit.all_qubits()))
+        }
+        return cirq_circuit.transform_qubits(qubit_map)
+
     slack_matrix = get_slack_matrix_from_circuit_mask(
         _get_circuit_mask(circuit)
     )
@@ -140,7 +150,7 @@ def _insert_ddd_sequences(
         slack_column = slack_matrix[:, moment_idx]
         for row_index, slack_length in enumerate(slack_column):
             if slack_length > 1:
-                ddd_sequence = rule(slack_length).transform_qubits(
+                ddd_sequence = cirq_rule(slack_length).transform_qubits(
                     {LineQubit(0): qubits[row_index]}
                 )
                 for idx, op in enumerate(ddd_sequence.all_operations()):
