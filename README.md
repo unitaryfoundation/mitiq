@@ -107,7 +107,7 @@ If you are using an experimental technique and would like to help it graduate, p
 | Probabilistic Error Amplification  | [PEA](https://mitiq.readthedocs.io/en/stable/guide/pea.html) |  [`mitiq.experimental.pea`](https://github.com/unitaryfoundation/mitiq/tree/main/mitiq/experimental/pea) | [Nature](https://www.nature.com/articles/s41586-023-06096-3) |
 | Virtual Distillation  | [VD](https://mitiq.readthedocs.io/en/stable/guide/vd.html) |  [`mitiq.experimental.vd`](https://github.com/unitaryfoundation/mitiq/tree/main/mitiq/experimental/vd) | [APS](https://journals.aps.org/prx/abstract/10.1103/PhysRevX.11.041036) |
 | Twirled Readout Error eXtinction | [TREX](https://mitiq.readthedocs.io/en/latest/guide/trex.html) | [`mitiq.experimental.trex`](https://github.com/unitaryfoundation/mitiq/tree/main/mitiq/experimental/trex) | [2012.09738](https://arxiv.org/abs/2012.09738) |
-| Debiasing | [DEB](https://mitiq.readthedocs.io/en/stable/guide/deb.html) | [`mitiq.experimental.deb`](https://github.com/unitaryfoundation/mitiq/tree/main/mitiq/experimental/deb) | [2301.07233](https://arxiv.org/abs/2301.07233) |
+| Debiasing | [DEB](https://mitiq.readthedocs.io/en/latest/guide/deb.html) | [`mitiq.experimental.deb`](https://github.com/unitaryfoundation/mitiq/tree/main/mitiq/experimental/deb) | [2301.07233](https://arxiv.org/abs/2301.07233) |
 
 
 In addition, we also have Pauli Twirling which is a noise tailoring technique:

@@ -241,6 +241,7 @@ linkcheck_ignore = [
     r"https://github.com/unitaryfoundation/mitiq/compare/.*",
     r"https://github.com/unitaryfoundation/mitiq/compare/.*",
     r"https://github.com/unitaryfoundation/mitiq/projects/7",
+    r"https://scholar\.google\.com/.*",
 ]
 
 linkcheck_retries = 3
