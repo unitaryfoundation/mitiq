@@ -53,7 +53,7 @@ def construct_circuits(
     measurement is expected to be handled by the executor.
 
     The permutations are returned alongside the circuits so that they can be
-    passed to :func:`.combine_results`, which undoes them on the measured
+    passed to :func:`~mitiq.experimental.deb.deb.combine_results`, which undoes them on the measured
     bitstrings. ``permutations[k][i]`` is the index (into
     ``sorted(circuit.all_qubits())``) of the qubit that logical qubit ``i`` is
     mapped onto in variant ``k``.
