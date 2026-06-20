@@ -38,11 +38,14 @@ mitigated = pea.execute_with_pea(
 )
 ```
 
-The representations are amplified with the canonical noise scaling of Section D of
-{cite}`Mari_2021_PRA`: the deviation of each representation from the identity is scaled by the scale
-factor, which keeps the coefficients summing to one. That construction shows any quasi-probability
-representation induces a canonical noise channel that is linear in a single noise parameter, so this
-scaling is well defined for noise that is neither local nor global depolarizing.
+The representations are amplified with the canonical noise scaling of Sec. VI D of
+{cite}`Mari_2021_PRA`. The rule depends on the sign structure of each representation. An all-positive
+representation (a genuine probability distribution, e.g. one learned from hardware) is scaled by its
+deviation from the identity. A signed representation (one with negative coefficients, e.g. a PEC-style
+decomposition) is scaled by the canonical sign-partition rule of Eq. (43), which scales the positive and
+negative volumes separately so that amplifying it adds noise instead of amplifying the error
+cancellation. Both rules keep the coefficients summing to one, and the scaling is well defined for noise
+that is neither local nor global depolarizing.
 
 The legacy way is to pass `noise_model` together with `epsilon`. Mitiq then builds the depolarizing
 representations for you. This path is kept for backward compatibility and emits a `DeprecationWarning`;
