@@ -52,6 +52,9 @@ the method needs $C \cdot N$ circuit shots to obtain the same precision as the s
 : An error mitigation model is
 trained with quantum circuits that resemble the circuit of interest, but which are easier to classically simulate.
 
+[Debiasing (DEB)](deb.md)
+: Several variants of a circuit are run, each relabeled onto a randomly permuted set of qubits, with the permutation undone on the measured bitstrings before combining. Averaging the unscrambled distributions reduces qubit-dependent bias. An optional sharpening step instead keeps the most frequent outcome across variants.
+
 [Digital Dynamical Decoupling (DDD)](ddd.md)
 : Sequences of gates are applied to slack windows (single-qubit idle windows) in a quantum circuit to reduce the coupling
 between the qubits and the environment, mitigating the effects of noise.
