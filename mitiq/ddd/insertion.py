@@ -7,9 +7,9 @@
 
 from collections.abc import Callable
 
+import cirq
 import numpy as np
 import numpy.typing as npt
-import cirq
 from cirq import Circuit, I, LineQubit, synchronize_terminal_measurements
 
 from mitiq import QPROGRAM
