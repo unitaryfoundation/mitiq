@@ -11,7 +11,8 @@ an executor is defined, every annotation is stored as a string.
 (e.g. ``"float"`` -> ``float``) so that float / measurement /
 density-matrix executors are detected correctly.
 
-See https://github.com/unitaryfoundation/mitiq/issues/3061 for the originating issue.
+See https://github.com/unitaryfoundation/mitiq/issues/3061 for the
+originating issue.
 """
 
 from __future__ import annotations
