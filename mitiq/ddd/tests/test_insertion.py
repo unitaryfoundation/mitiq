@@ -291,3 +291,29 @@ def test_insert_sequence_over_identity_gates():
     ddd_circuit = insert_ddd_sequences(circuit, rule=xx)
 
     assert ddd_circuit == circuit_expected
+
+
+def test_insert_sequences_with_qiskit_rule():
+    """DDD rules that return non-Cirq circuits (e.g. Qiskit) should work."""
+    from mitiq.interface.mitiq_qiskit.conversions import to_qiskit
+
+    def qiskit_xx(slack_length: int) -> qiskit.QuantumCircuit:
+        cirq_seq = xx(slack_length)
+        return to_qiskit(cirq_seq)
+
+    qubits = cirq.LineQubit.range(2)
+    circuit = cirq.Circuit(
+        cirq.ops.H.on_each(*qubits),
+        cirq.ops.I.on_each(*qubits),
+        cirq.ops.I.on_each(*qubits),
+        cirq.ops.H.on_each(*qubits),
+    )
+    expected = cirq.Circuit(
+        cirq.ops.H.on_each(*qubits),
+        cirq.ops.X.on_each(*qubits),
+        cirq.ops.X.on_each(*qubits),
+        cirq.ops.H.on_each(*qubits),
+    )
+
+    result = insert_ddd_sequences(circuit, rule=qiskit_xx)
+    assert result == expected
