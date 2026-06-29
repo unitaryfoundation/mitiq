@@ -74,7 +74,19 @@ class Executor:
     ) -> None:
         self._executor = executor
 
-        executor_annotation = inspect.getfullargspec(executor).annotations
+        # Resolve the executor's return-type annotation. ``get_type_hints``
+        # evaluates stringized (PEP 563) annotations back into concrete types,
+        # so executors defined in modules using
+        # ``from __future__ import annotations`` are still detected correctly.
+        # It evaluates *all* annotations, so it raises ``NameError`` when any
+        # of them is an unresolvable forward reference (e.g. a name imported
+        # only under ``typing.TYPE_CHECKING``) and ``TypeError`` on some
+        # callables it cannot introspect. In those cases fall back to the raw
+        # (possibly stringized) annotations, preserving the previous behavior.
+        try:
+            executor_annotation = typing.get_type_hints(executor)
+        except (NameError, TypeError):
+            executor_annotation = inspect.getfullargspec(executor).annotations
         self._executor_return_type = executor_annotation.get("return")
         self._max_batch_size = max_batch_size
 
