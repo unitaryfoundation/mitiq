@@ -11,7 +11,7 @@ import typing
 import warnings
 from collections import Counter
 from collections.abc import Callable, Iterable, Sequence
-from typing import Any, List, Tuple, cast, get_args
+from typing import Any, Literal, cast, get_args, get_origin
 
 import numpy as np
 import numpy.typing as npt
@@ -21,38 +21,45 @@ from mitiq.interface import convert_from_mitiq, convert_to_mitiq
 from mitiq.observable.observable import Observable
 from mitiq.observable.pauli import PauliString
 
-DensityMatrixLike = [
-    np.ndarray,
-    Iterable[np.ndarray],  # type: ignore
-    list[np.ndarray],  # type: ignore
-    List[np.ndarray],  # type: ignore
-    Sequence[np.ndarray],  # type: ignore
-    tuple[np.ndarray],  # type: ignore
-    Tuple[np.ndarray],  # type: ignore
-    npt.NDArray[np.complex64],
-    list[npt.NDArray[np.complex64]],
-    list[np.ndarray],  # type: ignore
-    tuple[npt.NDArray[np.complex64]],
-]
-FloatLike = [
-    None,  # Untyped executors are assumed to return floats.
-    float,
-    Iterable[float],
-    list[float],
-    Sequence[float],
-    tuple[float],
-    list[float],
-    tuple[float],
-]
-MeasurementResultLike = [
-    MeasurementResult,
-    Iterable[MeasurementResult],
-    list[MeasurementResult],
-    Sequence[MeasurementResult],
-    tuple[MeasurementResult],
-    list[MeasurementResult],
-    tuple[MeasurementResult],
-]
+_BATCHED_ORIGINS = frozenset({list, tuple, Iterable, Sequence})
+
+
+def _classify_return_type(
+    return_type: Any,
+) -> tuple[Literal["float", "density_matrix", "measurement"] | None, bool]:
+    """Classify an executor's return-type annotation.
+
+    Returns ``(category, is_batched)``. ``category`` is ``'float'``,
+    ``'density_matrix'``, ``'measurement'``, or ``None`` for
+    annotated-but-unrecognized types. ``is_batched`` is ``True`` when the
+    annotation is a collection (e.g. ``list[np.ndarray]``).
+
+    Untyped executors (``return_type is None``) default to ``'float'``.
+    All ndarray variants (``np.ndarray``, ``npt.NDArray[Any]``,
+    ``npt.NDArray[np.complex64]``, etc.) map to ``'density_matrix'``.
+    """
+    if return_type is None:
+        return "float", False
+
+    origin = get_origin(return_type)
+    if origin in _BATCHED_ORIGINS:
+        args = get_args(return_type)
+        element: Any = args[0] if args else None
+        is_batched = True
+    else:
+        element = return_type
+        is_batched = False
+
+    if element is float:
+        return "float", is_batched
+    elif element is MeasurementResult:
+        return "measurement", is_batched
+    elif element is not None and (
+        element is np.ndarray or get_origin(element) is np.ndarray
+    ):
+        return "density_matrix", is_batched
+    else:
+        return None, is_batched
 
 
 class Executor:
@@ -88,6 +95,9 @@ class Executor:
         except (NameError, TypeError):
             executor_annotation = inspect.getfullargspec(executor).annotations
         self._executor_return_type = executor_annotation.get("return")
+        self._result_category, self._is_batched = _classify_return_type(
+            self._executor_return_type
+        )
         self._max_batch_size = max_batch_size
 
         self._executed_circuits: list[QPROGRAM] = []
@@ -116,24 +126,7 @@ class Executor:
         Returns:
             True if the executor is detected as batched, else False.
         """
-        return_type = self._executor_return_type
-
-        if return_type is None:
-            return False
-
-        return return_type in (
-            BatchedType[T]  # type: ignore[index]
-            for BatchedType in [
-                Iterable,
-                List,
-                typing.Sequence,
-                Tuple,
-                list,
-                tuple,
-                Sequence,
-            ]
-            for T in get_args(QuantumResult)
-        )
+        return self._is_batched
 
     @property
     def executed_circuits(self) -> list[QPROGRAM]:
@@ -192,10 +185,8 @@ class Executor:
                 "Expected observable to be hermitian. Continue with caution."
             )
 
-        # Check executor and observable compatibility with type hinting
-        # If FloatLike is specified as a return and observable is used
-        if self._executor_return_type in FloatLike and observable is not None:
-            # Type hinted as FloatLike and observable passed
+        # Check executor and observable compatibility.
+        if self._result_category == "float" and observable is not None:
             if self._executor_return_type is not None:
                 raise ValueError(
                     "When using an executor which returns a float-like "
@@ -203,20 +194,17 @@ class Executor:
                     "is executed instead of with an observable."
                 )
             else:
-                # Using an observable but no type hinting
                 raise ValueError(
                     "When using an observable, the return type of the "
                     "executor must be specified using typehinting."
                 )
         elif observable is None:
-            # Type hinted as DensityMatrixLike but no observable is set
-            if self._executor_return_type in DensityMatrixLike:
+            if self._result_category == "density_matrix":
                 raise ValueError(
                     "When using a density matrix result, an observable "
                     "is required."
                 )
-            # Type hinted as MeasurementResultLike but no observable is set
-            elif self._executor_return_type in MeasurementResultLike:
+            elif self._result_category == "measurement":
                 raise ValueError(
                     "When using a measurement, or bitstring, like result, an "
                     "observable is required."
@@ -225,7 +213,7 @@ class Executor:
         # Get all required circuits to run.
         if (
             observable is not None
-            and self._executor_return_type in MeasurementResultLike
+            and self._result_category == "measurement"
         ):
             all_circuits = [
                 circuit_with_measurements
@@ -241,12 +229,12 @@ class Executor:
         all_results = self.run(all_circuits, force_run_all, **kwargs)
 
         # Parse the results.
-        if self._executor_return_type in FloatLike:
+        if self._result_category == "float":
             results = np.real_if_close(
                 cast(Sequence[float], all_results)
             ).tolist()
 
-        elif self._executor_return_type in DensityMatrixLike:
+        elif self._result_category == "density_matrix":
             observable = cast(Observable, observable)
             all_results = cast(list[npt.NDArray[np.complex64]], all_results)
             results = [
@@ -254,7 +242,7 @@ class Executor:
                 for density_matrix in all_results
             ]
 
-        elif self._executor_return_type in MeasurementResultLike:
+        elif self._result_category == "measurement":
             observable = cast(Observable, observable)
             all_results = cast(list[MeasurementResult], all_results)
             results = [
