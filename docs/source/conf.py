@@ -239,7 +239,6 @@ linkcheck_ignore = [
     r"https://www\.contributor-covenant\.org/.*",
     r"https://www\.sciencedirect\.com/science/article/.*",
     r"https://github.com/unitaryfoundation/mitiq/compare/.*",
-    r"https://github.com/unitaryfoundation/mitiq/compare/.*",
     r"https://github.com/unitaryfoundation/mitiq/projects/7",
     r"https://scholar\.google\.com/.*",
 ]
