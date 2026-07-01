@@ -18,9 +18,9 @@ Rather than performing full state tomography, it constructs a compact classical 
 
 The protocol works in two steps:
 
-- **Step 1: Quantum processing.** Apply a random unitary $U$ sampled from a fixed ensemble $\mathcal{U}$, measure in the computational basis, and record the outcome $b$ and the unitary $U$.
+- **Step 1: Quantum processing.** Apply a random unitary $U$ sampled from an ensemble $\mathcal{U}$ to $\rho$, then measure in the computational basis to obtain a bitstring outcome $b \in \{0,1\}^n$. Record the pair $(U, b)$.
 
-- **Step 2: Classical post-processing.** Apply an inverse channel $\mathcal{M}^{-1}$ to each measurement record to obtain a *classical shadow* $\hat{\rho}$, then estimate observables as $\hat{o}_i = \mathrm{Tr}(O_i \hat{\rho})$.
+- **Step 2: Classical post-processing.** For each recorded pair $(U, b)$, classically undo the effect of the random measurement to obtain a single-shot, unbiased estimate $\hat{\rho}$ of $\rho$ — a *classical shadow*. Repeating this over many rounds yields a collection of shadows, from which observables are estimated as $\hat{o}_i = \mathrm{Tr}(O_i \hat{\rho})$.
 
 The robust variant of this protocol, described in [Robust Shadow Estimation](#robust-shadow-estimation), additionally calibrates the inverse channel to account for noise on the rotation gates and measurements.
 
