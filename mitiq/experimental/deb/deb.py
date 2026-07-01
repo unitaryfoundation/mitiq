@@ -75,10 +75,11 @@ def combine_results(
 
     Args:
         results: One ``MeasurementResult`` per variant, in the same order as
-            the variants returned by :func:`.construct_circuits`.
+            the variants returned by
+            :func:`~mitiq.experimental.deb.symmetrization.construct_circuits`.
         permutations: The permutation applied to each variant, in the same
             order as ``results`` (the second element returned by
-            :func:`.construct_circuits`).
+            :func:`~mitiq.experimental.deb.symmetrization.construct_circuits`).
         method: Either ``"averaging"`` or ``"sharpening"``.
 
     Returns:
