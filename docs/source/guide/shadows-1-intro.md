@@ -13,6 +13,9 @@ kernelspec:
 
 # How Do I Use Classical Shadows?
 
+```{include} shadows-experimental-note.md
+```
+
 The `mitiq.experimental.shadows` module estimates expectation values and reconstructs density matrices from random Pauli measurements.
 It also supports robust shadow estimation, which calibrates out noise on the rotation gates and measurements.
 For the theory behind the technique, see [](shadows-5-theory.md).

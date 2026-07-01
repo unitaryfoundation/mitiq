@@ -13,6 +13,9 @@ kernelspec:
 
 # What is the Theory Behind Classical Shadow Estimation?
 
+```{include} shadows-experimental-note.md
+```
+
 Classical shadow estimation {cite}`huang2020predicting` is a protocol for predicting many properties of an unknown quantum state $\rho$ from a small number of randomized measurements.
 Rather than performing full state tomography, it constructs a compact classical representation — a *classical shadow* — from which expectation values of many observables can be estimated simultaneously.
 

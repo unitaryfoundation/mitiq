@@ -13,6 +13,9 @@ kernelspec:
 
 # When Should I Use Classical Shadows?
 
+```{include} shadows-experimental-note.md
+```
+
 ## Advantages
 
 Classical shadows can predict $M$ expectation values simultaneously from a single set of measurements, with a sample complexity that grows only as $\mathcal{O}(\log M)$ in the number of observables.

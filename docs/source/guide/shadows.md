@@ -13,6 +13,9 @@ kernelspec:
 
 # Classical Shadows
 
+```{include} shadows-experimental-note.md
+```
+
 Classical shadows {cite}`huang2020predicting` create an approximate classical representation of a quantum state using minimal measurements of copies of said state.
 The protocol is based on shadow tomography {cite}`aaronson2018shadow`, a technique for reconstructing properties of a quantum state from a small number of measurements.
 This approach not only characterizes and mitigates noise effectively but also retains sample efficiency and demonstrates noise resilience {cite}`chen2021robust`.

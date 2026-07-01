@@ -13,6 +13,9 @@ kernelspec:
 
 # What additional options are available when using classical shadows?
 
+```{include} shadows-experimental-note.md
+```
+
 ```{code-cell} ipython3
 :tags: [remove-cell]
 from functools import partialmethod
