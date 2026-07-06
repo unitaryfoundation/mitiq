@@ -183,7 +183,7 @@ calibration_results = shadows.pauli_twirling_calibrate(
     locality=2,       # match the weight of your heaviest observable
     qubits=qubits,
     executor=noisy_execute,
-    num_total_measurements_calibration=5000,
+    num_total_measurements_calibration=500,
 )
 print("Number of fidelity terms:", len(calibration_results))
 ```
