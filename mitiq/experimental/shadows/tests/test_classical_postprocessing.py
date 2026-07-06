@@ -6,6 +6,7 @@
 """Tests for classical post-processing functions for classical shadows."""
 
 import numpy as np
+import pytest
 
 import mitiq
 from mitiq.experimental.shadows.classical_postprocessing import (
@@ -216,6 +217,30 @@ def test_expectation_estimation_shadow_cal():
         measurement_outcomes, pauli, batch_size, fidelities
     )
     assert np.isclose(result, expected_result)
+
+
+def test_expectation_estimation_shadow_cal_locality_mismatch():
+    """An observable whose weight exceeds the calibrated locality has no
+    fidelity entry for its support and must raise instead of silently
+    returning 0."""
+    bitstrings = ["0101", "0110"]
+    paulistrings = ["YXZZ", "XXXX"]
+    # fidelities from a locality=1 calibration on 4 qubits
+    fidelities = {
+        "0000": 1,
+        "0001": 1 / 3,
+        "0010": 1 / 3,
+        "0100": 1 / 3,
+        "1000": 1 / 3,
+    }
+
+    measurement_outcomes = bitstrings, paulistrings
+    pauli = mitiq.PauliString("YX")
+
+    with pytest.raises(ValueError, match="locality >= 2"):
+        expectation_estimation_shadow(
+            measurement_outcomes, pauli, num_batches=1, fidelities=fidelities
+        )
 
 
 def test_expectation_estimation_shadow_no_indices():

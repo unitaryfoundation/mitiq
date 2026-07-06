@@ -233,11 +233,25 @@ def expectation_estimation_shadow(
     Returns:
         Float corresponding to the estimate of the observable expectation
         value.
+
+    Raises:
+        ValueError: If ``fidelities`` contains no entry for the support of
+            ``pauli``, i.e. the observable acts on more qubits than the
+            ``locality`` used during calibration.
     """
     bitstrings, paulistrings = measurement_outcomes
     num_qubits = len(bitstrings[0])
 
     qubits = sorted(pauli.support())
+    if fidelities:
+        b = create_string(num_qubits, qubits)
+        if b not in fidelities:
+            raise ValueError(
+                f"Observable {pauli.spec} acts on {len(qubits)} qubits, but "
+                "no Pauli fidelity was estimated for its support. Re-run "
+                "`pauli_twirling_calibrate` with "
+                f"`locality >= {len(qubits)}`."
+            )
     filtered_bitstrings = [
         "".join([bitstring[q] for q in qubits]) for bitstring in bitstrings
     ]
@@ -254,8 +268,7 @@ def expectation_estimation_shadow(
             product = sum((-1) ** bit.count("1") for bit in matching_bits)
 
             if fidelities:
-                b = create_string(num_qubits, qubits)
-                product /= fidelities.get(b, np.inf)
+                product /= fidelities[b]
             else:
                 product *= 3 ** len(qubits)
 

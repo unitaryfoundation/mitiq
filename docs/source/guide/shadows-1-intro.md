@@ -147,7 +147,8 @@ print("Calibrated:  ", calibrated)
 ```
 
 ```{note}
-You do not need to re-run `pauli_twirling_calibrate` between experiments as long as the number of qubits and the noise channel have not changed.
+You do not need to re-run `pauli_twirling_calibrate` between experiments as long as the number of qubits and the noise channel have not changed, and the new observables act on no more qubits than the calibrated `locality`.
+Reusing a calibration for an observable of larger weight raises a `ValueError`, since no Pauli fidelity was estimated for its support.
 ```
 
 For a detailed walkthrough of robust shadow estimation, see [Robust Shadow Estimation with Mitiq](../examples/rshadows_tutorial.md).
