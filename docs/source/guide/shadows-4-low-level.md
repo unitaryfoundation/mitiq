@@ -241,6 +241,8 @@ print(f"Uncalibrated ⟨ZZ⟩: {uncalibrated:.4f}")
 print(f"Calibrated ⟨ZZ⟩:   {calibrated:.4f}")
 ```
 
+With only a few hundred snapshots, both estimates fluctuate noticeably from run to run, but the uncalibrated estimate remains biased low while the calibrated estimate fluctuates around the ideal value.
+
 The high-level function `mitiq.experimental.shadows.pauli_twirling_calibrate` performs the calibration
 steps above automatically, and `mitiq.experimental.shadows.classical_post_processing` with
 `calibration_results` passes the fidelities through to these low-level functions.

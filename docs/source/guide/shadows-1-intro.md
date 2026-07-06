@@ -29,7 +29,6 @@ tqdm.tqdm.__init__ = partialmethod(tqdm.tqdm.__init__, disable=True)
 
 ```{code-cell} ipython3
 import cirq
-import numpy as np
 from mitiq import MeasurementResult, PauliString
 from mitiq.experimental import shadows
 from mitiq.interface.mitiq_cirq.cirq_utils import (
@@ -84,6 +83,10 @@ result = shadows.classical_post_processing(
 )
 print("Shadow estimates:", result)
 ```
+
+For the GHZ state both observables have expectation value 1.
+The protocol is randomized, so the estimates fluctuate around this value from run to
+run, with smaller fluctuations for larger `num_total_measurements_shadow`.
 
 To reconstruct the full density matrix instead, use `state_reconstruction=True`:
 
@@ -151,6 +154,11 @@ calibrated = shadows.classical_post_processing(
 print("Uncalibrated:", uncalibrated)
 print("Calibrated:  ", calibrated)
 ```
+
+The uncalibrated estimates are biased well below the true value of 1 (for this noise
+model they converge to roughly 0.54), while the calibrated estimates fluctuate around
+the true value.
+Since these are statistical estimates, the exact values vary from run to run.
 
 ```{note}
 You do not need to re-run `pauli_twirling_calibrate` between experiments as long as the number of qubits and the noise channel have not changed, and the new observables act on no more qubits than the calibrated `locality`.

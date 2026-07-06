@@ -25,7 +25,6 @@ tqdm.tqdm.__init__ = partialmethod(tqdm.tqdm.__init__, disable=True)
 
 ```{code-cell} ipython3
 import cirq
-import numpy as np
 from mitiq import MeasurementResult, PauliString
 from mitiq.experimental import shadows
 from mitiq.interface.mitiq_cirq.cirq_utils import (
@@ -228,6 +227,8 @@ calibrated = shadows.classical_post_processing(
 )
 print("Calibrated estimates:", calibrated)
 ```
+
+As on the [introduction page](shadows-1-intro.md), these are statistical estimates of the true value 1, and vary from run to run.
 
 ```{note}
 You do not need to re-run `pauli_twirling_calibrate` between experiments as long as
