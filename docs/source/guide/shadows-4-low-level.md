@@ -16,13 +16,6 @@ kernelspec:
 ```{include} shadows-experimental-note.md
 ```
 
-```{code-cell} ipython3
-:tags: [remove-cell]
-from functools import partialmethod
-import tqdm
-tqdm.tqdm.__init__ = partialmethod(tqdm.tqdm.__init__, disable=True)
-```
-
 The high-level functions `shadows.shadow_quantum_processing` and
 `shadows.classical_post_processing` each compose several lower-level steps.
 This page walks through those steps explicitly, using functions from

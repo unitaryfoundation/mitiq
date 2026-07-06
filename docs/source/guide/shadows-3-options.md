@@ -159,7 +159,7 @@ estimation.
 
 **`k_calibration`** sets the number of batches in the median-of-means estimator for
 the Pauli fidelities.
-Increasing it reduces sensitivity to outlier calibration shots:
+Increasing it reduces sensitivity to outlier calibration shots.
 
 **`locality`** restricts which Pauli fidelity terms are estimated.
 If your observables act on at most `w` qubits, setting `locality=w` reduces the number
@@ -194,8 +194,7 @@ avoid redundant circuit executions:
 
 ```{code-cell} ipython3
 # Collect calibration data manually
-import cirq as cirq_
-zero_circuit = cirq_.Circuit()
+zero_circuit = cirq.Circuit()
 calibration_outcomes = shadows.shadow_quantum_processing(
     zero_circuit,
     noisy_execute,
