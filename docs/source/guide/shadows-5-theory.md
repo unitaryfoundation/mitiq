@@ -70,10 +70,10 @@ $$\hat{o}_i(N, K) := \mathrm{median}\left\{\hat{o}_i^{(1)}, \ldots, \hat{o}_i^{(
 The shadow norm $\|O\|_{\mathrm{shadow}}$ determines how many measurements are needed to estimate $\mathrm{Tr}(O\rho)$ and depends on the ensemble $\mathcal{U}$.
 Two practically important cases are:
 
-- **Global Clifford measurements** ($\mathcal{U} = \mathcal{C}_n$): the shadow norm equals the Hilbert-Schmidt norm, $\|O\|_{\mathrm{shadow}} \leq 3\,\mathrm{Tr}[O^2]$.
+- **Global Clifford measurements** ($\mathcal{U} = \mathcal{C}_n$): the squared shadow norm is bounded by the Hilbert-Schmidt norm of the observable, $\|O\|^2_{\mathrm{shadow}} \leq 3\,\mathrm{Tr}[O^2]$.
 Each snapshot takes the form $\hat{\rho} = (2^n+1)U^\dagger|b\rangle\langle b|U - \mathbb{I}$.
 
-- **Random Pauli measurements** ($\mathcal{U} = \mathcal{C}_1^{\otimes n}$): $\|O\|_{\mathrm{shadow}} \leq 4^w \|O\|^2$ for an operator acting on $w$ qubits.
+- **Random Pauli measurements** ($\mathcal{U} = \mathcal{C}_1^{\otimes n}$): $\|O\|^2_{\mathrm{shadow}} \leq 4^w \|O\|^2_\infty$ for an operator acting on $w$ qubits, where $\|O\|_\infty$ is the operator norm.
 The unitary factorizes over qubits, so each snapshot also factorizes:
 
 $$\hat{\rho} = \bigotimes_{i=1}^{n}\!\left(3U_i^\dagger|b_i\rangle\langle b_i|U_i - \mathbb{I}\right).$$
@@ -104,9 +104,11 @@ where $\Pi_\lambda$ are projectors onto the irreducible representation subspaces
 
 ### Pauli fidelities
 
-For the local Clifford group $\mathcal{C}_1^{\otimes n}$, the projectors factorize as $\Pi_b = \bigotimes_{i=1}^n \Pi_{b_i}$, where:
+For the local Clifford group $\mathcal{C}_1^{\otimes n}$, the projectors factorize as $\Pi_b = \bigotimes_{i=1}^n \Pi_{b_i}$, where[^ptm]:
 
 $$\Pi_{b_i} = \begin{cases} |\sigma_0\rangle\!\rangle\langle\!\langle\sigma_0| & b_i = 0 \\ \mathbb{I} - |\sigma_0\rangle\!\rangle\langle\!\langle\sigma_0| & b_i = 1 \end{cases}$$
+
+[^ptm]: The double-ket notation refers to the Pauli transfer matrix (PTM), or Liouville, representation: a linear operator $A$ on the Hilbert space of $n$ qubits is written as a vector $|A\rangle\!\rangle$ with components $\langle\!\langle\sigma_a|A\rangle\!\rangle = \mathrm{Tr}(\sigma_a^\dagger A)$ in the basis of normalized Pauli operators $\sigma_a = P_a/\sqrt{2^n}$. In particular, $\sigma_0 = \mathbb{I}/\sqrt{2}$ is the normalized single-qubit identity, so $|\sigma_0\rangle\!\rangle\langle\!\langle\sigma_0|$ projects onto it.
 
 The expansion coefficients $\{\hat{f}_b\}_b$ are the **Pauli fidelities**.
 The single-round estimator is:
