@@ -102,10 +102,9 @@ estimation and state reconstruction — controlled by the `observables` and
 ### Expectation value estimation
 
 Pass a list of `PauliString` observables to estimate their expectation values.
-The `k_shadows` parameter controls the number of batches used in the median-of-means
-estimator.
-A larger `k_shadows` reduces the influence of outlier snapshots at the cost of using
-more measurements per estimate:
+The `k_shadows` parameter controls the number of batches used in the median-of-means estimator.
+This is purely a post-processing choice: the snapshots already collected by `shadow_quantum_processing` are split into `k_shadows` batches, and the estimate is the median of the batch means.
+A larger `k_shadows` reduces the influence of outlier snapshots, at the cost of fewer snapshots — and hence more statistical noise — within each batch:
 
 ```{code-cell} ipython3
 shadow_outcomes = shadows.shadow_quantum_processing(
