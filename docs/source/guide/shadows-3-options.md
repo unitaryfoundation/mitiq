@@ -17,13 +17,6 @@ kernelspec:
 ```
 
 ```{code-cell} ipython3
-:tags: [remove-cell]
-from functools import partialmethod
-import tqdm
-tqdm.tqdm.__init__ = partialmethod(tqdm.tqdm.__init__, disable=True)
-```
-
-```{code-cell} ipython3
 import cirq
 from mitiq import MeasurementResult, PauliString
 from mitiq.experimental import shadows
@@ -55,8 +48,7 @@ def execute(circuit: cirq.Circuit) -> MeasurementResult:
 
 ## Options for `shadow_quantum_processing`
 
-`shadows.shadow_quantum_processing` accepts two optional arguments beyond the required
-`circuit`, `executor`, and `num_total_measurements_shadow`.
+`shadows.shadow_quantum_processing` accepts two optional arguments beyond the required `circuit`, `executor`, and `num_total_measurements_shadow`.
 
 **`random_seed`** seeds NumPy's random number generator before sampling Pauli bases.
 This makes the measurement outcomes reproducible:
@@ -81,15 +73,19 @@ print("Bases match:", shadow_outcomes_2[1][:5] == bases[:5])
 
 **`qubits`** explicitly specifies which qubits to measure.
 This is useful when the circuit's qubit ordering differs from what you want to track,
-or when you want to restrict measurements to a subset of qubits:
+or when you want to restrict measurements to a subset of qubits.
+Here we measure only the first two qubits of the GHZ circuit, so the sampled Pauli
+bases and measured bitstrings have length 2 instead of 3:
 
 ```{code-cell} ipython3
 shadow_outcomes = shadows.shadow_quantum_processing(
     circuit,
     execute,
     num_total_measurements_shadow=200,
-    qubits=[qubits[0], qubits[1], qubits[2]],
+    qubits=qubits[:2],
 )
+print("First five bases:     ", shadow_outcomes[1][:5])
+print("First five bitstrings:", shadow_outcomes[0][:5])
 ```
 
 ## Options for `classical_post_processing`

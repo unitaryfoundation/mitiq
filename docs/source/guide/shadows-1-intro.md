@@ -21,13 +21,6 @@ It also supports robust shadow estimation, which calibrates out noise on the rot
 For the theory behind the technique, see [](shadows-5-theory.md).
 
 ```{code-cell} ipython3
-:tags: [remove-cell]
-from functools import partialmethod
-import tqdm
-tqdm.tqdm.__init__ = partialmethod(tqdm.tqdm.__init__, disable=True)
-```
-
-```{code-cell} ipython3
 import cirq
 from mitiq import MeasurementResult, PauliString
 from mitiq.experimental import shadows
