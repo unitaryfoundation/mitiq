@@ -102,13 +102,19 @@ For a detailed walkthrough with plots and error analysis, see [Classical Shadows
 Robust shadow estimation calibrates out noise that acts on the Pauli rotation gates and the measurement.
 It requires an additional calibration step using measurements on the $|0\rangle^{\otimes n}$ state.
 
-Define a noisy executor:
+Define a noisy executor that inserts a layer of depolarizing noise immediately before the measurement:
 
 ```{code-cell} ipython3
-from functools import partial
-
 def noisy_execute(circuit: cirq.Circuit) -> MeasurementResult:
-    return cirq_sample_bitstrings(circuit, noise_level=(0.05,), shots=1)
+    *operations, measurement = circuit
+    noise = cirq.Moment(cirq.depolarize(0.2).on_each(*circuit.all_qubits()))
+    noisy_circuit = cirq.Circuit(*operations, noise, measurement)
+    return cirq_sample_bitstrings(noisy_circuit, noise_level=(0,), shots=1)
+```
+
+```{note}
+This is a demonstration noise model, deliberately constructed so that robust shadow estimation can remove the noise completely: all of the noise is confined to the measurement stage, and state preparation is noiseless.
+On real hardware state preparation is also noisy, and robust shadow estimation does not correct that portion.
 ```
 
 Run `pauli_twirling_calibrate` to characterize the noise channel.

@@ -167,12 +167,17 @@ Increasing it reduces sensitivity to outlier calibration shots:
 If your observables act on at most `w` qubits, setting `locality=w` reduces the number
 of fidelity terms from $2^n$ to $\sum_{i=0}^{w} \binom{n}{i}$, which can substantially
 reduce memory and computation for large systems.
-The `locality` value should match the weight of the heaviest observable you plan to
-estimate:
+The `locality` value should match the weight of the heaviest observable you plan to estimate.
+
+As in the [introduction](shadows-1-intro.md), we use a demonstration noise model that inserts depolarizing noise immediately before the measurement.
+This is the type of noise that robust shadow estimation is designed to remove.
 
 ```{code-cell} ipython3
 def noisy_execute(circuit: cirq.Circuit) -> MeasurementResult:
-    return cirq_sample_bitstrings(circuit, noise_level=(0.05,), shots=1)
+    *operations, measurement = circuit
+    noise = cirq.Moment(cirq.depolarize(0.2).on_each(*circuit.all_qubits()))
+    noisy_circuit = cirq.Circuit(*operations, noise, measurement)
+    return cirq_sample_bitstrings(noisy_circuit, noise_level=(0,), shots=1)
 
 calibration_results = shadows.pauli_twirling_calibrate(
     k_calibration=2,
