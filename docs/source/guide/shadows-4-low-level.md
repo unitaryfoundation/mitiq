@@ -187,7 +187,10 @@ measurements using the median-of-means estimator:
 from mitiq.experimental.shadows.classical_postprocessing import get_pauli_fidelities
 
 def noisy_execute(circuit: cirq.Circuit) -> MeasurementResult:
-    return cirq_sample_bitstrings(circuit, noise_level=(0.05,), shots=1)
+    *operations, measurement = circuit
+    noise = cirq.Moment(cirq.depolarize(0.2).on_each(*circuit.all_qubits()))
+    noisy_circuit = cirq.Circuit(*operations, noise, measurement)
+    return cirq_sample_bitstrings(noisy_circuit, noise_level=(0,), shots=1)
 
 # Collect calibration measurements on the zero state
 zero_circuit = cirq.Circuit()

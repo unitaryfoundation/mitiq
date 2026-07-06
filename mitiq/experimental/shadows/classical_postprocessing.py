@@ -25,7 +25,11 @@ from mitiq.experimental.shadows.shadows_utils import (
     create_string,
     valid_bitstrings,
 )
-from mitiq.utils import matrix_kronecker_product, operator_ptm_vector_rep
+from mitiq.utils import (
+    matrix_kronecker_product,
+    operator_from_ptm_vector,
+    operator_ptm_vector_rep,
+)
 
 # Local unitaries to measure Pauli operators in the Z basis
 PAULI_MAP = {
@@ -146,10 +150,10 @@ def classical_snapshot(
             available.
 
     Returns:
-        Reconstructed classical snapshot in terms of nparray.
+        Reconstructed classical snapshot as a :math:`2^n \times 2^n` matrix.
     """
-    # calibrate the noisy quantum channel, output in PTM rep.
-    # ptm rep of identity
+    # the calibrated inverse channel is diagonal in the PTM rep., so the
+    # per-qubit factors are computed there and converted back to matrices
     I_ptm = operator_ptm_vector_rep(np.eye(2) / np.sqrt(2))
     pi_zero = np.outer(I_ptm, I_ptm)
     pi_one = np.eye(4) - pi_zero
@@ -159,7 +163,7 @@ def classical_snapshot(
     if fidelities:
         elements = []
         for bits, fidelity in fidelities.items():
-            pi_snapshot_vector = []
+            local_rhos = []
             for b1, b2, pauli in zip(bits, bitstring, paulistring):
                 # get pi for each qubit based on calibration measurement
                 pi = pi_zero if b1 == "0" else pi_one
@@ -167,11 +171,12 @@ def classical_snapshot(
                 state = ZERO_STATE if b2 == "0" else ONE_STATE
                 # get U for each qubit based on shadow measurement
                 U = PAULI_MAP[pauli]
-                pi_snapshot_vector.append(
-                    pi * operator_ptm_vector_rep(U.conj().T @ state @ U)
+                local_ptm_vector = pi * operator_ptm_vector_rep(
+                    U.conj().T @ state @ U
                 )
+                local_rhos.append(operator_from_ptm_vector(local_ptm_vector))
             elements.append(
-                1 / fidelity * matrix_kronecker_product(pi_snapshot_vector)
+                1 / fidelity * matrix_kronecker_product(local_rhos)
             )
         rho_snapshot = np.sum(elements, axis=0)
     else:
@@ -200,7 +205,8 @@ def shadow_state_reconstruction(
         fidelities: The estimated Pauli fidelities to use for calibration if
             available.
     Returns:
-        The state reconstructed from classical shadow protocol
+        The state reconstructed from the classical shadow protocol as a
+        :math:`2^n \times 2^n` density matrix.
     """
     bitstrings, paulistrings = shadow_measurement_outcomes
 

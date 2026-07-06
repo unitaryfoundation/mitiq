@@ -369,6 +369,33 @@ def operator_ptm_vector_rep(
     return np.array(opt_vec)
 
 
+def operator_from_ptm_vector(
+    ptm_vec: npt.NDArray[np.complex64],
+) -> npt.NDArray[np.complex64]:
+    r"""
+    Returns the operator corresponding to a PTM vector representation,
+    inverting :func:`operator_ptm_vector_rep`:
+    :math:`\mathcal{H}_{4^n}\ni |\mathtt{opt}\rangle\!\rangle\rightarrow
+    \mathtt{opt}\in\mathcal{L}(\mathcal{H}_{2^n})`.
+
+    Args:
+        ptm_vec: A vector of length :math:`4^n` representing an operator in
+            the normalized Pauli basis.
+    Returns:
+        The :math:`2^n \times 2^n` matrix representation of the operator.
+    """
+    num_qubits = int(np.log2(len(ptm_vec)) / 2)
+    if 4**num_qubits != len(ptm_vec):
+        raise TypeError("Input length must be a power of 4")
+    dim = 2**num_qubits
+    opt = np.zeros((dim, dim), dtype=complex)
+    for coeff, pauli_combination in zip(
+        ptm_vec, product(PAULIS, repeat=num_qubits)
+    ):
+        opt += coeff * matrix_kronecker_product(pauli_combination)
+    return opt * np.sqrt(1 / dim)
+
+
 def qem_methods() -> dict[str, str]:
     """
     Returns a dictionary of Quantum Error Mitigation techniques

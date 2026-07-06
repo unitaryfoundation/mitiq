@@ -41,6 +41,7 @@ from mitiq.utils import (
     _simplify_gate_exponent,
     arbitrary_tensor_product,
     matrix_kronecker_product,
+    operator_from_ptm_vector,
     matrix_to_vector,
     operator_ptm_vector_rep,
     qem_methods,
@@ -439,6 +440,21 @@ def test_operator_ptm_vector_rep_raised_error():
         assert np.allclose(
             operator_ptm_vector_rep(np.array([1.0, 0.0, 0.0, 0.0]))
         )
+
+
+@pytest.mark.parametrize("num_qubits", [1, 2, 3])
+def test_operator_from_ptm_vector_round_trip(num_qubits):
+    rng = np.random.RandomState(13)
+    dim = 2**num_qubits
+    opt = rng.rand(dim, dim) + 1j * rng.rand(dim, dim)
+    np.testing.assert_array_almost_equal(
+        operator_from_ptm_vector(operator_ptm_vector_rep(opt)), opt
+    )
+
+
+def test_operator_from_ptm_vector_raised_error():
+    with pytest.raises(TypeError, match="Input length must be a power of 4"):
+        operator_from_ptm_vector(np.array([1.0, 0.0, 0.0]))
 
 
 def test_qem_methods_basic():

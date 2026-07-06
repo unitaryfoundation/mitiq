@@ -16,8 +16,6 @@ from mitiq.experimental.shadows.classical_postprocessing import (
     get_single_shot_pauli_fidelity,
     shadow_state_reconstruction,
 )
-from mitiq.utils import operator_ptm_vector_rep
-
 
 def test_get_single_shot_pauli_fidelity():
     b_list = "01"
@@ -102,15 +100,13 @@ def test_classical_snapshot_cal():
     b_list_shadow = "01"
     u_list_shadow = "XY"
     f_est = {"00": 1, "01": 1 / 3, "10": 1 / 3, "11": 1 / 9}
-    expected_result = operator_ptm_vector_rep(
-        np.array(
-            [
-                [0.25 + 0.0j, 0.0 + 0.75j, 0.75 + 0.0j, 0.0 + 2.25j],
-                [0.0 - 0.75j, 0.25 + 0.0j, 0.0 - 2.25j, 0.75 + 0.0j],
-                [0.75 + 0.0j, 0.0 + 2.25j, 0.25 + 0.0j, 0.0 + 0.75j],
-                [0.0 - 2.25j, 0.75 + 0.0j, 0.0 - 0.75j, 0.25 + 0.0j],
-            ]
-        )
+    expected_result = np.array(
+        [
+            [0.25 + 0.0j, 0.0 + 0.75j, 0.75 + 0.0j, 0.0 + 2.25j],
+            [0.0 - 0.75j, 0.25 + 0.0j, 0.0 - 2.25j, 0.75 + 0.0j],
+            [0.75 + 0.0j, 0.0 + 2.25j, 0.25 + 0.0j, 0.0 + 0.75j],
+            [0.0 - 2.25j, 0.75 + 0.0j, 0.0 - 0.75j, 0.25 + 0.0j],
+        ]
     )
     np.testing.assert_array_almost_equal(
         classical_snapshot(b_list_shadow, u_list_shadow, f_est),
@@ -160,18 +156,18 @@ def test_shadow_state_reconstruction_cal():
     measurement_outcomes = (bitstrings, paulistrings)
     fidelities = {"00": 1, "01": 1 / 3, "10": 1 / 3, "11": 1 / 9}
 
-    expected_state_vec = operator_ptm_vector_rep(
-        np.array(
-            [
-                [0.25, 0.75j, 0.75, 2.25j],
-                [-0.75j, 0.25, -2.25j, 0.75],
-                [0.75, 2.25j, 0.25, 0.75j],
-                [-2.25j, 0.75, -0.75j, 0.25],
-            ]
-        )
+    expected_state = np.array(
+        [
+            [0.25, 0.75j, 0.75, 2.25j],
+            [-0.75j, 0.25, -2.25j, 0.75],
+            [0.75, 2.25j, 0.25, 0.75j],
+            [-2.25j, 0.75, -0.75j, 0.25],
+        ]
     )
     state = shadow_state_reconstruction(measurement_outcomes, fidelities)
-    np.testing.assert_almost_equal(state, expected_state_vec)
+    assert state.shape == (4, 4)
+    np.testing.assert_almost_equal(np.trace(state), 1.0)
+    np.testing.assert_almost_equal(state, expected_state)
 
 
 def test_expectation_estimation_shadow():
