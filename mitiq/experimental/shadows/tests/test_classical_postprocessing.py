@@ -17,6 +17,7 @@ from mitiq.experimental.shadows.classical_postprocessing import (
     shadow_state_reconstruction,
 )
 
+
 def test_get_single_shot_pauli_fidelity():
     b_list = "01"
     u_list = "XY"
