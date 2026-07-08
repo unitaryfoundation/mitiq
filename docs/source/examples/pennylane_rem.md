@@ -14,112 +14,175 @@ kernelspec:
 ```{tags} rem, pennylane, basic
 ```
 
-# Use readout error mitigation with PennyLane.
+# Readout error mitigation in a PennyLane workflow
 
 Mitiq already has a PennyLane tutorial demonstrating [zero-noise extrapolation (ZNE)](pennylane-ibmq-backends.md) via `pennylane.mitigate_with_zne`.
-This example complements it by showing how to use [readout error mitigation (REM)](../guide/rem.md) with a circuit defined in PennyLane.
+This example complements it by showing how to use [readout error mitigation (REM)](../guide/rem.md) with a circuit that is defined *and executed* entirely in PennyLane.
 
-ZNE changes the effective noise level during circuit execution and extrapolates results to the zero-noise limit.
-REM instead targets the classical readout channel: it corrects measurement results using a confusion matrix (or its inverse).
+Instead of converting to another framework, we keep the whole workflow in PennyLane and go one step beyond the [REM user guide](../guide/rem.md) in two ways:
 
-In this tutorial we:
-
-1. Define a simple PennyLane circuit.
-2. Convert it to a Mitiq circuit with {func}`mitiq.interface.mitiq_pennylane.from_pennylane`.
-3. Simulate readout noise with a custom [executor](../guide/executors.md).
-4. Apply REM and compare ideal, noisy, and mitigated measurement distributions.
+1. We model **asymmetric, per-qubit** readout errors, so that flipping a measured `0` to `1` is not equally likely as flipping a `1` to `0`, and the two qubits are miscalibrated differently.
+2. We **estimate the confusion matrix from calibration data** rather than assuming we already know the error rates, which is what one has to do on real hardware.
 
 ## Setup
 
 ```{code-cell} ipython3
-import cirq
 import numpy as np
 import pennylane as qml
-from cirq.experiments.single_qubit_readout_calibration_test import (
-    NoisySingleQubitReadoutSampler,
+
+from mitiq import MeasurementResult
+from mitiq.rem import (
+    generate_tensored_inverse_confusion_matrix,
+    mitigate_executor,
 )
 
-from mitiq import MeasurementResult, rem
-from mitiq.interface.mitiq_pennylane import from_pennylane
+rng = np.random.default_rng(1967)
 ```
 
 ## Define a PennyLane circuit
 
-We use the same single-qubit circuit as in the PennyLane + ZNE tutorial: ten Pauli $X$ gates on one wire.
-The circuit is the identity in the noiseless setting, so measuring in the computational basis should always return `0`.
+We use a two-qubit GHZ state, whose ideal measurement distribution is an equal mix of `00` and `11`.
+The device returns raw computational-basis samples via `qml.sample`, which is exactly the kind of measurement data REM operates on.
 
 ```{code-cell} ipython3
-def pennylane_circuit():
-    for _ in range(10):
-        qml.PauliX(wires=0)
+n_wires = 2
+shots = 40_000
+
+dev = qml.device("default.qubit", wires=n_wires, shots=shots, seed=rng)
 
 
-tape = qml.tape.make_qscript(pennylane_circuit)()
-circuit = from_pennylane(tape)
-qubits = sorted(circuit.all_qubits())
-
-measured_circuit = circuit.copy()
-measured_circuit.append(cirq.measure(*qubits, key="result"))
-
-print(circuit)
+@qml.qnode(dev)
+def ghz_state():
+    qml.Hadamard(wires=0)
+    qml.CNOT(wires=[0, 1])
+    return qml.sample()
 ```
 
-## Noisy readout executor
+## Model asymmetric readout error
+
+Readout error acts on the *classical* measurement outcomes: after the quantum circuit runs, each measured bit can be reported incorrectly.
+We model it directly on the PennyLane samples with per-qubit rates:
+
+- `p0[w]`: probability of reading `1` when qubit `w` was actually `0`,
+- `p1[w]`: probability of reading `0` when qubit `w` was actually `1`.
+
+The rates below are asymmetric (`p0 != p1`) and differ between the two qubits.
+
+```{code-cell} ipython3
+p0 = np.array([0.05, 0.10])
+p1 = np.array([0.20, 0.15])
+
+
+def apply_readout_error(samples: np.ndarray) -> np.ndarray:
+    samples = np.atleast_2d(np.asarray(samples, dtype=int))
+    noisy = samples.copy()
+    for w in range(n_wires):
+        draws = rng.random(samples.shape[0])
+        noisy[(samples[:, w] == 0) & (draws < p0[w]), w] = 1
+        noisy[(samples[:, w] == 1) & (draws < p1[w]), w] = 0
+    return noisy
+```
 
 REM requires an executor that returns raw measurement results as a {class}`mitiq.MeasurementResult`.
-Here we explicitly measure the circuit so that we can compare full probability distributions.
-
-We model independent single-qubit readout errors with Cirq's `NoisySingleQubitReadoutSampler`.
-The executor factory below keeps the `-> MeasurementResult` return annotation, which Mitiq uses to route results correctly.
+The `-> MeasurementResult` return annotation is important: Mitiq uses it to route the results through the REM post-processing step.
 
 ```{code-cell} ipython3
-P0 = 0.15
-P1 = 0.15
-SHOTS = 10_000
-
-
-def make_readout_executor(p0: float, p1: float, shots: int = SHOTS):
-    def executor(circuit: cirq.Circuit) -> MeasurementResult:
-        simulator = NoisySingleQubitReadoutSampler(p0, p1)
-        result = simulator.run(circuit, repetitions=shots)
-        bitstrings = np.column_stack(list(result.measurements.values()))
-        return MeasurementResult(bitstrings, qubit_indices=(0,))
-
-    return executor
-
-
-ideal_executor = make_readout_executor(p0=0.0, p1=0.0)
-noisy_executor = make_readout_executor(p0=P0, p1=P1)
+def readout_executor(circuit: qml.QNode) -> MeasurementResult:
+    clean_samples = circuit()
+    noisy_samples = apply_readout_error(clean_samples)
+    return MeasurementResult(
+        noisy_samples, qubit_indices=tuple(range(n_wires))
+    )
 ```
 
-## Compare ideal, noisy, and REM-mitigated results
+## Ideal and noisy distributions
 
-We first evaluate the ideal and noisy measurement distributions, then apply REM using an inverse confusion matrix generated with {func}`mitiq.rem.generate_inverse_confusion_matrix`.
+We first look at the noiseless distribution and the distribution obtained through our noisy readout.
 
 ```{code-cell} ipython3
-ideal_result = ideal_executor(measured_circuit)
-noisy_result = noisy_executor(measured_circuit)
+def distribution(result: MeasurementResult) -> dict[str, float]:
+    dist = result.prob_distribution()
+    return {state: round(dist.get(state, 0.0), 3) for state in ("00", "01", "10", "11")}
 
-inverse_confusion_matrix = rem.generate_inverse_confusion_matrix(
-    1, p0=P0, p1=P1
+
+ideal_result = MeasurementResult(
+    np.atleast_2d(ghz_state()), qubit_indices=tuple(range(n_wires))
 )
-mitigated_executor = rem.mitigate_executor(
-    noisy_executor,
+noisy_result = readout_executor(ghz_state)
+
+print("Ideal distribution:", distribution(ideal_result))
+print("Noisy distribution:", distribution(noisy_result))
+```
+
+The asymmetric readout error leaks probability into the `01` and `10` outcomes, and the two qubits are affected differently.
+
+## Estimate the confusion matrix
+
+On hardware the error rates are unknown, so we estimate them with calibration circuits: prepare a known input, measure it through the *same* noisy readout, and read off how often each qubit is misreported.
+
+```{code-cell} ipython3
+@qml.qnode(dev)
+def prepare_zeros():
+    for w in range(n_wires):
+        qml.Identity(wires=w)
+    return qml.sample()
+
+
+@qml.qnode(dev)
+def prepare_ones():
+    for w in range(n_wires):
+        qml.PauliX(wires=w)
+    return qml.sample()
+
+
+measured_zeros = readout_executor(prepare_zeros).asarray
+measured_ones = readout_executor(prepare_ones).asarray
+
+# Fraction of 1s given a true 0, and fraction of 0s given a true 1.
+est_p0 = measured_zeros.mean(axis=0)
+est_p1 = 1 - measured_ones.mean(axis=0)
+
+print("Estimated p0:", np.round(est_p0, 3), "(true:", p0, ")")
+print("Estimated p1:", np.round(est_p1, 3), "(true:", p1, ")")
+```
+
+Each qubit gets its own confusion matrix, whose columns are the true state and whose rows are the measured state.
+
+```{code-cell} ipython3
+confusion_matrices = [
+    np.array(
+        [
+            [1 - est_p0[w], est_p1[w]],
+            [est_p0[w], 1 - est_p1[w]],
+        ]
+    )
+    for w in range(n_wires)
+]
+
+for w, cm in enumerate(confusion_matrices):
+    print(f"Confusion matrix for qubit {w}:\n{np.round(cm, 3)}")
+```
+
+## Apply REM
+
+We tensor the per-qubit confusion matrices into a single inverse confusion matrix with {func}`mitiq.rem.generate_tensored_inverse_confusion_matrix`, then wrap the noisy executor with {func}`mitiq.rem.mitigate_executor`.
+
+```{code-cell} ipython3
+inverse_confusion_matrix = generate_tensored_inverse_confusion_matrix(
+    n_wires, confusion_matrices
+)
+
+mitigated_executor = mitigate_executor(
+    readout_executor,
     inverse_confusion_matrix=inverse_confusion_matrix,
 )
-mitigated_result = mitigated_executor(measured_circuit)
+mitigated_result = mitigated_executor(ghz_state)
 
-
-def display_distribution(result: MeasurementResult) -> dict[str, float]:
-    distribution = result.prob_distribution()
-    return {state: round(distribution.get(state, 0.0), 3) for state in ("0", "1")}
-
-
-print("Ideal distribution:     ", display_distribution(ideal_result))
-print("Noisy distribution:     ", display_distribution(noisy_result))
-print("REM distribution:       ", display_distribution(mitigated_result))
+print("Ideal distribution:    ", distribution(ideal_result))
+print("Noisy distribution:    ", distribution(noisy_result))
+print("REM distribution:      ", distribution(mitigated_result))
 ```
 
-REM recovers the ideal distribution in this example because the simulated readout noise matches the confusion model used to build the inverse matrix.
+Even though the confusion matrix was *estimated* rather than assumed, and the readout error is asymmetric and qubit-dependent, REM removes most of the spurious `01` and `10` population and restores a distribution close to the ideal `00`/`11` mix.
 
 More options for generating and applying confusion matrices are described in the [REM user guide](../guide/rem.md).

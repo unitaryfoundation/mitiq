@@ -37,7 +37,7 @@ def test_from_pennylane_strips_gphase():
         qml.SX(wires=0)
 
     # Confirm the QASM contains gphase before conversion.
-    (expanded,), _ = qml.decompose(tape)
+    expanded = tape.expand()
     qasm = qml.to_openqasm(
         expanded,
         rotations=False,
