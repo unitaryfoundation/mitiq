@@ -76,6 +76,10 @@ scaled_circuits, scaled_signs, scaled_norms = pea.construct_circuits(
 )
 ```
 
+Here we use the legacy `noise_model` interface for brevity. You can instead pass `representations` (a
+list of {class}`.OperationRepresentation`, e.g. learned from hardware), which is the recommended option.
+See [What additional options are available in PEA?](pea-3-options.md).
+
 For each scale factor, `construct_circuits` returns a list of probabilistically sampled circuits.
 We can inspect how many circuits were sampled and examine an example from each scale factor:
 

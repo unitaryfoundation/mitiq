@@ -242,7 +242,7 @@ def _generate_random_program(n_qubits, length):
                 else:
                     param_val = random.uniform(-2 * pi, 2 * pi)
             else:
-                raise ValueError("Unknown gate parameter {}".format(param))
+                raise ValueError(f"Unknown gate parameter {param}")
 
             param_vals.append(param_val)
 

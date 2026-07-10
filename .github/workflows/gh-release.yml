@@ -13,7 +13,7 @@ jobs:
       contents: write
     steps:
       - name: Check out Mitiq
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
       - name: Extract release notes of latest version
         run: |
           awk '/^## Version /{if(found) exit; found=1} found{print}' CHANGELOG.md > release_notes.md

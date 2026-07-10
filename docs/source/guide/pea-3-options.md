@@ -14,8 +14,57 @@ kernelspec:
 # What additional options are available in PEA?
 
 {func}`.execute_with_pea` exposes several optional arguments beyond the required `circuit`, `executor`,
-`scale_factors`, `noise_model`, `epsilon`, and `extrapolation_method`.
+`scale_factors`, and `extrapolation_method`, together with the noise amplification specified either by
+`representations` or by the legacy `noise_model` and `epsilon` pair.
 This page describes each one.
+
+## Choosing how the noise is amplified
+
+PEA needs a quasi-probability representation of each operation in the circuit so it can amplify the
+noise in a controlled way. There are two mutually exclusive ways to provide it.
+
+The recommended way is to pass `representations`, a list of {class}`.OperationRepresentation` objects
+(one per unique operation in the circuit). Because these can be learned from hardware characterization,
+this is the only interface that lets PEA run on noise that is neither local nor global depolarizing:
+
+```{code} python
+# reps: list[OperationRepresentation], e.g. learned from hardware
+mitigated = pea.execute_with_pea(
+    circuit,
+    executor,
+    scale_factors=[1.0, 1.2, 1.6],
+    extrapolation_method=LinearFactory.extrapolate,
+    representations=reps,
+)
+```
+
+The representations are amplified with the canonical noise scaling of Sec. VI D of
+{cite}`Mari_2021_PRA`. The rule depends on the sign structure of each representation. An all-positive
+representation (a genuine probability distribution, e.g. one learned from hardware) is scaled by its
+deviation from the identity. A signed representation (one with negative coefficients, e.g. a PEC-style
+decomposition) is scaled by the canonical sign-partition rule of Eq. (43), which scales the positive and
+negative volumes separately so that amplifying it adds noise instead of amplifying the error
+cancellation. Both rules keep the coefficients summing to one, and the scaling is well defined for noise
+that is neither local nor global depolarizing.
+
+The legacy way is to pass `noise_model` together with `epsilon`. Mitiq then builds the depolarizing
+representations for you. This path is kept for backward compatibility and emits a `DeprecationWarning`;
+prefer `representations`:
+
+```{code} python
+mitigated = pea.execute_with_pea(
+    circuit,
+    executor,
+    scale_factors=[1.0, 1.2, 1.6],
+    extrapolation_method=LinearFactory.extrapolate,
+    noise_model="local_depolarizing",   # legacy
+    epsilon=0.005,
+)
+```
+
+Passing both `representations` and `noise_model`, or neither, raises a `ValueError`. When the
+representations correspond to a global depolarizing model, the two paths produce identical results at
+every scale factor.
 
 ## Controlling the sampling budget
 
@@ -105,6 +154,7 @@ If no observable is provided, the executor must return the expectation value dir
 ## Supported noise models
 
 ```{attention}
-The only supported noise models are currently `"local_depolarizing"` and `"global_depolarizing"`.
-Please [open an issue](https://github.com/unitaryfoundation/mitiq/issues/new) to request additional noise models.
+The built-in `noise_model` strings are currently `"local_depolarizing"` and `"global_depolarizing"`.
+To amplify any other noise, pass `representations` directly (see [Choosing how the noise is
+amplified](#choosing-how-the-noise-is-amplified) above), which is not restricted to these two models.
 ```

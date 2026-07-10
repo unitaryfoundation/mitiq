@@ -15,6 +15,11 @@ kernelspec:
 ```
 
 ```{code-cell} ipython3
+import warnings
+warnings.filterwarnings("ignore", category=UserWarning)
+```
+
+```{code-cell} ipython3
 import qiskit
 from qiskit import QuantumCircuit
 
@@ -188,9 +193,12 @@ def ibmq_executor_full(circuit: qiskit.QuantumCircuit,
         shots: Number of times to execute the circuit to compute 
         the expectation value.
     """
+    # Select the appropriate backend based on noise flag
+    exec_backend = backend_noiseless if NO_NOISE else backend
+    
     # Transpile the circuit so it can be properly run
     pm = generate_preset_pass_manager(
-        backend=backend, 
+        backend=exec_backend, 
         optimization_level=0, 
         basis_gates=noise_model.basis_gates if noise_model else None,
     )
@@ -200,8 +208,8 @@ def ibmq_executor_full(circuit: qiskit.QuantumCircuit,
     if not isinstance(exec_circuit, list):
         exec_circuit = [exec_circuit]
 
-    # Run the circuit
-    sampler = Sampler(backend)
+    # Run the circuit on the selected backend
+    sampler = Sampler(exec_backend)
     job = sampler.run(exec_circuit, shots=shots)
 
     # Convert from raw measurement counts to the expectation value

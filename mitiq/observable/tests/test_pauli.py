@@ -382,3 +382,18 @@ def test_spec():
 
 def test_with_coeff():
     assert PauliString(spec="X").with_coeff(2).coeff == 2
+
+
+def test_pauli_init_invalid_spec_raises():
+    with pytest.raises(ValueError, match="invalid characters in spec"):
+        PauliString(spec="A")
+
+
+def test_pauli_init_support_length_mismatch_raises():
+    with pytest.raises(ValueError, match="must be equal"):
+        PauliString(spec="XX", support=[0])
+
+
+def test_pauli_repr():
+    pauli = PauliString(spec="XYZ")
+    assert repr(pauli) == repr(pauli._pauli)

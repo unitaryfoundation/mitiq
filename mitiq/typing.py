@@ -79,7 +79,7 @@ except ImportError:  # pragma: no cover
     _OpenQASMCircuit = _Circuit  # type: ignore
 
 # Supported + installed quantum programs.
-QPROGRAM = Union[
+QPROGRAM: TypeAlias = Union[
     _Circuit,
     _Program,
     _QuantumCircuit,

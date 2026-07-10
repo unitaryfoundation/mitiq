@@ -352,3 +352,32 @@ def test_pauli_string_deduplication_removal_of_0_coefficients():
     obs = Observable(*pauli_strings)
     assert obs.nterms == 1
     assert obs == Observable(XI.with_coeff(XI.coeff * 2))
+
+
+def test_observable_paulis_property():
+    pauli1 = PauliString(spec="XI")
+    pauli2 = PauliString(spec="ZZ")
+    obs = Observable(pauli1, pauli2)
+    assert obs.paulis == [pauli1, pauli2]
+
+
+def test_observable_mul_returns_notimplemented():
+    obs = Observable(PauliString(spec="XI"))
+    assert obs.__mul__("not a valid operand") is NotImplemented
+
+
+def test_observable_rmul_returns_notimplemented():
+    obs = Observable(PauliString(spec="XI"))
+    assert obs.__rmul__("not a valid operand") is NotImplemented
+
+
+def test_observable_mul_unsupported_type_raises_type_error():
+    obs = Observable(PauliString(spec="XI"))
+    with pytest.raises(TypeError):
+        obs * "not a valid operand"
+
+
+def test_observable_rmul_unsupported_type_raises_type_error():
+    obs = Observable(PauliString(spec="XI"))
+    with pytest.raises(TypeError):
+        "not a valid operand" * obs

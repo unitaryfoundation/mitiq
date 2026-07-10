@@ -39,9 +39,11 @@ Robust Shadow Estimation with Cirq: Pauli Twirling Calibration of Classical Shad
 DDD with Cirq: Mirror circuits <ddd_tutorial.md>
 DDD with Qiskit: GHZ circuits <ddd_on_ibmq_ghz.md>
 CDR with Qrack as Near-Clifford Simulator <cdr_qrack.md>
+CDR with Clifft as Near-Clifford Simulator <cdr_demo.md>
 GGI Summer School ZNE Hands-On Tutorial <ggi_summer_school_unsolved.md>
 Composing techniques: REM + ZNE <combine_rem_zne.md>
 Composing techniques: DDD + ZNE <combine_ddd_zne.md>
+Composing techniques: [[4,2,2]] Error Detection + ZNE <combine_422_zne.md>
 Advanced Error Mitigation Pipeline: PT + DDD + REM + ZNE <advanced_error_mitigation_pipeline.md>
 The Mitiq paper code <mitiq-paper/mitiq-paper-codeblocks.md>
 ```

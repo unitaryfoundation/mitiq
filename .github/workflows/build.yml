@@ -25,7 +25,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Check out mitiq
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
 
       - name: Install uv
         uses: astral-sh/setup-uv@v7
@@ -51,7 +51,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Check out mitiq
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
 
       - name: Install uv
         uses: astral-sh/setup-uv@v7
@@ -82,7 +82,7 @@ jobs:
         MPLBACKEND: Agg
     steps:
       - name: Check out mitiq
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
         with:
           # Fetch full history so Codecov can resolve commit ancestry reliably.
           fetch-depth: 0
@@ -110,7 +110,7 @@ jobs:
         # Upload once per workflow on same-repo PRs and on pushes to main so
         # PR comparisons always have a recent base report on the default branch.
         if: ${{ matrix.python-version == '3.12' && matrix.os == 'ubuntu-latest' && (github.event_name == 'push' || github.event.pull_request.head.repo.full_name == github.repository) }}
-        uses: codecov/codecov-action@v5
+        uses: codecov/codecov-action@v7
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
           fail_ci_if_error: true

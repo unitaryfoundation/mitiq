@@ -168,7 +168,7 @@ f_est = pauli_twirling_calibrate(
 f_est
 ```
 
-the varible `locality` is the maximum number of qubits on which our operators of interest are acting on. E.g. if our operator is a sequence of two point correlation terms $\{\langle Z_iZ_{i+1}\rangle\}_{0\leq i\leq n-1}$, then `locality` = 2. We note that one could also split the calibration process into two stages:
+the variable `locality` is the maximum number of qubits on which our operators of interest are acting on. E.g. if our operator is a sequence of two point correlation terms $\{\langle Z_iZ_{i+1}\rangle\}_{0\leq i\leq n-1}$, then `locality` = 2. We note that one could also split the calibration process into two stages:
 
 1.  `shadow_quantum_processing`
 
@@ -183,7 +183,7 @@ the varible `locality` is the maximum number of qubits on which our operators of
 
 In this step, we obtain classical shadow snapshots from the input state (before applying the invert channel).
 
-#### 1.1 Add Rotation Gate and Meausure the Rotated State in Computational Basis
+#### 1.1 Add Rotation Gate and Measure the Rotated State in Computational Basis
 
 At present, the implementation supports random Pauli measurement. This is equivalent to randomly sampling $U$ from the local Clifford group $Cl_2^n$, followed by a $Z$-basis measurement (see [this tutorial](../examples/shadows_tutorial.md) for a clear explanation).
 
@@ -228,9 +228,9 @@ print("one snapshot measurement basis = ", shadow_measurement_output[1][0])
 
 In this step, we estimate our object of interest (expectation value or density matrix) by post-processing the (previously obtained) measurement outcomes.
 
-#### 2.1 Example: Operator Expectation Value Esitimation
+#### 2.1 Example: Operator Expectation Value Estimation
 
-For example, if we want to estimate the two point correlation function $\{\langle Z_iZ_{i+1}\rangle\}_{0\leq i\leq n-1}$, we will define the corresponding Puali strings:
+For example, if we want to estimate the two point correlation function $\{\langle Z_iZ_{i+1}\rangle\}_{0\leq i\leq n-1}$, we will define the corresponding Pauli strings:
 
 ```{code-cell} ipython3
 from mitiq import PauliString
@@ -357,9 +357,9 @@ fidelity_shadow_calibrated = fidelity(
     ptm_ghz_state, cal_est_corrs["reconstructed_state"]
 )
 print(
-    f"fidelity between true state and shadow reconstruced state {fidelity_shadow}"
+    f"fidelity between true state and shadow reconstructed state {fidelity_shadow}"
 )
 print(
-    f"fidelity between true state and rshadow reconstruced state {fidelity_shadow_calibrated}"
+    f"fidelity between true state and rshadow reconstructed state {fidelity_shadow_calibrated}"
 )
 ```

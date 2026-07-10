@@ -9,7 +9,6 @@ updates:
     allow:
       - dependency-type: "all"
     exclude-paths:
-      - "VERSION.txt"
       - "INTEGRATIONS.txt"
     ignore:
       # Ignore patch releases in "supported frontend/backend" packages.

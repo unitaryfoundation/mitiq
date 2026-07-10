@@ -236,6 +236,29 @@ guarantees. Access them via `mitiq.experimental`.
    :members:
 ```
 
+### Debiasing
+
+#### Debiasing (High-Level Tools)
+
+```{eval-rst}
+.. automodule:: mitiq.experimental.deb.deb
+   :members:
+```
+
+#### Circuit Symmetrization
+
+```{eval-rst}
+.. automodule:: mitiq.experimental.deb.symmetrization
+   :members:
+```
+
+#### Sharpening
+
+```{eval-rst}
+.. automodule:: mitiq.experimental.deb.sharpening
+   :members:
+```
+
 ### Probabilistic Error Amplification
 
 #### Probabilistic Error Amplification (High-Level Tools)

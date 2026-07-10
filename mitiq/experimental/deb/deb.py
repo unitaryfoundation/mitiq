@@ -1,0 +1,142 @@
+# Copyright (C) Unitary Foundation
+#
+# This source code is licensed under the GPL license (v3) found in the
+# LICENSE file in the root directory of this source tree.
+
+"""High-level debiasing functions.
+
+Debiasing (also called symmetrization) mitigates qubit-dependent errors by
+executing several variants of a circuit, each one relabeled onto a randomly
+permuted set of qubits, and combining their results. Each variant's
+permutation is undone on the measured bitstrings before they are combined.
+The combined result is obtained either by averaging the variant distributions
+or by a shot-wise plurality vote (sharpening). See :cite:`Maksymov_2023_arxiv`.
+
+Throughout, bitstrings are ordered to match ``sorted(circuit.all_qubits())``:
+the ``i``-th character of a bitstring corresponds to the ``i``-th qubit in that
+sorted order.
+"""
+
+from collections.abc import Callable, Sequence
+from typing import cast
+
+import cirq
+import numpy as np
+
+from mitiq import MeasurementResult
+from mitiq.experimental.deb.sharpening import sharpen
+from mitiq.experimental.deb.symmetrization import construct_circuits
+
+Executor = Callable[[cirq.Circuit], MeasurementResult]
+
+
+def _unscramble(
+    result: MeasurementResult, permutation: Sequence[int]
+) -> MeasurementResult:
+    """Undo a variant's qubit permutation on its measured bitstrings.
+
+    Logical qubit ``i`` is measured on the qubit at index ``permutation[i]``,
+    so the unscrambled bit for logical qubit ``i`` is ``shot[permutation[i]]``.
+    """
+    # ``MeasurementResult.__post_init__`` normalises every shot to a
+    # ``list[int]``, though the declared type stays the broader ``Bitstring``.
+    shots = cast(list[list[int]], result.result)
+    unscrambled = [[shot[p] for p in permutation] for shot in shots]
+    return MeasurementResult(unscrambled)
+
+
+def _average(distributions: Sequence[dict[str, float]]) -> dict[str, float]:
+    """Average a list of probability distributions over the same basis."""
+    total: dict[str, float] = {}
+    for distribution in distributions:
+        for bitstring, probability in distribution.items():
+            total[bitstring] = total.get(bitstring, 0.0) + probability
+    return {
+        bitstring: probability / len(distributions)
+        for bitstring, probability in total.items()
+    }
+
+
+def combine_results(
+    results: Sequence[MeasurementResult],
+    permutations: Sequence[Sequence[int]],
+    method: str = "averaging",
+) -> dict[str, float]:
+    """Combine the measurement results of debiasing variants.
+
+    Each result is first unscrambled with its variant's permutation. The
+    unscrambled results are then combined either by averaging their probability
+    distributions (``"averaging"``) or by a shot-wise plurality vote
+    (``"sharpening"``, see :func:`.sharpen`).
+
+    The ``"sharpening"`` method assumes every variant was run with the same
+    number of shots, since it votes across variants shot by shot; results with
+    differing shot counts are truncated to the smallest count.
+
+    Args:
+        results: One ``MeasurementResult`` per variant, in the same order as
+            the variants returned by
+            :func:`~mitiq.experimental.deb.symmetrization.construct_circuits`.
+        permutations: The permutation applied to each variant, in the same
+            order as ``results`` (the second element returned by
+            :func:`~mitiq.experimental.deb.symmetrization.construct_circuits`).
+        method: Either ``"averaging"`` or ``"sharpening"``.
+
+    Returns:
+        The combined probability distribution over the computational basis,
+        with bitstrings ordered to match ``sorted(circuit.all_qubits())``.
+    """
+    unscrambled = [
+        _unscramble(result, permutation)
+        for result, permutation in zip(results, permutations, strict=True)
+    ]
+
+    if method == "averaging":
+        return _average([result.prob_distribution() for result in unscrambled])
+    if method == "sharpening":
+        sharpened = sharpen(unscrambled)
+        if sharpened.shots == 0:
+            return {}
+        return sharpened.prob_distribution()
+
+    raise ValueError(
+        f"Unknown method {method!r}. Use 'averaging' or 'sharpening'."
+    )
+
+
+def execute_with_debiasing(
+    circuit: cirq.Circuit,
+    executor: Executor,
+    num_variants: int = 10,
+    *,
+    method: str = "averaging",
+    random_state: int | np.random.Generator | None = None,
+) -> dict[str, float]:
+    """Return the debiased probability distribution of ``circuit``.
+
+    The circuit is relabeled onto ``num_variants`` randomly permuted sets of
+    qubits, each variant is executed, its permutation is undone on the measured
+    bitstrings, and the unscrambled results are combined. With
+    ``method="averaging"`` the variant distributions are averaged; with
+    ``method="sharpening"`` they are combined by a shot-wise plurality vote
+    (see :func:`.sharpen`), which is useful when the target answer is
+    concentrated on a few bitstrings.
+
+    Args:
+        circuit: The circuit to execute. It should not contain terminal
+            measurements; the executor is responsible for measurement.
+        executor: A function mapping a circuit to a ``MeasurementResult``.
+        num_variants: Number of permuted variants to combine.
+        method: Either ``"averaging"`` or ``"sharpening"``.
+        random_state: Seed or ``numpy.random.Generator`` for reproducibility.
+
+    Returns:
+        The combined probability distribution over the computational basis. Its
+        bitstrings are ordered to match ``sorted(circuit.all_qubits())``: the
+        ``i``-th character corresponds to the ``i``-th sorted qubit.
+    """
+    circuits, permutations = construct_circuits(
+        circuit, num_variants, random_state=random_state
+    )
+    results = [executor(variant) for variant in circuits]
+    return combine_results(results, permutations, method=method)

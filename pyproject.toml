@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "mitiq"
-dynamic = ["version"]
+version = "1.0.0"
 readme = "README.md"
 description = "Mitiq is an open source toolkit for implementing error mitigation techniques on most current intermediate-scale quantum computers." 
 authors = [ 
@@ -33,18 +33,18 @@ dependencies = [
 
 [project.optional-dependencies]
 braket = [
-    "amazon-braket-sdk>=1.97,<1.115",
+    "amazon-braket-sdk>=1.97,<1.122",
     "cirq-ionq>=1.6.0,<1.7.0",
     "llvmlite==0.46.0",
     "numba==0.64.0",
 ]
 pennylane = [
     "pennylane-qiskit~=0.43.0",
-    "pennylane~=0.44.1",
+    "pennylane>=0.44.1,<0.46.0",
 ]
 pyquil = [
     "pyquil~=4.17.0",
-    "qbraid>=0.10,<0.12",
+    "qbraid>=0.10,<0.13",
 ]
 qibo = [
     "qibo>=0.2.16,<0.4.0",
@@ -55,10 +55,17 @@ qiskit = [
     "qiskit-ibm-runtime~=0.41.1",
     "ply==3.11",
 ]
+benchmarking = [
+    "mthree",
+    "qermit",
+    "qiskit>=2.0.0,<3.0.0",
+    "qiskit-aer~=0.17.0",
+    "qiskit-ibm-runtime~=0.41.1",
+]
 
 [dependency-groups]
 dev = [
-    "pytest==9.0.2",
+    "pytest==9.0.3",
     "pytest-xdist[psutil]==3.0.2",
     "pytest-cov==7.0.0",
     "ruff==0.15.6",
@@ -84,9 +91,10 @@ docs = [
     "openfermionpyscf==0.5; sys_platform != 'win32'",
     "bqskit==1.2.1",
     "seaborn==0.13.2",
-    "stim==1.15.0",
-    "stimcirq==1.15.0",
-    "pyqrack==1.69.1",
+    "stim==1.16.0",
+    "stimcirq==1.16.0",
+    "pyqrack==2.0.2",
+    "clifft==0.4.1; python_version == '3.12'",
     "ucc==0.4.12; python_version == '3.12'",
     "pytket-cirq==0.43.0",
 ]
@@ -151,6 +159,3 @@ exclude_lines = [
 
 [tool.setuptools.packages.find]
 where = ["."]
-
-[tool.setuptools.dynamic]
-version = {file = "VERSION.txt"}

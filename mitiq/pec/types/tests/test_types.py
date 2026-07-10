@@ -595,3 +595,13 @@ def test_different_length_error():
             noisy_operations=[NoisyOperation(xcirq), NoisyOperation(zcirq)],
             coeffs=[0.5, 0.5, 0.4],
         )
+
+
+def test_sample_bad_random_state_type_raises():
+    q = cirq.LineQubit(0)
+    ideal = cirq.Circuit(cirq.X(q))
+    noisy_x = NoisyOperation(cirq.Circuit(cirq.X(q)), np.identity(4))
+    noisy_z = NoisyOperation(cirq.Circuit(cirq.Z(q)), np.identity(4))
+    rep = OperationRepresentation(ideal, [noisy_x, noisy_z], [0.5, 0.5])
+    with pytest.raises(TypeError, match="random_state"):
+        rep.sample(random_state="not-a-valid-type")
