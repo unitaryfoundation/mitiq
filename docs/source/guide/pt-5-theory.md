@@ -13,31 +13,33 @@ kernelspec:
 
 # What is the theory behind Pauli Twirling?
 
-Pauli Twirling (PT) {cite}`Wallman_2016_PRA, Hashim_2021_PRX, Urbanek_2021_PRL, Saki_2023_arxiv` is a noise tailoring technique designed to transform complex, arbitrary quantum noise into a simpler, more predictable stochastic Pauli channel. 
+```{admonition} Warning:
+Pauli Twirling in Mitiq is still under construction. This users guide will change in the future
+after some utility functions are introduced. 
+```
 
-But why is this transformation beneficial, and how does it work mathematically?
+Pauli Twirling (PT) {cite}`Wallman_2016_PRA, Hashim_2021_PRX, Urbanek_2021_PRL, Saki_2023_arxiv`
+is a quantum noise tailoring technique designed to transform the noise channel
+towards a more manageable stochastic Pauli channel. This tailoring is achieved
+by randomly applying a series of Pauli operations to the quantum system, then
+averaging over the results, and in doing so can reduce the complexity of the errors.
 
-## 1. The Problem: Coherent Errors Accumulate Quadratically
-Any quantum operation, including errors, can be represented mathematically as a Pauli Transfer Matrix (PTM). A diagonal entry in the PTM represents the probability of a specific Pauli error occurring. Off-diagonal elements represent *coherent* errors — meaning an error doesn't just randomly flip a qubit, it systematically rotates the quantum state (e.g., from an over-rotation during a gate).
+1. In general, PT is a noise agnostic tailoring technique, designed to be composed with more direct mitigation
 
-When a circuit is deep, these systematic coherent rotations can add up constructively. This causes the worst-case error to grow *quadratically* with the circuit depth, quickly overwhelming the quantum information.
+2. For Markovian noise, PT can make the overall quantum channel more symmetric (analogous to dynamical decoupling {cite}`Viola_1998_PRA, Viola_1999_PRL, Zhang_2014_PRL`)
 
-## 2. The Solution: Randomizing the Noise
-We can suppress this quadratic error scaling by "twirling" the noise channel over the Pauli group. 
+Pauli Twirling (PT) can be a powerful tool for noise management in quantum systems. By twirling over the Pauli gates, PT transforms complex noise channels into simpler stochastic Pauli noise channels.
 
-Operationally, PT involves inserting random combinations of Pauli operations (like $I, X, Y, Z$) immediately before and after target gates (such as `CNOT` or `CZ`). Because Pauli matrices either commute or anti-commute with each other, we can classically keep track of the signs and adjust the rest of the circuit to ensure that the *ideal* logical outcome remains completely unchanged. 
+The success of PT is contingent on various factors, such as the nature of the noise and the specific characteristics of the quantum system. It's worth noting that, while PT generally simplifies the noise channel, there are circumstances where it could transform the noise negatively, for example into a completely depolarizing channel with a corresponding total loss of quantum information.
 
-## 3. The Resulting Tailored Channel
-When we average the results of many such randomized variant circuits, the *physical* errors interact differently. Mathematically, conjugating a general noise channel by random Paulis perfectly zeroes out all of the off-diagonal elements in its PTM.
+For optimal results, Pauli Twirling should be implemented with an understanding of the underlying noise dynamics, and ideally, should be complemented with more direction error mitigation techniques to ensure robust quantum computation.
 
-The result is a completely diagonal PTM. This purely diagonal matrix corresponds to a **stochastic Pauli channel**, where errors happen randomly according to some classical probability distribution, rather than systematically rotating the state vector.
+In the context of quantum error mitigation, PT is closer to [DDD](ddd-5-theory.md), but stands apart as a noise tailoring technique. PT's peculiarities include:
 
-* **Linear Scaling:** Because the errors are now stochastic, they do not build up constructively. The worst-case error rate now scales linearly, tightly bounding the problem. 
-* **Easier to Mitigate:** Stochastic Pauli noise is much easier to analyze and mitigate using other Quantum Error Mitigation (QEM) techniques.
+- It is not expected to reduce noise on its own, but rather tailor the noise such that it can be properly mitigated by other techniques.
 
-## Summary 
+- It constructs a _single_ circuit with random modifications, and subsequently averages over many executions.
+With a single circuit, both the computational cost and complexity are reduced, making the final average of results a relatively straightforward task. That is, there is no need to take a linear combinations of noisy results as in [ZNE](zne-5-theory.md) [PEC](pec-5-theory.md) and [CDR](cdr-5-theory.md).
 
-In the context of quantum error mitigation, PT stands apart as a noise *tailoring* technique rather than a standalone noise *reduction* technique. PT's defining characteristics are:
-- It transforms arbitrary noise into well-behaved stochastic Pauli noise.
-- It constructs randomly altered circuits but evaluates a *single* simple average over them, meaning there is no complex probabilistic overhead or inference required.
-- Because it zeroes off-diagonal PTM terms, PT is highly effective when paired with methods that assume stochastic noise behavior, like [ZNE](zne.md) or [PEC](pec.md).
+- As a consequence of the previous point, the fundamental error mitigation overhead is minimized,
+such that there is no increase in statistical uncertainty in the final result, assuming optimal executions.

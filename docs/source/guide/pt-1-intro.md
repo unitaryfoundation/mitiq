@@ -136,70 +136,10 @@ designed to be composed with other techniques rather than an error mitigation te
 
 +++
 
-## Stacking PT with a quantum error mitigation technique
-
-PT is a noise *tailoring* technique, not a noise *reduction* technique.
-Its primary value comes from composing it with a dedicated quantum error
-mitigation (QEM) method that benefits from structured Pauli noise.
-
-The general stacking workflow is:
-
-```{figure} ../img/pt_qem_workflow.svg
----
-width: 800px
-name: pt-qem-workflow
----
-Workflow of PT combined with a QEM technique (e.g. ZNE). PT tailors the noise,
-then the QEM method extrapolates or cancels the tailored noise.
-```
-
-### Example: PT + ZNE
-
-[Zero-Noise Extrapolation](zne.md) (ZNE) amplifies noise by scaling
-the circuit and extrapolates to the zero-noise limit. ZNE performs
-best when the noise is stochastic, because unitary folding amplifies
-Pauli noise more predictably than coherent noise.
-
-The correct order for combining PT with ZNE is:
-
-1. Generate noise-scaled circuits via {func}`.zne.construct_circuits`.
-2. For each noise-scaled circuit, generate PT variants via
-   {func}`.generate_pauli_twirl_variants`.
-3. Execute all variants and average over the PT variants for each scale factor.
-4. Extrapolate to zero noise using the averaged values.
-
-This ensures the twirling gates are **not** amplified by the ZNE folding.
-
-```{code-cell} ipython3
-from mitiq import zne
-
-scale_factors = [1, 3, 5]
-noise_scaled_circuits = zne.construct_circuits(circuit, scale_factors)
-
-NUM_PT_VARIANTS = 50
-noisy_executor = Executor(partial(execute, noise_level=NOISE_LEVEL))
-
-noise_scaled_expvals = []
-for nsc in noise_scaled_circuits:
-    pt_variants = generate_pauli_twirl_variants(nsc, num_circuits=NUM_PT_VARIANTS)
-    noise_scaled_expvals.append(np.average(noisy_executor.evaluate(pt_variants)))
-
-extrapolation = zne.inference.RichardsonFactory(scale_factors=scale_factors).extrapolate
-pt_zne_result = zne.combine_results(scale_factors, noise_scaled_expvals, extrapolation)
-
-zne_only = zne.execute_with_zne(circuit, partial(execute, noise_level=NOISE_LEVEL))
-
-pt_variants = generate_pauli_twirl_variants(circuit, num_circuits=NUM_PT_VARIANTS)
-pt_only = np.average(noisy_executor.evaluate(pt_variants))
-
-print(f"Error (no mitigation):  {abs(ideal_value - noisy_value):.4f}")
-print(f"Error (ZNE only):       {abs(ideal_value - zne_only):.4f}")
-print(f"Error (PT only):        {abs(ideal_value - pt_only):.4f}")
-print(f"Error (PT + ZNE):       {abs(ideal_value - pt_zne_result):.4f}")
-```
-
-For a more detailed walkthrough, see the
-[ZNE with Pauli Twirling example](../examples/pt_zne.md).
+PT can also be stacked with dedicated quantum error mitigation techniques like ZNE or PEC.
+See [Stacking PT with other QEM techniques](pt-3-options.md#stacking-pt-with-other-qem-techniques)
+for a worked example and the
+[ZNE with Pauli Twirling example](../examples/pt_zne.md) for a full tutorial.
 
 The section
 [What additional options are available when using PT?](pt-3-options.md)

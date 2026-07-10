@@ -30,8 +30,7 @@ Two noise channels are built in: `"bit-flip"` and `"depolarize"`.
 ```{code-cell} ipython3
 import cirq
 from cirq import LineQubit, Circuit, CNOT
-from mitiq.pt import generate_pauli_twirl_variants
-from mitiq.pt.pt import add_noise_to_two_qubit_gates
+from mitiq.pt import generate_pauli_twirl_variants, add_noise_to_two_qubit_gates
 
 q0, q1 = LineQubit.range(2)
 cnot_circuit = Circuit(CNOT(q0, q1))
@@ -49,7 +48,7 @@ To add a custom noise channel, update the `CIRQ_NOISE_OP` dictionary
 before calling {func}`.generate_pauli_twirl_variants` with a `noise_name`.
 
 ```{code-cell} ipython3
-from mitiq.pt.pt import CIRQ_NOISE_OP
+from mitiq.pt import CIRQ_NOISE_OP
 
 CIRQ_NOISE_OP["phase-flip"] = cirq.phase_flip
 
@@ -83,13 +82,85 @@ The number of twirled circuits generated (controlled by `num_circuits`) determin
 - **Small `num_circuits` (e.g., 1-10):** The variance in the expectation values will be quite high because the Pauli group hasn't been adequately sampled over. The resulting effective noise channel might still contain coherent properties.
 - **Large `num_circuits` (e.g., 20-100+):** By the law of large numbers, the averaged results converge toward the exact stochastic Pauli channel. However, generating and evaluating too many circuits increases the simulation or execution cost. 
 
-In practice, executing 20 to 50 twirl variants per expectation value provides a good balance between sufficient noise tailoring and execution overhead on physical hardware.
+As a starting point, 20 to 50 twirl variants per expectation value often provides a reasonable balance between sufficient noise tailoring and execution overhead on physical hardware; the right number depends on circuit size, noise rate, and the precision required.
 
 ## Which noise channels are tailored by PT?
 
 PT aims to convert coherent or generally asymmetric noise into purely stochastic Pauli noise. Any noise channel with off-diagonal terms in its Pauli Transfer Matrix (PTM) benefits from twirling, which zeroes out those off-diagonals. 
 
 The following heatmaps provide a visual representation of how different original noise channels are transformed (tailored) after Pauli Twirling.
+The code below generates these heatmaps by computing the Pauli Transfer Matrix (PTM) of each channel before and after twirling.
+
+```{code-cell} ipython3
+:tags: [remove-input]
+
+import numpy as np
+import matplotlib.pyplot as plt
+
+# Pauli matrices
+I = np.eye(2)
+X = np.array([[0, 1], [1, 0]])
+Y = np.array([[0, -1j], [1j, 0]])
+Z = np.array([[1, 0], [0, -1]])
+paulis = [I, X, Y, Z]
+labels = ["I", "X", "Y", "Z"]
+
+def ptm(channel_kraus):
+    """Compute the 4x4 Pauli Transfer Matrix of a channel given its Kraus operators."""
+    n = 4
+    mat = np.zeros((n, n))
+    for i, Pi in enumerate(paulis):
+        for j, Pj in enumerate(paulis):
+            val = 0.0
+            for K in channel_kraus:
+                KPj = K @ Pj
+                KPjKd = KPj @ K.conj().T
+                val += np.trace(Pi @ KPjKd).real
+            mat[i, j] = val / 2.0
+    return mat
+
+def twirl_ptm(ptm_in):
+    """Twirling a channel: keep only diagonal elements (exact result for Pauli twirling)."""
+    return np.diag(np.diag(ptm_in))
+
+def coherent_kraus(theta=0.3):
+    K = np.array([[np.cos(theta), -np.sin(theta)],
+                  [np.sin(theta),  np.cos(theta)]])
+    return [K]
+
+def amplitude_damping_kraus(gamma=0.2):
+    K0 = np.array([[1, 0], [0, np.sqrt(1 - gamma)]])
+    K1 = np.array([[0, np.sqrt(gamma)], [0, 0]])
+    return [K0, K1]
+
+def depolarizing_kraus(p=0.1):
+    K0 = np.sqrt(1 - p) * I
+    K1 = np.sqrt(p / 3) * X
+    K2 = np.sqrt(p / 3) * Y
+    K3 = np.sqrt(p / 3) * Z
+    return [K0, K1, K2, K3]
+
+channels = [
+    ("Coherent over-rotation", coherent_kraus()),
+    ("Amplitude damping", amplitude_damping_kraus()),
+    ("Depolarizing", depolarizing_kraus()),
+]
+
+fig, axes = plt.subplots(len(channels), 2, figsize=(7, 9))
+for row, (name, kraus) in enumerate(channels):
+    p_before = ptm(kraus)
+    p_after  = twirl_ptm(p_before)
+    for col, (mat, title) in enumerate([(p_before, "Before PT"), (p_after, "After PT")]):
+        ax = axes[row, col]
+        im = ax.imshow(mat, vmin=-1, vmax=1, cmap="RdBu_r")
+        ax.set_xticks(range(4)); ax.set_yticks(range(4))
+        ax.set_xticklabels(labels); ax.set_yticklabels(labels)
+        ax.set_title(f"{name}\n{title}", fontsize=9)
+        fig.colorbar(im, ax=ax, fraction=0.046, pad=0.04)
+plt.tight_layout()
+plt.savefig("../img/pt_ptm_heatmaps.png", dpi=100, bbox_inches="tight")
+plt.show()
+```
 
 ```{figure} ../img/pt_ptm_heatmaps.png
 ---
