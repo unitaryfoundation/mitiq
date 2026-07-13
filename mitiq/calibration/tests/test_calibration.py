@@ -223,6 +223,80 @@ def test_get_cost():
     assert cost["ideal_executions"] == 0
 
 
+def test_get_cost_breakdown():
+    cal = Calibrator(damping_execute, frontend="cirq", settings=settings)
+    breakdown = cal.get_cost_breakdown()
+
+    # One row per (problem, strategy) pair plus one baseline row per problem.
+    assert len(breakdown) == len(cal.problems) * (len(cal.strategies) + 1)
+    for strategy in cal.strategies:
+        rows = [r for r in breakdown if r["strategy_id"] == strategy.id]
+        assert len(rows) == len(cal.problems)
+        assert all(
+            r["noisy_executions"] == strategy.num_circuits_required()
+            and r["technique"] == strategy.technique.name
+            for r in rows
+        )
+    baseline_rows = [r for r in breakdown if r["strategy_id"] is None]
+    assert len(baseline_rows) == len(cal.problems)
+    assert all(
+        r["noisy_executions"] == 1 and r["technique"] == "baseline"
+        for r in baseline_rows
+    )
+
+    # The breakdown sums to the totals reported by get_cost.
+    cost = cal.get_cost()
+    assert cost["noisy_executions"] == sum(
+        r["noisy_executions"] for r in breakdown
+    )
+    assert cost["ideal_executions"] == 0
+    assert all(r["ideal_executions"] == 0 for r in breakdown)
+
+
+def test_get_cost_breakdown_custom_problem_with_ideal_executor():
+    q = cirq.LineQubit(0)
+    circ = cirq.Circuit(cirq.X(q))
+
+    custom_settings = Settings(
+        benchmarks=[{"circuit_type": "custom", "circuit": circ}],
+        strategies=[
+            {
+                "technique": "zne",
+                "scale_noise": fold_global,
+                "factory": LinearFactory([1.0, 2.0]),
+            }
+        ],
+    )
+    ideal_exec = Executor(partial(damping_execute, noise_level=0))
+    cal = Calibrator(
+        damping_execute,
+        frontend="cirq",
+        settings=custom_settings,
+        ideal_executor=ideal_exec,
+    )
+
+    breakdown = cal.get_cost_breakdown()
+    assert breakdown == [
+        {
+            "problem_id": 0,
+            "problem_type": "custom",
+            "strategy_id": 0,
+            "technique": "ZNE",
+            "noisy_executions": 2,
+            "ideal_executions": 0,
+        },
+        {
+            "problem_id": 0,
+            "problem_type": "custom",
+            "strategy_id": None,
+            "technique": "baseline",
+            "noisy_executions": 1,
+            "ideal_executions": 1,
+        },
+    ]
+    assert cal.get_cost() == {"noisy_executions": 3, "ideal_executions": 1}
+
+
 def test_best_strategy():
     test_strategy_settings = Settings(
         benchmarks=[
