@@ -74,7 +74,7 @@ wheels = [
 
 [[package]]
 name = "amazon-braket-sdk"
-version = "1.121.0"
+version = "1.123.0.post0"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "amazon-braket-default-simulator" },
@@ -92,9 +92,9 @@ dependencies = [
     { name = "oqpy" },
     { name = "sympy" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/ff/86/baa5c99bdb23be45a83956592d5dca2bb13355674759c95c66f6583b4265/amazon_braket_sdk-1.121.0.tar.gz", hash = "sha256:cd3fcaaa719fae149400c79a7ba9d5a678fa4e367ce6abdcb90d3ec110a36296", size = 270615, upload-time = "2026-06-26T20:47:37.506Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/db/2b/9625229f48468491b5ccf19a7723f95e97756cfcff43f66f788a4f195ca1/amazon_braket_sdk-1.123.0.post0.tar.gz", hash = "sha256:418dd9e8640dcbfb1692c769a35f6f8c3a093bf1c0e8d89d3a3c69469ea08cb4", size = 272363, upload-time = "2026-07-13T16:13:53.281Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/da/18/22bf12c41cb93eb4dcf0cc7653bdeccc83e36d82ef02d54e006ab2f43a33/amazon_braket_sdk-1.121.0-py3-none-any.whl", hash = "sha256:4266c710c12dfd3eca8bcc334ebfff91f38941f778301a99292cec6ea2ced65a", size = 397839, upload-time = "2026-06-26T20:47:35.428Z" },
+    { url = "https://files.pythonhosted.org/packages/4d/92/5226eeb5c5b29699cd41ad5395d15893fdb420d9486eb0e8e68920874a90/amazon_braket_sdk-1.123.0.post0-py3-none-any.whl", hash = "sha256:3e712d03a37faeee132253d51ce7803c12f02d05a7c27771395c724083577589", size = 399578, upload-time = "2026-07-13T16:13:51.684Z" },
 ]
 
 [[package]]
@@ -1719,7 +1719,7 @@ docs = [
 
 [package.metadata]
 requires-dist = [
-    { name = "amazon-braket-sdk", marker = "extra == 'braket'", specifier = ">=1.97,<1.122" },
+    { name = "amazon-braket-sdk", marker = "extra == 'braket'", specifier = ">=1.97,<1.124" },
     { name = "cirq-core", specifier = ">=1.6.0,<1.7.0" },
     { name = "cirq-ionq", marker = "extra == 'braket'", specifier = ">=1.6.0,<1.7.0" },
     { name = "llvmlite", marker = "extra == 'braket'", specifier = "==0.46.0" },
