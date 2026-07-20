@@ -22,6 +22,7 @@ ZNE with Qiskit: Quantum simulation of quantum many body scars <quantum_simulati
 ZNE with Qiskit: Simulation of Loschmidt echo revival <loschmidt_echo_revival_zne.md>
 ZNE with Cirq: Solving MaxCut with QAOA <maxcut-demo.md>
 ZNE with Cirq: Hamiltonian simulation with Pauli gates<hamiltonians.md>
+ZNE with Cirq: BB84 Quantum Key Distribution <bb84_zne_tutorial.ipynb>
 ZNE with Cirq: Energy of molecular Hydrogen <molecular_hydrogen.md>
 ZNE with Cirq: Noise scaling methods <scaling.md>
 ZNE with Qibo: Mitigating noisy simulations <qibo-noisy-simulation.md>
