@@ -154,6 +154,13 @@ def get_observable_in_code_space(observable: list[cirq.PauliString]):
 We then assign the check operators as a list of pauli strings, and the code Hamiltonian as an Observable for the [[5,1,3]] code.
 The check operators of the [[5,1,3]] code are simply the expansion of the code’s 4 generators: $[XZZXI, IXZZX, XIXZZ, ZXIXZ]$
 
+```{tip}
+Check operators need not come from a QEC code. Any operators that leave the ideal output state
+invariant (for example, known parity or other problem symmetries) are valid. For guidance on
+discovering and constructing them, including a non-code example, see
+[Finding and creating check operators](qse-3-options.md#finding-and-creating-check-operators).
+```
+
 ```{code-cell} ipython3
 def get_5_1_3_code_check_operators_and_code_hamiltonian() -> tuple:
     """
