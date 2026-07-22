@@ -121,10 +121,18 @@ print("\nQuantum results:\n", *executor.quantum_results, sep="\n")
 
 Notice in the above output that the executor has been called once for each circuit it has executed. This is because `mitiq_cirq.compute_density_matrix` inputs one circuit and outputs one `QuantumResult`.
 
-Several quantum computing services allow running a sequence, or "batch," of circuits at once. This is important for error mitigation when running many circuits to speed up the computation.
+Several quantum computing services allow running a sequence, or "batch," of circuits at once.
+This is especially important for error mitigation: techniques such as ZNE, PEC, and LRE typically generate **many** noise-scaled or sampled circuits, and batching reduces the number of backend round-trips (and often wall-clock time) without changing the quantum resource counts themselves.
+See also [Resource Requirements](resource-requirements.md).
 
-To define a batched executor, annotate it with `Sequence[T]`, `list[T]`, `tuple[T]`, or `Iterable[T]` where `T` is a `QuantumResult`.
-Here is an example:
+To define a batched executor, the function must:
+
+1. Accept a **sequence** of circuits (e.g. `list[QPROGRAM]`), and
+2. Be **annotated** to return a sequence of results (`list[T]`, `Sequence[T]`, `tuple[T]`, or `Iterable[T]` where `T` is a `QuantumResult`).
+
+Mitiq detects batching from that return-type annotation. Functions without a batched annotation are treated as serial even if they could accept a list.
+
+Here is a density-matrix example:
 
 ```{code-cell} ipython3
 import numpy as np
@@ -156,6 +164,57 @@ print("\nExecuted circuits:\n", *batched_executor.executed_circuits, sep="\n")
 print("\nQuantum results:\n", *batched_executor.quantum_results, sep="\n")
 ```
 
+#### Float-valued batched executors
+
+Hardware jobs often return expectation values (floats) rather than density matrices.
+A batched float executor looks like this:
+
+```{code-cell} ipython3
+def serial_float_executor(circuit: cirq.Circuit) -> float:
+    """Serial executor: one circuit → one float."""
+    rho = mitiq_cirq.compute_density_matrix(circuit)
+    # Population of |0⟩ as a simple float-valued result.
+    return float(np.real(rho[0, 0]))
+
+
+def batched_float_executor(circuits: list[cirq.Circuit]) -> list[float]:
+    """Batched executor: many circuits → many floats in one call."""
+    return [serial_float_executor(c) for c in circuits]
+
+
+serial_ex = Executor(serial_float_executor)
+batched_ex = Executor(batched_float_executor, max_batch_size=50)
+
+sample = [cirq.Circuit(pauli.on(q)) for pauli in (cirq.X, cirq.Y, cirq.Z)]
+_ = serial_ex.evaluate(sample)
+_ = batched_ex.evaluate(sample)
+
+print("Serial calls: ", serial_ex.calls_to_executor)   # one call per circuit
+print("Batched calls:", batched_ex.calls_to_executor)  # one call for the batch
+print("can_batch:    ", serial_ex.can_batch, batched_ex.can_batch)
+```
+
+```{tip}
+Replace the body of `batched_float_executor` with your provider's batch/job API
+(for example, submitting a list of circuits in a single QPU job). Mitiq only
+requires that the function accept a list of circuits and return a list of results
+of equal length, in the same order.
+```
+
+#### `max_batch_size`
+
+The optional `max_batch_size` argument caps how many circuits are sent in a single call.
+If you evaluate more circuits than `max_batch_size`, Mitiq splits them into multiple batches:
+
+```{code-cell} ipython3
+small_batch_executor = Executor(batched_float_executor, max_batch_size=2)
+many_circuits = [cirq.Circuit(cirq.X(q)) for _ in range(5)]
+_ = small_batch_executor.evaluate(many_circuits)
+print("Calls with max_batch_size=2:", small_batch_executor.calls_to_executor)
+```
+
+Choose `max_batch_size` based on your backend's limits (job size, payload size, or queue policy).
+
 ## Using `Executor`s in error mitigation techniques
 
 +++
@@ -182,6 +241,11 @@ print("Calls to executor:", batched_executor.calls_to_executor)
 print("\nExecuted circuits:\n", *batched_executor.executed_circuits, sep="\n")
 print("\nQuantum results:\n", *batched_executor.quantum_results, sep="\n")
 ```
+
+With a batched executor, all noise-scaled circuits for a non-adaptive method
+(for example a fixed set of ZNE scale factors) can be submitted together,
+which is the usual way to use Mitiq efficiently on cloud hardware
+{cite}`Russo_2022_Testing`.
 
 ## Defining an `Executor` that returns measurement outcomes (bitstrings)
 
