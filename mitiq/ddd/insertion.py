@@ -6,6 +6,7 @@
 """Tools to determine slack windows in circuits and to insert DDD sequences."""
 
 from collections.abc import Callable
+from dataclasses import dataclass
 
 import cirq
 import numpy as np
@@ -15,6 +16,23 @@ from cirq import Circuit, I, LineQubit, synchronize_terminal_measurements
 from mitiq import QPROGRAM
 from mitiq.interface import accept_qprogram_and_validate
 from mitiq.interface.conversions import convert_to_mitiq
+
+
+@dataclass(frozen=True)
+class DDDInfo:
+    """Structured information about a DDD insertion pass.
+
+    Attributes:
+        num_idle_windows: Number of single-qubit idle windows with slack length
+            greater than 1 (candidates for DDD insertion).
+        num_sequences_inserted: Number of non-empty DDD sequences that were
+            inserted into those windows.
+        idle_window_lengths: Length of each candidate idle window, in moments.
+    """
+
+    num_idle_windows: int
+    num_sequences_inserted: int
+    idle_window_lengths: tuple[int, ...]
 
 
 def _get_circuit_mask(circuit: Circuit) -> npt.NDArray[np.int64]:
@@ -91,7 +109,9 @@ def get_slack_matrix_from_circuit_mask(
 def insert_ddd_sequences(
     circuit: QPROGRAM,
     rule: Callable[[int], QPROGRAM],
-) -> QPROGRAM:
+    *,
+    return_info: bool = False,
+) -> QPROGRAM | tuple[QPROGRAM, DDDInfo]:
     """Returns the circuit with DDD sequences applied according to the input
     rule.
 
@@ -100,18 +120,32 @@ def insert_ddd_sequences(
         rule: The rule determining what DDD sequences should be applied.
             A set of built-in DDD rules can be imported from
             ``mitiq.ddd.rules``.
+        return_info: If ``False`` (default), return only the circuit with
+            DDD sequences added. If ``True``, return a tuple
+            ``(circuit_with_ddd, ddd_info)`` where ``ddd_info`` is a
+            :class:`~mitiq.ddd.insertion.DDDInfo` describing idle windows
+            found and sequences inserted. This is useful for verifying
+            that DDD actually modified the circuit (e.g. when there are
+            no idle windows).
 
     Returns:
-        The circuit with DDD sequences added.
+        The circuit with DDD sequences added, or
+        ``(circuit_with_ddd, ddd_info)`` if ``return_info`` is ``True``.
     """
-
-    return _insert_ddd_sequences(circuit, rule)
+    info_out: list[DDDInfo] = []
+    circuit_with_ddd = _insert_ddd_sequences(
+        circuit, rule, _info_out=info_out if return_info else None
+    )
+    if return_info:
+        return circuit_with_ddd, info_out[0]
+    return circuit_with_ddd
 
 
 @accept_qprogram_and_validate
 def _insert_ddd_sequences(
     circuit: Circuit,
     rule: Callable[[int], QPROGRAM],
+    _info_out: list[DDDInfo] | None = None,
 ) -> Circuit:
     """Returns the circuit with DDD sequences applied according to the input
     rule.
@@ -121,6 +155,11 @@ def _insert_ddd_sequences(
         rule: The rule determining what DDD sequences should be applied.
             A set of built-in DDD rules can be imported from
             ``mitiq.ddd.rules``.
+        _info_out: Optional mutable list used as an out-parameter. When
+            provided, a single :class:`DDDInfo` is appended after insertion.
+            This keeps the public return type of the decorated function a
+            circuit so ``accept_qprogram_and_validate`` conversion is
+            unchanged.
 
     Returns:
         The circuit with DDD sequences added.
@@ -146,14 +185,20 @@ def _insert_ddd_sequences(
     # Copy to avoid mutating the input circuit
     circuit_with_ddd = circuit.copy()
     qubits = sorted(circuit.all_qubits())
+    idle_window_lengths: list[int] = []
+    num_sequences_inserted = 0
     for moment_idx in range(len(circuit)):
         slack_column = slack_matrix[:, moment_idx]
         for row_index, slack_length in enumerate(slack_column):
             if slack_length > 1:
+                idle_window_lengths.append(int(slack_length))
                 ddd_sequence = cirq_rule(slack_length).transform_qubits(
                     {LineQubit(0): qubits[row_index]}
                 )
-                for idx, op in enumerate(ddd_sequence.all_operations()):
+                operations = list(ddd_sequence.all_operations())
+                if operations:
+                    num_sequences_inserted += 1
+                for idx, op in enumerate(operations):
                     moment = circuit_with_ddd[moment_idx + idx]
                     op_to_replace = moment.operation_at(*op.qubits)
 
@@ -163,4 +208,13 @@ def _insert_ddd_sequences(
                     circuit_with_ddd[moment_idx + idx] = moment.with_operation(
                         op
                     )
+
+    if _info_out is not None:
+        _info_out.append(
+            DDDInfo(
+                num_idle_windows=len(idle_window_lengths),
+                num_sequences_inserted=num_sequences_inserted,
+                idle_window_lengths=tuple(idle_window_lengths),
+            )
+        )
     return circuit_with_ddd
