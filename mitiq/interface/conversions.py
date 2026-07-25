@@ -119,6 +119,12 @@ def convert_to_mitiq(circuit: QPROGRAM) -> tuple[cirq.Circuit, str]:
         input_circuit_type = "qibo"
         conversion_function = from_qibo
 
+    elif "qrisp" in package:
+        from mitiq.interface.mitiq_qrisp.conversions import from_qrisp
+
+        input_circuit_type = "qrisp"
+        conversion_function = from_qrisp
+
     elif "openqasm3.ast" in package:
         from mitiq.interface.mitiq_openqasm.conversions import from_openqasm
 
@@ -198,6 +204,11 @@ def convert_from_mitiq(
 
         def conversion_function(circ: cirq.Circuit) -> cirq.Circuit:
             return circ
+
+    elif conversion_type == "qrisp":
+        from mitiq.interface.mitiq_qrisp.conversions import to_qrisp
+
+        conversion_function = to_qrisp
 
     elif conversion_type == "openqasm":
         from mitiq.interface.mitiq_openqasm.conversions import to_openqasm

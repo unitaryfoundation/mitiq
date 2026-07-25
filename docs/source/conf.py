@@ -128,6 +128,7 @@ tags_badge_colors = {
     "stim": "secondary",
     "qrack": "secondary",
     "qibo": "secondary",
+    "qrisp": "secondary",
     "ionq": "secondary",
     "basic": "success",
     "intermediate": "success",

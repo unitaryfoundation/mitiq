@@ -478,6 +478,13 @@ guarantees. Access them via `mitiq.experimental`.
    :members:
 ```
 
+#### Qrisp Conversions
+
+```{eval-rst}
+.. automodule:: mitiq.interface.mitiq_qrisp.conversions
+   :members:
+```
+
 #### OpenQASM Conversions
 
 ```{eval-rst}

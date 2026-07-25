@@ -55,6 +55,9 @@ qiskit = [
     "qiskit-ibm-runtime~=0.41.1",
     "ply==3.11",
 ]
+qrisp = [
+    "qrisp>=0.9.0",
+]
 benchmarking = [
     "mthree",
     "qermit",

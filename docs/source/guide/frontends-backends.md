@@ -57,6 +57,7 @@ Examples for using each of the frameworks to represent the input to a mitigation
 - {doc}`Braket <../examples/braket_mirror_circuit>`
 - {doc}`PennyLane <../examples/pennylane-ibmq-backends>`
 - {doc}`Qibo <../examples/qibo-noisy-simulation>`
+- {doc}`Qrisp <../examples/qrisp>`
 
 ## Backends
 

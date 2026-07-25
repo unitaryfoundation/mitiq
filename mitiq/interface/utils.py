@@ -138,6 +138,13 @@ def _count_gate_arities_qibo(circuit: Any) -> dict[str, int]:
     return counts
 
 
+def _count_gate_arities_qrisp(circuit: Any) -> dict[str, int]:
+    """Counts gates in a Qrisp circuit grouped by arity."""
+    from mitiq.interface.conversions import convert_to_mitiq
+
+    return _count_gate_arities_cirq(convert_to_mitiq(circuit)[0])
+
+
 def _count_gate_arities_openqasm(circuit: Any) -> dict[str, int]:
     """Counts gates in a OpenQASM circuit grouped by arity."""
     from mitiq.interface.conversions import convert_to_mitiq
@@ -155,6 +162,8 @@ def _get_circuit_type(circuit: QPROGRAM) -> str:
         )
     if "qiskit" in package:
         return "qiskit"
+    if "qrisp" in package:
+        return "qrisp"
     if "pyquil" in package:
         return "pyquil"
     if "braket" in package:
@@ -175,6 +184,7 @@ def _get_circuit_type(circuit: QPROGRAM) -> str:
 _COUNT_FUNCTIONS: dict[str, Callable[[Any], dict[str, int]]] = {
     "cirq": _count_gate_arities_cirq,
     "qiskit": _count_gate_arities_qiskit,
+    "qrisp": _count_gate_arities_qrisp,
     "pyquil": _count_gate_arities_pyquil,
     "braket": _count_gate_arities_braket,
     "pennylane": _count_gate_arities_pennylane,

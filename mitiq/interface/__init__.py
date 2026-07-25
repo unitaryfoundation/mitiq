@@ -31,6 +31,7 @@ _SUBMODULES = {
     "mitiq_pyquil",
     "mitiq_qibo",
     "mitiq_qiskit",
+    "mitiq_qrisp",
 }
 
 

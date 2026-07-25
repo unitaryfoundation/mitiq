@@ -66,6 +66,11 @@ except ImportError:  # pragma: no cover
     _QiboCircuit = _Circuit
 
 try:
+    from qrisp import QuantumCircuit as _QrispCircuit
+except ImportError:  # pragma: no cover
+    _QrispCircuit = _Circuit  # type: ignore
+
+try:
     from openqasm3.ast import Program
 
     class QasmStringType(str):
@@ -86,6 +91,7 @@ QPROGRAM: TypeAlias = Union[
     _BKCircuit,
     _QuantumTape,
     _QiboCircuit,
+    _QrispCircuit,
     _OpenQASMCircuit,
 ]
 
@@ -98,6 +104,7 @@ class SUPPORTED_PROGRAM_TYPES(EnhancedEnum):
     PYQUIL = _Program
     QIBO = _QiboCircuit
     QISKIT = _QuantumCircuit
+    QRISP = _QrispCircuit
     OPENQASM = _OpenQASMCircuit
 
 
