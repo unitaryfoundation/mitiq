@@ -5,6 +5,10 @@
 
 """Functions to convert between Mitiq's internal circuit representation and
 Qrisp's circuit representation.
+
+Qrisp provides native Cirq converters via ``qrisp.interface.convert_to_cirq``
+and ``qrisp.interface.convert_from_cirq``.  These wrappers delegate directly
+to those functions.
 """
 
 from cirq import Circuit
