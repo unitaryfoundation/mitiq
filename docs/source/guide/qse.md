@@ -25,3 +25,9 @@ qse-4-low-level.md
 qse-5-theory.md
 ```
 
+Here is a tutorial on how to use QSE in Mitiq:
+
+- [QSE with Cirq: [[5,1,3]] code](../examples/qse_tutorial.md)
+
+You can find many more examples on a variety of error mitigation techniques in the **[Examples](../examples/examples.md)** section of the documentation.
+

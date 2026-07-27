@@ -1,6 +1,6 @@
 # Examples
 
-Below you can find a gallery of tutorials applying Zero Noise Extrapolation (ZNE), Probabilistic Error Cancellation (PEC), Clifford Data Regression (CDR), and Digital Dynamical Decoupling (DDD), etc. with Mitiq.
+Below you can find a gallery of tutorials applying Zero Noise Extrapolation (ZNE), Probabilistic Error Cancellation (PEC), Clifford Data Regression (CDR), Digital Dynamical Decoupling (DDD), Quantum Subspace Expansion (QSE), etc. with Mitiq.
 
 You can also search for an example utilizing a specific QEM technique, frontend, backend or difficulty level by clicking through the tags available [here.](tags.md)
 
@@ -40,6 +40,7 @@ DDD with Cirq: Mirror circuits <ddd_tutorial.md>
 DDD with Qiskit: GHZ circuits <ddd_on_ibmq_ghz.md>
 CDR with Qrack as Near-Clifford Simulator <cdr_qrack.md>
 CDR with Clifft as Near-Clifford Simulator <cdr_demo.md>
+QSE with Cirq: [[5,1,3]] code <qse_tutorial.md>
 GGI Summer School ZNE Hands-On Tutorial <ggi_summer_school_unsolved.md>
 Composing techniques: REM + ZNE <combine_rem_zne.md>
 Composing techniques: DDD + ZNE <combine_ddd_zne.md>
