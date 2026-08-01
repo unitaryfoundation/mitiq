@@ -34,9 +34,9 @@ $$
 M_i | \Psi \rangle = | \Psi \rangle.
 $$
 
-Mitiq does **not** require check operators to come from a quantum error-correcting (QEC) code.
-Any set of operators that satisfy the invariance condition above is valid input to
-{func}`.execute_with_qse` — including stabilizers of a code, physical symmetries of a problem,
+While many check operators naturally arise from applying a quantum error-correcting (QEC)
+code, {func}`.execute_with_qse` works with any set of operators that satisfy the invariance
+condition above — including stabilizers of a code, physical symmetries of a problem,
 and other known invariants of the prepared state {cite}`McClean_2020_NatComm`.
 In the API they are passed as a sequence of {class}`.PauliString` objects.
 
@@ -67,13 +67,18 @@ observable — for example:
 - *Spin or other discrete symmetries* — if the prepared state is an eigenstate of a Pauli
   (or a small set of commuting Paulis) with known eigenvalue $+1$, those Paulis are valid checks.
 
-These operators need not form a complete error-correcting code. Even a single nontrivial
-symmetry can define a useful one-dimensional expansion beyond the identity.
+Even a single nontrivial symmetry can define a useful one-dimensional expansion beyond
+the identity.
 
 **3. Mixed sets.**
 Stabilizers and symmetries can be combined. Including a symmetry that is *not* already in the
 stabilizer group helps suppress error components that violate that symmetry
-(see [What is the theory behind QSE?](qse-5-theory.md)).
+(see [What is the theory behind QSE?](qse-5-theory.md)). For example, when running a circuit
+that prepares a logical codeword of the [[5,1,3]] code, the four stabilizer generators are one
+natural check-operator set. If the logical state is additionally known to be an eigenstate of
+the logical $\bar{Z}$ operator — as it is for a computational-basis logical state — $\bar{Z}$
+commutes with every stabilizer but is not itself a product of them, so it can be added to the
+check list as an extra, non-stabilizer check operator.
 
 ### Constructing the code Hamiltonian
 
@@ -113,8 +118,7 @@ the checks.
 
 The following two-qubit circuit prepares the even-parity Bell state
 $| \Phi^+ \rangle = (|00\rangle + |11\rangle)/\sqrt{2}$. That state is a $+1$ eigenstate of
-both $XX$ and $ZZ$, which we use as check operators. No stabilizer-code machinery is required
-beyond knowing these symmetries of $| \Phi^+ \rangle$.
+both $XX$ and $ZZ$, which we use as check operators.
 
 ```{code-cell} ipython3
 import cirq
