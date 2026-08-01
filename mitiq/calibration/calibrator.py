@@ -7,7 +7,7 @@ import warnings
 from collections.abc import Callable, Sequence
 from enum import Enum
 from operator import itemgetter
-from typing import cast
+from typing import Any, cast
 
 import cirq
 import numpy as np
@@ -325,22 +325,59 @@ class Calibrator:
         Returns:
             A summary of the number of circuits to be run.
         """
-        num_circuits = len(self.problems)
-        num_options = sum(
-            strategy.num_circuits_required()  # type: ignore
-            for strategy in self.strategies  # type: ignore
-        )
-
-        noisy = num_circuits * (num_options + 1)
-        ideal = (
-            sum(1 for p in self.problems if p.type == "custom")
-            if self.ideal_executor is not None
-            else 0
-        )
+        breakdown = self.get_cost_breakdown()
         return {
-            "noisy_executions": noisy,
-            "ideal_executions": ideal,
+            "noisy_executions": sum(
+                row["noisy_executions"] for row in breakdown
+            ),
+            "ideal_executions": sum(
+                row["ideal_executions"] for row in breakdown
+            ),
         }
+
+    def get_cost_breakdown(self) -> list[dict[str, Any]]:
+        """Returns the breakdown of the total cost reported by
+        :func:`get_cost`, itemized by problem and strategy.
+
+        Each (problem, strategy) pair contributes one row containing the
+        number of noisy executions required by that strategy. Each problem
+        also contributes one baseline row (with ``strategy_id`` set to
+        ``None`` and ``technique`` set to ``"baseline"``) accounting for the
+        single unmitigated noisy execution and, for custom problems run with
+        an ideal executor, the ideal execution.
+
+        Returns:
+            A list of dictionaries, each with keys ``problem_id``,
+            ``problem_type``, ``strategy_id``, ``technique``,
+            ``noisy_executions`` and ``ideal_executions``.
+        """
+        breakdown = []
+        for problem in self.problems:
+            for strategy in self.strategies:
+                breakdown.append(
+                    {
+                        "problem_id": problem.id,
+                        "problem_type": problem.type,
+                        "strategy_id": strategy.id,
+                        "technique": strategy.technique.name,
+                        "noisy_executions": strategy.num_circuits_required(),
+                        "ideal_executions": 0,
+                    }
+                )
+            breakdown.append(
+                {
+                    "problem_id": problem.id,
+                    "problem_type": problem.type,
+                    "strategy_id": None,
+                    "technique": "baseline",
+                    "noisy_executions": 1,
+                    "ideal_executions": int(
+                        problem.type == "custom"
+                        and self.ideal_executor is not None
+                    ),
+                }
+            )
+        return breakdown
 
     def run(self, log: OutputForm | None = None) -> None:
         """Runs all the circuits required for calibration.
