@@ -179,6 +179,9 @@ def serial_float_executor(circuit: cirq.Circuit) -> float:
 
 def batched_float_executor(circuits: list[cirq.Circuit]) -> list[float]:
     """Batched executor: many circuits → many floats in one call."""
+    # For demonstration only: this just loops the serial call under the
+    # hood, so it isn't actually batched. Replace the body with your
+    # provider's batch/job API to get real batching.
     return [serial_float_executor(c) for c in circuits]
 
 
