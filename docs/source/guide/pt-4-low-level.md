@@ -35,8 +35,7 @@ There is no complex inference step --- the final result is a simple average.
 ```{note}
 The `num_circuits` parameter in {func}`.generate_pauli_twirl_variants` controls how many
 twirled variants are generated. More variants lead to better convergence of the
-Pauli-twirled noise channel. See [What is the theory behind PT?](pt-5-theory.md)
-for a visualization of how this convergence plays out across different noise types.
+Pauli-twirled noise channel.
 ```
 
 As shown in [How do I use PT?](pt-1-intro.md), {func}`.generate_pauli_twirl_variants` generates
