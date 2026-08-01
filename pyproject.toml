@@ -33,7 +33,7 @@ dependencies = [
 
 [project.optional-dependencies]
 braket = [
-    "amazon-braket-sdk>=1.97,<1.122",
+    "amazon-braket-sdk>=1.97,<1.125",
     "cirq-ionq>=1.6.0,<1.7.0",
     "llvmlite==0.46.0",
     "numba==0.64.0",
@@ -87,7 +87,7 @@ docs = [
     "nbsphinx==0.9.7",
     "pandas==2.3.3",
     "pyscf==2.12.0; sys_platform != 'win32'",
-    "openfermion==1.7.1; sys_platform != 'win32'",
+    "openfermion==1.8.1; sys_platform != 'win32'",
     "openfermionpyscf==0.5; sys_platform != 'win32'",
     "bqskit==1.2.1",
     "seaborn==0.13.2",

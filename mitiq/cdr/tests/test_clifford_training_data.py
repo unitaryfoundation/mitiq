@@ -11,7 +11,7 @@ import pytest
 from cirq.circuits import Circuit
 
 from mitiq import SUPPORTED_PROGRAM_TYPES
-from mitiq.cdr._testing import random_x_z_cnot_circuit
+from mitiq.cdr._testing import random_x_z_circuit, random_x_z_cnot_circuit
 from mitiq.cdr.clifford_training_data import (
     _map_to_near_clifford,
     _replace,
@@ -20,6 +20,23 @@ from mitiq.cdr.clifford_training_data import (
 )
 from mitiq.cdr.clifford_utils import count_non_cliffords, is_clifford
 from mitiq.interface import convert_from_mitiq
+
+
+def test_random_x_z_circuit():
+    qubits = cirq.LineQubit.range(3)
+    circuit = random_x_z_circuit(qubits, n_moments=5, random_state=1)
+    allowed_gates = {
+        *(cirq.rz(angle) for angle in np.linspace(0.0, 2 * np.pi, 6)),
+        cirq.rx(np.pi / 2),
+    }
+
+    assert circuit == random_x_z_circuit(qubits, n_moments=5, random_state=1)
+    assert len(circuit) == 5
+    assert circuit.all_qubits() == set(qubits)
+    assert all(
+        len(operation.qubits) == 1 and operation.gate in allowed_gates
+        for operation in circuit.all_operations()
+    )
 
 
 def test_generate_training_circuits():
