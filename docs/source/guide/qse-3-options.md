@@ -38,7 +38,10 @@ While many check operators naturally arise from applying a quantum error-correct
 code, {func}`.execute_with_qse` works with any set of operators that satisfy the invariance
 condition above — including stabilizers of a code, physical symmetries of a problem,
 and other known invariants of the prepared state {cite}`McClean_2020_NatComm`.
-In the API they are passed as a sequence of {class}`.PauliString` objects.
+In the API they are passed as a sequence of {class}`.PauliString` objects. Prefer
+operators for which the ideal state is a $+1$ eigenstate. If it is a $-1$ eigenstate of a
+Pauli $P$, use $-P$ via the {class}`.PauliString` coefficient. Multi-term symmetries should
+be split into Pauli terms that individually stabilize the state.
 
 ```{note}
 If you do not know any operators that leave the ideal state invariant, QSE is not a good fit
@@ -52,8 +55,10 @@ from noisy samples alone.
 When the circuit prepares a logical state of a stabilizer code, take generators of the stabilizer
 group (or a subset of group elements) as check operators. Expanding the product of
 $(I + G_k)$ over generators $G_k$ yields the full set of group elements, which is what the
-[[5,1,3]] example in [How do I use QSE?](qse-1-intro.md) does. Using more stabilizers enlarges the
-subspace and can improve mitigation, at the cost of more measurements.
+[[5,1,3]] example in [How do I use QSE?](qse-1-intro.md) does. The identity is optional,
+although it is included when the full stabilizer group is used. Any nonempty subset is valid:
+more operators can improve mitigation, while fewer operators reduce circuit executions and the
+$O(n^2)$ overlap-matrix measurement cost (before caching and Pauli aggregation).
 
 **2. Problem symmetries and conserved quantities.**
 Many algorithms prepare states with known symmetries of the underlying Hamiltonian or
@@ -97,22 +102,6 @@ coefficients) that appear in the check list — as in the [[5,1,3]] helper in th
 You may use a different $H_c$ if you have a better energy-like proxy for the ideal state, but
 it should still rank the codespace / symmetry sector you care about below states that break
 the checks.
-
-### Practical guidance
-
-- **Identity.** Including the identity Pauli string is optional but common when the check
-  list is built as a full stabilizer group (the group always contains $I$).
-- **How many operators?** You do **not** need the full exponential set. Any nonempty subset
-  is accepted. Fewer operators mean a smaller generalized eigenvalue problem and fewer
-  circuit executions, but a coarser projector and typically weaker mitigation. Measurement
-  cost for the overlap matrices scales as $O(n^2)$ in the number of check operators $n$
-  (before caching and Pauli aggregation).
-- **Eigenvalue $+1$.** Prefer operators for which the ideal state is a $+1$ eigenstate. If
-  the ideal state is a $-1$ eigenstate of some Pauli $P$, use $-P$ (via the
-  {class}`.PauliString` coefficient) so that $M | \Psi \rangle = | \Psi \rangle$ holds.
-- **Type.** Every check operator must be a {class}`.PauliString`. Multi-term symmetries should
-  be split into Pauli terms that individually stabilize the state, or absorbed into a single
-  Pauli when the symmetry is already a Pauli string.
 
 ### Example: check operators from a parity symmetry (no QEC code)
 
