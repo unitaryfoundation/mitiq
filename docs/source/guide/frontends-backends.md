@@ -73,6 +73,22 @@ For more information on executors, see the {doc}`executors` section of this guid
 ### Batch execution of programs
 
 You can also use the {class}`.Executor` class to execute a batch of quantum programs all in one go.
-To perform batched execution, you can use the same mitiq.Executor class constructor and pass a function with the following signature: `T[mitiq.QPROGRAM] -> T[{class}".QuantumResult"]` where T is `Sequence`, `List`, `Tuple`, or `Iterable`.
+Error mitigation techniques often produce many circuits; a batched executor submits them with fewer backend calls.
 
-For more information on batched executors and example code, see the {doc}`executors` section of this guide.
+To perform batched execution, pass a function with signature
+`Sequence[mitiq.QPROGRAM] -> Sequence[mitiq.QuantumResult]`
+(or `list` / `tuple` / `Iterable` in place of `Sequence`).
+**Return-type annotations are required** so Mitiq can detect batching.
+
+```python
+from mitiq import Executor, QPROGRAM
+
+def run_batch(circuits: list[QPROGRAM]) -> list[float]:
+    # Submit all circuits to your backend in one job when possible.
+    return [run_one(c) for c in circuits]
+
+batched_executor = Executor(run_batch, max_batch_size=75)
+assert batched_executor.can_batch
+```
+
+For a full walkthrough (serial vs. batched call counts, `max_batch_size`, and use with ZNE), see {doc}`executors`.
