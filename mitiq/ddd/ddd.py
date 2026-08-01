@@ -12,7 +12,7 @@ from typing import Any
 import numpy as np
 
 from mitiq import QPROGRAM, Executor, Observable, QuantumResult
-from mitiq.ddd.insertion import insert_ddd_sequences
+from mitiq.ddd.insertion import DDDInfo, insert_ddd_sequences
 
 
 def execute_with_ddd(
@@ -106,7 +106,9 @@ def construct_circuits(
     rule: Callable[[int], QPROGRAM],
     rule_args: dict[str, Any] | None = None,
     num_trials: int = 1,
-) -> list[QPROGRAM]:
+    *,
+    return_info: bool = False,
+) -> list[QPROGRAM] | tuple[list[QPROGRAM], list[DDDInfo]]:
     """Generates a list of circuits with DDD sequences inserted.
 
     Args:
@@ -117,9 +119,14 @@ def construct_circuits(
             applied in that window.
         rule_args: An optional dictionary of keyword arguments for ``rule``.
         num_trials: The number of circuits to generate with DDD insertions.
+        return_info: If ``False`` (default), return only the list of
+            circuits. If ``True``, return a tuple ``(circuits_with_ddd,
+            ddd_infos)`` where ``ddd_infos`` has one
+            :class:`~mitiq.ddd.insertion.DDDInfo` per trial.
 
     Returns:
-        A list of circuits with DDD inserted.
+        A list of circuits with DDD inserted, or ``(circuits_with_ddd,
+        ddd_infos)`` if ``return_info`` is ``True``.
     """
     if rule_args is None:
         rule_args = {}
@@ -127,11 +134,22 @@ def construct_circuits(
     rule_partial = partial(rule, **rule_args)
 
     # Insert DDD sequences in (a copy of) the input circuit
-    circuits_with_ddd = [
-        insert_ddd_sequences(circuit, rule_partial) for _ in range(num_trials)
-    ]
+    if not return_info:
+        return [
+            insert_ddd_sequences(circuit, rule_partial)
+            for _ in range(num_trials)
+        ]
 
-    return circuits_with_ddd
+    circuits_with_ddd = []
+    ddd_infos = []
+    for _ in range(num_trials):
+        circuit_with_ddd, info = insert_ddd_sequences(
+            circuit, rule_partial, return_info=True
+        )
+        circuits_with_ddd.append(circuit_with_ddd)
+        ddd_infos.append(info)
+
+    return circuits_with_ddd, ddd_infos
 
 
 def mitigate_executor(

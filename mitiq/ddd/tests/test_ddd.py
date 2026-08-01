@@ -11,6 +11,7 @@ from pytest import mark
 
 from mitiq import QPROGRAM, SUPPORTED_PROGRAM_TYPES, Executor
 from mitiq.ddd import (
+    DDDInfo,
     construct_circuits,
     ddd_decorator,
     execute_with_ddd,
@@ -240,3 +241,24 @@ def test_num_trials_generates_circuits(num_trials: int):
     )
 
     assert num_trials == len(circuits)
+
+
+def test_construct_circuits_return_info_default_is_list_only():
+    """Default API remains a plain list of circuits (no tuple)."""
+    circuits = construct_circuits(circuit_cirq_a, rule=xx, num_trials=3)
+    assert isinstance(circuits, list)
+    assert all(isinstance(c, QPROGRAM) for c in circuits)
+
+
+def test_construct_circuits_return_info_true():
+    """Optional return_info reports one DDDInfo per trial."""
+    circuits, infos = construct_circuits(
+        circuit_cirq_a, rule=xx, num_trials=3, return_info=True
+    )
+
+    assert len(circuits) == 3
+    assert len(infos) == 3
+    assert all(isinstance(info, DDDInfo) for info in infos)
+    assert circuits == construct_circuits(
+        circuit_cirq_a, rule=xx, num_trials=3
+    )
