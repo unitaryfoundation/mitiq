@@ -76,7 +76,8 @@ def generate_pauli_twirl_variants(
         num_circuits: Number of twirled variants of the circuits.
         noise_name: Name of the noisy operator acting on CNOT and CZ gates.
             This is useful if the user requires a noisy circuit after twirling.
-            Values allowed: ["bit-flip", "depolarize"]
+            Built-in values: ``["bit-flip", "depolarize"]``. Custom channels
+            can be added to :attr:`CIRQ_NOISE_OP` before calling this function.
 
     Returns:
         A list of `num_circuits` twirled versions of `circuit`

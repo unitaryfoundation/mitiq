@@ -1,0 +1,59 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 250" width="1000" height="250" font-family="sans-serif">
+    <!-- Definitions for arrows and styles -->
+    <defs>
+        <marker id="arrow" viewBox="0 0 10 10" refX="10" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+            <path d="M 0 0 L 10 5 L 0 10 z" fill="#333" />
+        </marker>
+        <style>
+            .box { fill: #f0f4f8; stroke: #2c3e50; stroke-width: 2; rx: 8; ry: 8; }
+            .box-pt { fill: #e8f5e9; stroke: #2e7d32; stroke-width: 2; rx: 8; ry: 8; }
+            .box-qem { fill: #e3f2fd; stroke: #1565c0; stroke-width: 2; rx: 8; ry: 8; }
+            .text { font-size: 14px; fill: #333; text-anchor: middle; font-weight: bold; }
+            .subtext { font-size: 11px; fill: #666; text-anchor: middle; }
+            .line { stroke: #333; stroke-width: 2; fill: none; marker-end: url(#arrow); }
+        </style>
+    </defs>
+
+    <!-- Blocks -->
+    <!-- Input -->
+    <rect class="box" x="20" y="80" width="130" height="60" />
+    <text class="text" x="85" y="105">Input Circuit</text>
+    <text class="subtext" x="85" y="125">(QPROGRAM)</text>
+
+    <!-- QEM Generator -->
+    <rect class="box-qem" x="190" y="80" width="140" height="60" />
+    <text class="text" x="260" y="105">QEM Generation</text>
+    <text class="subtext" x="260" y="125">(e.g., ZNE Folding)</text>
+
+    <!-- PT Generator -->
+    <rect class="box-pt" x="370" y="80" width="140" height="60" />
+    <text class="text" x="440" y="105">PT Variants</text>
+    <text class="subtext" x="440" y="125">(Pauli Insertions)</text>
+
+    <!-- QPU Execution -->
+    <rect class="box" x="550" y="80" width="110" height="60" />
+    <text class="text" x="605" y="105">Execute</text>
+    <text class="subtext" x="605" y="125">(Hardware/Sim)</text>
+
+    <!-- PT Averaging -->
+    <rect class="box-pt" x="700" y="80" width="120" height="60" />
+    <text class="text" x="760" y="105">PT Averaging</text>
+    <text class="subtext" x="760" y="125">(Noise Tailored)</text>
+
+    <!-- QEM Inference -->
+    <rect class="box-qem" x="860" y="80" width="120" height="60" />
+    <text class="text" x="920" y="105">QEM Inference</text>
+    <text class="subtext" x="920" y="125">(Extrapolation)</text>
+
+    <!-- Arrows -->
+    <path class="line" d="M 150 110 L 180 110" />
+    <path class="line" d="M 330 110 L 360 110" />
+    <path class="line" d="M 510 110 L 540 110" />
+    <path class="line" d="M 660 110 L 690 110" />
+    <path class="line" d="M 820 110 L 850 110" />
+    
+    <!-- Explanatory Grouping Box -->
+    <rect x="355" y="40" width="480" height="130" fill="none" stroke="#2e7d32" stroke-width="2" stroke-dasharray="5,5" rx="10" ry="10" />
+    <text x="595" y="30" font-size="14px" fill="#2e7d32" font-weight="bold" text-anchor="middle">Pauli Twirling Preprocessing Subroutine</text>
+
+</svg>
