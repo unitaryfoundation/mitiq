@@ -186,6 +186,39 @@ def test_Strategy_pretty_dict():
         )
 
 
+def test_Strategy_pretty_dict_pec():
+    strategy = light_pec_settings.make_strategies()[0]
+    strategy_dict = strategy.to_dict()
+    strategy_pretty_dict = strategy.to_pretty_dict()
+    assert strategy_pretty_dict["technique"] == "PEC"
+    assert strategy_pretty_dict["noise_bias"] == strategy_dict.get(
+        "noise_bias", "N/A"
+    )
+    assert (
+        strategy_pretty_dict["representation_function"]
+        == strategy_dict["representation_function"][25:]
+    )
+
+
+def test_pec_mitigation_function_unbiased_representation():
+    def constant_executor(circuit: cirq.Circuit) -> float:
+        return 1.0
+
+    strategy = light_pec_settings.make_strategies()[0]
+    q0, q1 = cirq.LineQubit.range(2)
+    circuit = cirq.Circuit(cirq.H(q0), cirq.CNOT(q0, q1))
+
+    expval = strategy.mitigation_function(circuit, constant_executor)
+    assert np.isclose(expval, 1.0, atol=0.5)
+
+
+def test_get_problem():
+    settings = basic_settings
+    problems = settings.make_problems()
+    problem = problems[0]
+    assert settings.get_problem(problem.id) is problem
+
+
 def test_make_circuits_rotated_rb_circuits():
     settings = Settings(
         benchmarks=[
