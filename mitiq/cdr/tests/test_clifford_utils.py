@@ -75,6 +75,30 @@ def test_closest_clifford():
             assert closest_clifford(a) == ang
 
 
+@pytest.mark.parametrize(
+    ("angle", "neighbor_indices"),
+    [
+        (np.pi / 4, (0, 1)),
+        (3 * np.pi / 4, (1, 2)),
+        (5 * np.pi / 4, (2, 3)),
+    ],
+)
+def test_closest_clifford_equidistant(angle, neighbor_indices):
+    """Cover the equidistant branch of ``closest_clifford`` (see #2365).
+
+    Midpoints between neighboring Clifford angles are handled by randomly
+    choosing one of the two closest Clifford angles.
+    """
+    expected = {_CLIFFORD_ANGLES[i] for i in neighbor_indices}
+    results: set[float] = set()
+    for seed in range(200):
+        np.random.seed(seed)
+        results.add(float(closest_clifford(angle)))
+        if results == expected:
+            break
+    assert results == expected
+
+
 def test_random_clifford():
     assert set(random_clifford(20, np.random.RandomState(1))).issubset(
         _CLIFFORD_ANGLES
