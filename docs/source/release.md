@@ -39,16 +39,15 @@ This task has two parts:
     This method requires installing (and authenticating on) the Github CLI, but has the advantage that the output list comes already with Github handles, hence removing a tedious step for the release manager.    
     ``` 
 2.  The release manager should add a "Summary" section with a couple
-    sentences describing the latest release, and then update the title
-    of the release section to include the release date and remove the
-    "In Development" designation.
+    sentences describing the latest release, and include the release
+    date in the title of the new release section.
 
 ### Bump version in pyproject.toml
 
 When releasing a new version, one must update the `version` field in `pyproject.toml`
-which is the single source of truth for version information. We follow
-[SemVer](https://semver.org/), so typically a release will involve changing the version from
-`X.Y.Zdev` (development) to `X.Y.Z` (released).
+which is the single source of truth for version information. Between releases the
+version remains that of the latest release, so bump it here to the new version
+according to [SemVer](https://semver.org/).
 
 ### Create a release pull request
 
@@ -124,8 +123,3 @@ You need to be a registered maintainer of Mitiq project on PyPI to
 upload a new release on PyPI from your local machine as a token is 
 required for authentication.
 ```
-
-## Update the new development version
-
-Add a new section to the `CHANGELOG.md` to track changes in the following release, meaning that if `vX.Y.Z` was just released, then there should be a section for `vX.(Y+1).0` that is marked "In Development".
-Finally, change the `version` field in `pyproject.toml` from `X.Y.Z` to `X.(Y+1).0dev`.
