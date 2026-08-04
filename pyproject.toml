@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "mitiq"
-version = "1.0.0"
+version = "1.1.0"
 readme = "README.md"
 description = "Mitiq is an open source toolkit for implementing error mitigation techniques on most current intermediate-scale quantum computers." 
 authors = [ 
