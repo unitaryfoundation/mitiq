@@ -7,6 +7,7 @@
 
 from collections.abc import Callable
 from dataclasses import dataclass
+from typing import Literal, overload
 
 import cirq
 import numpy as np
@@ -106,63 +107,24 @@ def get_slack_matrix_from_circuit_mask(
     return slack_matrix
 
 
-def insert_ddd_sequences(
-    circuit: QPROGRAM,
-    rule: Callable[[int], QPROGRAM],
-    *,
-    return_info: bool = False,
-) -> QPROGRAM | tuple[QPROGRAM, DDDInfo]:
-    """Returns the circuit with DDD sequences applied according to the input
-    rule.
-
-    Args:
-        circuit: The QPROGRAM circuit to be modified with DDD sequences.
-        rule: The rule determining what DDD sequences should be applied.
-            A set of built-in DDD rules can be imported from
-            ``mitiq.ddd.rules``.
-        return_info: If ``False`` (default), return only the circuit with
-            DDD sequences added. If ``True``, return a tuple
-            ``(circuit_with_ddd, ddd_info)`` where ``ddd_info`` is a
-            :class:`~mitiq.ddd.insertion.DDDInfo` describing idle windows
-            found and sequences inserted. This is useful for verifying
-            that DDD actually modified the circuit (e.g. when there are
-            no idle windows).
-
-    Returns:
-        The circuit with DDD sequences added, or
-        ``(circuit_with_ddd, ddd_info)`` if ``return_info`` is ``True``.
-    """
-    info_out: list[DDDInfo] = []
-    circuit_with_ddd = _insert_ddd_sequences(
-        circuit, rule, _info_out=info_out if return_info else None
-    )
-    if return_info:
-        return circuit_with_ddd, info_out[0]
-    return circuit_with_ddd
-
-
-@accept_qprogram_and_validate
-def _insert_ddd_sequences(
+def _apply_ddd_sequences(
     circuit: Circuit,
     rule: Callable[[int], QPROGRAM],
-    _info_out: list[DDDInfo] | None = None,
-) -> Circuit:
-    """Returns the circuit with DDD sequences applied according to the input
-    rule.
+) -> tuple[Circuit, DDDInfo]:
+    """Insert DDD sequences into a Cirq circuit.
+
+    Always returns ``(circuit_with_ddd, info)``. This is the single Cirq-level
+    implementation; conversion wrappers either discard ``info`` or thread it
+    out as a proper return value (never via a mutable out-parameter).
 
     Args:
         circuit: The Cirq circuit to be modified with DDD sequences.
         rule: The rule determining what DDD sequences should be applied.
             A set of built-in DDD rules can be imported from
             ``mitiq.ddd.rules``.
-        _info_out: Optional mutable list used as an out-parameter. When
-            provided, a single :class:`DDDInfo` is appended after insertion.
-            This keeps the public return type of the decorated function a
-            circuit so ``accept_qprogram_and_validate`` conversion is
-            unchanged.
 
     Returns:
-        The circuit with DDD sequences added.
+        A tuple ``(circuit_with_ddd, ddd_info)``.
     """
     circuit = synchronize_terminal_measurements(circuit)
     if not circuit.are_all_measurements_terminal():
@@ -209,12 +171,111 @@ def _insert_ddd_sequences(
                         op
                     )
 
-    if _info_out is not None:
-        _info_out.append(
-            DDDInfo(
-                num_idle_windows=len(idle_window_lengths),
-                num_sequences_inserted=num_sequences_inserted,
-                idle_window_lengths=tuple(idle_window_lengths),
-            )
-        )
+    info = DDDInfo(
+        num_idle_windows=len(idle_window_lengths),
+        num_sequences_inserted=num_sequences_inserted,
+        idle_window_lengths=tuple(idle_window_lengths),
+    )
+    return circuit_with_ddd, info
+
+
+@accept_qprogram_and_validate
+def _insert_ddd_sequences(
+    circuit: Circuit,
+    rule: Callable[[int], QPROGRAM],
+) -> Circuit:
+    """Returns the circuit with DDD sequences applied according to the input
+    rule.
+
+    Circuit-only wrapper for :func:`_apply_ddd_sequences`. The decorator
+    requires a Cirq→Cirq return type so frontend conversion stays unchanged;
+    callers that need :class:`DDDInfo` go through
+    :func:`insert_ddd_sequences` with ``return_info=True``.
+
+    Args:
+        circuit: The Cirq circuit to be modified with DDD sequences.
+        rule: The rule determining what DDD sequences should be applied.
+            A set of built-in DDD rules can be imported from
+            ``mitiq.ddd.rules``.
+
+    Returns:
+        The circuit with DDD sequences added.
+    """
+    circuit_with_ddd, _ = _apply_ddd_sequences(circuit, rule)
     return circuit_with_ddd
+
+
+def _insert_ddd_sequences_with_info(
+    circuit: QPROGRAM,
+    rule: Callable[[int], QPROGRAM],
+) -> tuple[QPROGRAM, DDDInfo]:
+    """Insert DDD sequences and return both the converted circuit and info.
+
+    ``@accept_qprogram_and_validate`` only supports Cirq→Cirq (or one-to-many)
+    returns, so it cannot propagate :class:`DDDInfo` on its own. We apply that
+    decorator to a one-shot circuit transformer that records info via a local
+    nonlocal binding, then return a normal ``(circuit, info)`` tuple. No
+    mutable out-parameter is part of any function signature.
+    """
+    info: DDDInfo | None = None
+
+    def _insert_and_record(circ: Circuit) -> Circuit:
+        nonlocal info
+        circuit_with_ddd, info = _apply_ddd_sequences(circ, rule)
+        return circuit_with_ddd
+
+    circuit_with_ddd = accept_qprogram_and_validate(_insert_and_record)(
+        circuit
+    )
+    # _insert_and_record always assigns info before returning.
+    assert info is not None
+    return circuit_with_ddd, info
+
+
+@overload
+def insert_ddd_sequences(
+    circuit: QPROGRAM,
+    rule: Callable[[int], QPROGRAM],
+    *,
+    return_info: Literal[False] = False,
+) -> QPROGRAM: ...
+
+
+@overload
+def insert_ddd_sequences(
+    circuit: QPROGRAM,
+    rule: Callable[[int], QPROGRAM],
+    *,
+    return_info: Literal[True],
+) -> tuple[QPROGRAM, DDDInfo]: ...
+
+
+def insert_ddd_sequences(
+    circuit: QPROGRAM,
+    rule: Callable[[int], QPROGRAM],
+    *,
+    return_info: bool = False,
+) -> QPROGRAM | tuple[QPROGRAM, DDDInfo]:
+    """Returns the circuit with DDD sequences applied according to the input
+    rule.
+
+    Args:
+        circuit: The QPROGRAM circuit to be modified with DDD sequences.
+        rule: The rule determining what DDD sequences should be applied.
+            A set of built-in DDD rules can be imported from
+            ``mitiq.ddd.rules``.
+        return_info: If ``False`` (default), return only the circuit with
+            DDD sequences added. If ``True``, return a tuple
+            ``(circuit_with_ddd, ddd_info)`` where ``ddd_info`` is a
+            :class:`~mitiq.ddd.insertion.DDDInfo` describing idle windows
+            found and sequences inserted. This is useful for verifying
+            that DDD actually modified the circuit (e.g. when there are
+            no idle windows).
+
+    Returns:
+        The circuit with DDD sequences added, or
+        ``(circuit_with_ddd, ddd_info)`` if ``return_info`` is ``True``.
+    """
+    if return_info:
+        return _insert_ddd_sequences_with_info(circuit, rule)
+    return _insert_ddd_sequences(circuit, rule)

@@ -7,7 +7,7 @@
 
 from collections.abc import Callable
 from functools import partial, wraps
-from typing import Any, cast
+from typing import Any
 
 import numpy as np
 
@@ -143,9 +143,8 @@ def construct_circuits(
     circuits_with_ddd: list[QPROGRAM] = []
     ddd_infos: list[DDDInfo] = []
     for _ in range(num_trials):
-        circuit_with_ddd, info = cast(
-            tuple[QPROGRAM, DDDInfo],
-            insert_ddd_sequences(circuit, rule_partial, return_info=True),
+        circuit_with_ddd, info = insert_ddd_sequences(
+            circuit, rule_partial, return_info=True
         )
         circuits_with_ddd.append(circuit_with_ddd)
         ddd_infos.append(info)
