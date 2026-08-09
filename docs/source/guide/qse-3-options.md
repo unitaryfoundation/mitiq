@@ -103,7 +103,7 @@ You may use a different $H_c$ if you have a better energy-like proxy for the ide
 it should still rank the codespace / symmetry sector you care about below states that break
 the checks.
 
-### Example: check operators from a parity symmetry (no QEC code)
+### Example: check operators from a parity symmetry
 
 The following two-qubit circuit prepares the even-parity Bell state
 $| \Phi^+ \rangle = (|00\rangle + |11\rangle)/\sqrt{2}$. That state is a $+1$ eigenstate of
