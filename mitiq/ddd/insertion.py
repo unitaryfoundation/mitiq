@@ -114,8 +114,8 @@ def _apply_ddd_sequences(
     """Insert DDD sequences into a Cirq circuit.
 
     Always returns ``(circuit_with_ddd, info)``. This is the single Cirq-level
-    implementation; conversion wrappers either discard ``info`` or thread it
-    out as a proper return value (never via a mutable out-parameter).
+    implementation; conversion wrappers either discard ``info`` or pass it
+    through as an extra return value.
 
     Args:
         circuit: The Cirq circuit to be modified with DDD sequences.
@@ -211,27 +211,13 @@ def _insert_ddd_sequences_with_info(
 ) -> tuple[QPROGRAM, DDDInfo]:
     """Insert DDD sequences and return both the converted circuit and info.
 
-    Cirq inputs go straight through :func:`_apply_ddd_sequences`, which returns
-    a normal ``(circuit, DDDInfo)`` tuple. Other frontends still need
-    ``@accept_qprogram_and_validate`` for conversion, and that decorator can
-    only return a ``QPROGRAM``, so info is recorded in a local binding and
-    returned as a normal tuple. No caller-facing out-parameter.
+    :func:`_apply_ddd_sequences` always returns ``(circuit, DDDInfo)``.
+    ``accept_qprogram_and_validate(..., returns_extra=True)`` converts the
+    circuit and passes the info through as a normal extra return value.
     """
-    if isinstance(circuit, Circuit):
-        return _apply_ddd_sequences(circuit, rule)
-
-    info: DDDInfo | None = None
-
-    def _insert_and_record(circ: Circuit) -> Circuit:
-        nonlocal info
-        circuit_with_ddd, info = _apply_ddd_sequences(circ, rule)
-        return circuit_with_ddd
-
-    circuit_with_ddd = accept_qprogram_and_validate(_insert_and_record)(
-        circuit
-    )
-    assert info is not None
-    return circuit_with_ddd, info
+    return accept_qprogram_and_validate(
+        _apply_ddd_sequences, returns_extra=True
+    )(circuit, rule)
 
 
 @overload
