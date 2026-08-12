@@ -211,12 +211,15 @@ def _insert_ddd_sequences_with_info(
 ) -> tuple[QPROGRAM, DDDInfo]:
     """Insert DDD sequences and return both the converted circuit and info.
 
-    ``@accept_qprogram_and_validate`` only supports Cirq→Cirq (or one-to-many)
-    returns, so it cannot propagate :class:`DDDInfo` on its own. We apply that
-    decorator to a one-shot circuit transformer that records info via a local
-    nonlocal binding, then return a normal ``(circuit, info)`` tuple. No
-    mutable out-parameter is part of any function signature.
+    Cirq inputs go straight through :func:`_apply_ddd_sequences`, which returns
+    a normal ``(circuit, DDDInfo)`` tuple. Other frontends still need
+    ``@accept_qprogram_and_validate`` for conversion, and that decorator can
+    only return a ``QPROGRAM``, so info is recorded in a local binding and
+    returned as a normal tuple. No caller-facing out-parameter.
     """
+    if isinstance(circuit, Circuit):
+        return _apply_ddd_sequences(circuit, rule)
+
     info: DDDInfo | None = None
 
     def _insert_and_record(circ: Circuit) -> Circuit:
@@ -227,7 +230,6 @@ def _insert_ddd_sequences_with_info(
     circuit_with_ddd = accept_qprogram_and_validate(_insert_and_record)(
         circuit
     )
-    # _insert_and_record always assigns info before returning.
     assert info is not None
     return circuit_with_ddd, info
 
