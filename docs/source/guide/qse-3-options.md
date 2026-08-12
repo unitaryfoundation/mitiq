@@ -134,10 +134,3 @@ code_hamiltonian = Observable(
 
 These objects are then passed to {func}`.execute_with_qse` together with an executor and the
 observable of interest, exactly as in [How do I use QSE?](qse-1-intro.md).
-
-## Requirements for Check Operators
-
-You do not need the full exponential set of check operators; any nonempty subset is valid.
-The tradeoff is the fidelity of the projected state versus measurement cost.
-See [Finding and creating check operators](#finding-and-creating-check-operators) above for
-how to choose them.
