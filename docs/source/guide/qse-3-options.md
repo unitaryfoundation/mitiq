@@ -34,10 +34,10 @@ $$
 M_i | \Psi \rangle = | \Psi \rangle.
 $$
 
-While many check operators naturally arise from applying a quantum error-correcting (QEC)
-code, {func}`.execute_with_qse` works with any set of operators that satisfy the invariance
-condition above — including stabilizers of a code, physical symmetries of a problem,
-and other known invariants of the prepared state {cite}`McClean_2020_NatComm`.
+While many check operators naturally arise from stabilizer codes,
+{func}`.execute_with_qse` works with any set of operators that satisfy the invariance
+condition above, including stabilizers, physical symmetries of a problem, and other
+known invariants of the prepared state {cite}`McClean_2020_NatComm`.
 In the API they are passed as a sequence of {class}`.PauliString` objects. Prefer
 operators for which the ideal state is a $+1$ eigenstate. If it is a $-1$ eigenstate of a
 Pauli $P$, use $-P$ via the {class}`.PauliString` coefficient. Multi-term symmetries should
@@ -51,7 +51,7 @@ from noisy samples alone.
 
 ### Sources of check operators
 
-**1. Stabilizer (QEC) codes.**
+**1. Stabilizer codes.**
 When the circuit prepares a logical state of a stabilizer code, take generators of the stabilizer
 group (or a subset of group elements) as check operators. Expanding the product of
 $(I + G_k)$ over generators $G_k$ yields the full set of group elements, which is what the
@@ -137,7 +137,7 @@ observable of interest, exactly as in [How do I use QSE?](qse-1-intro.md).
 
 ## Requirements for Check Operators
 
-When specifying the check operators, it is **not** necessary to specify the full exponential number of operators.
-As many or as few operators can be specified.
-The tradeoff is the fidelity of the projected state.
-See [Finding and creating check operators](#finding-and-creating-check-operators) above for how to choose them.
+You do not need the full exponential set of check operators; any nonempty subset is valid.
+The tradeoff is the fidelity of the projected state versus measurement cost.
+See [Finding and creating check operators](#finding-and-creating-check-operators) above for
+how to choose them.
