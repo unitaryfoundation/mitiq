@@ -5,14 +5,17 @@
 
 """High-level digital dynamical decoupling (DDD) tools."""
 
+import logging
 from collections.abc import Callable
 from functools import partial, wraps
-from typing import Any
+from typing import Any, Literal, overload
 
 import numpy as np
 
 from mitiq import QPROGRAM, Executor, Observable, QuantumResult
 from mitiq.ddd.insertion import DDDInfo, insert_ddd_sequences
+
+LOGGER = logging.getLogger("mitiq.ddd")
 
 
 def execute_with_ddd(
@@ -101,6 +104,46 @@ def combine_results(results: list[float]) -> float:
     return float(np.average(results))
 
 
+def _log_ddd_info(info: DDDInfo, *, trial: int, num_trials: int) -> None:
+    """Log idle-window / insertion counts for one DDD trial."""
+    if num_trials == 1:
+        LOGGER.info(
+            "DDD: found %s idle windows; inserted %s sequences",
+            info.num_idle_windows,
+            info.num_sequences_inserted,
+        )
+        return
+    LOGGER.info(
+        "DDD trial %s/%s: found %s idle windows; inserted %s sequences",
+        trial,
+        num_trials,
+        info.num_idle_windows,
+        info.num_sequences_inserted,
+    )
+
+
+@overload
+def construct_circuits(
+    circuit: QPROGRAM,
+    rule: Callable[[int], QPROGRAM],
+    rule_args: dict[str, Any] | None = None,
+    num_trials: int = 1,
+    *,
+    return_info: Literal[False] = False,
+) -> list[QPROGRAM]: ...
+
+
+@overload
+def construct_circuits(
+    circuit: QPROGRAM,
+    rule: Callable[[int], QPROGRAM],
+    rule_args: dict[str, Any] | None = None,
+    num_trials: int = 1,
+    *,
+    return_info: Literal[True],
+) -> tuple[list[QPROGRAM], tuple[DDDInfo, ...]]: ...
+
+
 def construct_circuits(
     circuit: QPROGRAM,
     rule: Callable[[int], QPROGRAM],
@@ -108,8 +151,13 @@ def construct_circuits(
     num_trials: int = 1,
     *,
     return_info: bool = False,
-) -> list[QPROGRAM] | tuple[list[QPROGRAM], list[DDDInfo]]:
+) -> list[QPROGRAM] | tuple[list[QPROGRAM], tuple[DDDInfo, ...]]:
     """Generates a list of circuits with DDD sequences inserted.
+
+    Each trial is logged at INFO on the ``mitiq.ddd`` logger (idle windows
+    found and sequences inserted). Logging is silent unless that logger is
+    enabled; ``insert_ddd_sequences`` does not log, so there is no duplicate
+    output when this function calls it.
 
     Args:
         circuit: The quantum circuit to be modified with DD.
@@ -121,7 +169,7 @@ def construct_circuits(
         num_trials: The number of circuits to generate with DDD insertions.
         return_info: If ``False`` (default), return only the list of
             circuits. If ``True``, return a tuple ``(circuits_with_ddd,
-            ddd_infos)`` where ``ddd_infos`` has one
+            ddd_infos)`` where ``ddd_infos`` is a tuple of one
             :class:`~mitiq.ddd.insertion.DDDInfo` per trial.
 
     Returns:
@@ -133,23 +181,19 @@ def construct_circuits(
     rule_partial: Callable[[int], QPROGRAM]
     rule_partial = partial(rule, **rule_args)
 
-    # Insert DDD sequences in (a copy of) the input circuit
-    if not return_info:
-        return [
-            insert_ddd_sequences(circuit, rule_partial)
-            for _ in range(num_trials)
-        ]
-
     circuits_with_ddd: list[QPROGRAM] = []
     ddd_infos: list[DDDInfo] = []
-    for _ in range(num_trials):
+    for trial in range(1, num_trials + 1):
         circuit_with_ddd, info = insert_ddd_sequences(
             circuit, rule_partial, return_info=True
         )
         circuits_with_ddd.append(circuit_with_ddd)
         ddd_infos.append(info)
+        _log_ddd_info(info, trial=trial, num_trials=num_trials)
 
-    return circuits_with_ddd, ddd_infos
+    if return_info:
+        return circuits_with_ddd, tuple(ddd_infos)
+    return circuits_with_ddd
 
 
 def mitigate_executor(

@@ -140,6 +140,14 @@ print(ddd_info.idle_window_lengths)
 The returned {class}`~mitiq.ddd.insertion.DDDInfo` reports how many idle windows were found,
 how many non-empty DDD sequences were inserted, and the length of each candidate window.
 
+{func}`.ddd.construct_circuits` logs the same counts at INFO on the ``mitiq.ddd`` logger
+(one line per trial). Enable it with:
+
+```{code-block} python
+import logging
+logging.getLogger("mitiq.ddd").setLevel(logging.INFO)
+```
+
 ```{note}
 In principle, the function {func}`.insert_ddd_sequences()` is all one needs to apply DDD.
 Indeed, since in DDD there is not a final post-processing step, one can simply insert DDD sequences before running the circuit on a noisy backend.

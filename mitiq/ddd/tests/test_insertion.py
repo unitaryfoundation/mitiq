@@ -5,6 +5,8 @@
 
 """Unit tests for DDD slack windows and DDD insertion tools."""
 
+import inspect
+
 import cirq
 import numpy as np
 import pyquil
@@ -391,6 +393,34 @@ def test_insert_ddd_sequences_return_info_empty_rule():
     assert info.num_idle_windows == 2
     assert info.num_sequences_inserted == 0
     assert info.idle_window_lengths == (2, 2)
+
+
+def test_insert_ddd_sequences_return_info_not_shared_across_calls():
+    """Successive return_info calls do not share mutable state."""
+    q = cirq.LineQubit(0)
+    empty = cirq.Circuit(cirq.H(q), cirq.X(q), cirq.H(q))
+    idle = cirq.Circuit(cirq.H(q), cirq.I(q), cirq.I(q), cirq.H(q))
+
+    _, info_empty = insert_ddd_sequences(empty, rule=xx, return_info=True)
+    _, info_idle = insert_ddd_sequences(idle, rule=xx, return_info=True)
+    _, info_empty_again = insert_ddd_sequences(
+        empty, rule=xx, return_info=True
+    )
+
+    assert info_empty.num_idle_windows == 0
+    assert info_idle.num_idle_windows == 1
+    assert info_empty_again.num_idle_windows == 0
+    assert info_idle.idle_window_lengths == (2,)
+    assert info_empty.idle_window_lengths == ()
+
+
+def test_insert_ddd_sequences_has_no_mutable_defaults():
+    """No shared list/dict default on the public insertion API."""
+    for param in inspect.signature(insert_ddd_sequences).parameters.values():
+        default = param.default
+        if default is inspect.Parameter.empty:
+            continue
+        assert not isinstance(default, (list, dict, set)), param.name
 
 
 def test_insert_ddd_sequences_return_info_qiskit():
