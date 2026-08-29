@@ -1416,8 +1416,14 @@ class PolyExpFactory(BatchedFactory):
             # The zero noise limit is ansatz(0)= asymptote + b
             zne_limit = asymptote + opt_params[0]
 
+            # Bind the fitted parameters to a name that is not rebound
+            # below: `opt_params` gains a leading `asymptote` entry, and a
+            # closure over it would evaluate the ansatz with a shifted
+            # parameter list.
+            fit_params = list(opt_params)
+
             def zne_curve(scale_factor: float) -> float:
-                return _ansatz_known(scale_factor, *opt_params)
+                return _ansatz_known(scale_factor, *fit_params)
 
             # Use propagation of errors to calculate zne_error
             if params_cov is not None:
