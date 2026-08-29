@@ -11,7 +11,11 @@ from braket.circuits import Instruction
 from braket.circuits import gates as braket_gates
 from cirq import Circuit, LineQubit, ops, protocols, testing
 
-from mitiq.interface.mitiq_braket.conversions import from_braket, to_braket
+from mitiq.interface.mitiq_braket.conversions import (
+    _translate_one_qubit_cirq_operation_to_braket_instruction,
+    from_braket,
+    to_braket,
+)
 from mitiq.utils import _equal
 
 
@@ -382,3 +386,71 @@ def test_to_from_braket_common_three_qubit_gates(common_gate):
     )
 
     assert _equal(test_circuit, cirq_circuit, require_qubit_equality=True)
+
+
+def test_to_braket_drops_measurement_gates_with_a_warning():
+    """Measurement gates have no Braket equivalent and are removed.
+
+    Braket circuits measure implicitly, so ``to_braket`` drops Cirq
+    measurement gates. That silently changes the circuit, so it warns —
+    this pins both halves of that contract, and that the surrounding
+    gates survive.
+    """
+    qreg = LineQubit.range(2)
+    cirq_circuit = Circuit(
+        ops.H(qreg[0]),
+        ops.CNOT(*qreg),
+        ops.measure(*qreg, key="m"),
+    )
+
+    with pytest.warns(UserWarning, match="Measurement gate removed"):
+        braket_circuit = to_braket(cirq_circuit)
+
+    assert [instr.operator.name for instr in braket_circuit.instructions] == [
+        "H",
+        "CNot",
+    ]
+
+
+def test_to_braket_identity_gate():
+    """``cirq.I`` maps to Braket's ``I``, not dropped or decomposed."""
+    braket_circuit = to_braket(Circuit(ops.I(LineQubit(0))))
+
+    assert [instr.operator.name for instr in braket_circuit.instructions] == [
+        "I"
+    ]
+
+
+@pytest.mark.parametrize(
+    "cirq_gate, braket_name",
+    [
+        (ops.SWAP, "Swap"),
+        (ops.ISWAP, "ISwap"),
+    ],
+)
+def test_to_braket_swap_gates_are_not_decomposed(cirq_gate, braket_name):
+    """SWAP and ISWAP have direct Braket equivalents.
+
+    Both are reachable only at exponent 1, so a partial swap must not
+    take this path — that case is checked in the same test to make sure
+    the exponent guard is doing something.
+    """
+    qreg = LineQubit.range(2)
+
+    braket_circuit = to_braket(Circuit(cirq_gate.on(*qreg)))
+    assert [instr.operator.name for instr in braket_circuit.instructions] == [
+        braket_name
+    ]
+
+    partial = to_braket(Circuit(cirq_gate.on(*qreg) ** 0.5))
+    assert [instr.operator.name for instr in partial.instructions] != [
+        braket_name
+    ]
+
+
+def test_translate_matrix_without_target_raises():
+    """A bare matrix carries no qubit, so ``target`` is required."""
+    with pytest.raises(ValueError, match="must be specified"):
+        _translate_one_qubit_cirq_operation_to_braket_instruction(
+            np.eye(2), target=None
+        )
