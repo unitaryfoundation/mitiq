@@ -2,6 +2,7 @@
 #
 # This source code is licensed under the GPL license (v3) found in the
 # LICENSE file in the root directory of this source tree.
+import itertools
 from typing import cast
 from warnings import warn
 
@@ -53,18 +54,28 @@ def from_braket(circuit: BKCircuit) -> Circuit:
 def to_braket(circuit: Circuit) -> BKCircuit:
     """Returns a Braket circuit equivalent to the input Cirq circuit.
 
-    Braket addresses qubits by integer index, so qubits that are not
-    ``cirq.LineQubit`` are relabelled to ``cirq.LineQubit`` in sorted order
-    first. This leaves ``LineQubit`` circuits untouched, and preserves the
-    unitary for the rest.
+    Braket addresses qubits by integer index. ``LineQubit`` indices are
+    carried through unchanged, including in a circuit that mixes them with
+    other qubit types; any qubit that is not a ``LineQubit`` is assigned the
+    lowest index not already taken by one.
 
     Args:
         circuit: Cirq circuit to convert to a Braket circuit.
     """
-    qubits = sorted(circuit.all_qubits())
-    if any(not isinstance(qubit, LineQubit) for qubit in qubits):
+    other_qubits = sorted(
+        qubit
+        for qubit in circuit.all_qubits()
+        if not isinstance(qubit, LineQubit)
+    )
+    if other_qubits:
+        taken = {
+            qubit.x
+            for qubit in circuit.all_qubits()
+            if isinstance(qubit, LineQubit)
+        }
+        free = (index for index in itertools.count() if index not in taken)
         circuit = circuit.transform_qubits(
-            {qubit: LineQubit(index) for index, qubit in enumerate(qubits)}
+            {qubit: LineQubit(next(free)) for qubit in other_qubits}
         )
 
     return BKCircuit(

@@ -456,3 +456,59 @@ def test_to_braket_random_circuit():
         protocols.unitary(cirq_circuit),
         atol=1e-7,
     )
+
+
+def test_to_braket_mixed_qubit_types_preserves_line_qubit_indices():
+    """A non-LineQubit alongside LineQubits must not renumber them.
+
+    Relabelling every qubit in sorted order would send an operation on
+    ``LineQubit(10)`` to Braket target 0 or 1, silently changing which
+    physical qubit it addresses. Only the non-LineQubits are assigned, and
+    they take the lowest index no LineQubit already occupies.
+    """
+    line, other = LineQubit(10), ops.NamedQubit("aux")
+    cirq_circuit = Circuit(ops.X(line), ops.CNOT(line, other))
+
+    braket_circuit = to_braket(cirq_circuit)
+
+    targets = sorted(
+        {int(t) for instr in braket_circuit.instructions for t in instr.target}
+    )
+    assert targets == [0, 10]
+
+
+def test_to_braket_measurement_only_qubit_does_not_renumber():
+    """A non-LineQubit that appears only in a measurement is harmless.
+
+    Measurements are dropped by the translator, so a circuit whose gates
+    are all on LineQubits must keep its indices even when a measurement
+    mentions another qubit type.
+    """
+    cirq_circuit = Circuit(
+        ops.X(LineQubit(10)),
+        ops.CNOT(LineQubit(10), LineQubit(11)),
+        ops.measure(ops.NamedQubit("aux"), key="m"),
+    )
+
+    with pytest.warns(UserWarning, match="Measurement gate removed"):
+        braket_circuit = to_braket(cirq_circuit)
+
+    targets = sorted(
+        {int(t) for instr in braket_circuit.instructions for t in instr.target}
+    )
+    assert targets == [10, 11]
+
+
+def test_to_braket_assigned_index_avoids_existing_line_qubits():
+    """An assigned index never collides with a LineQubit already present."""
+    cirq_circuit = Circuit(
+        ops.X(LineQubit(0)),
+        ops.CNOT(LineQubit(0), ops.NamedQubit("aux")),
+    )
+
+    braket_circuit = to_braket(cirq_circuit)
+
+    targets = sorted(
+        {int(t) for instr in braket_circuit.instructions for t in instr.target}
+    )
+    assert targets == [0, 1]
