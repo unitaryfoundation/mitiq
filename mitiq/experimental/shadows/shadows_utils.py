@@ -78,6 +78,10 @@ def fidelity(
     """
     Calculate the fidelity between two states.
 
+    Uses the squared convention, so the fidelity of a state with itself is
+    1 and the fidelity between a pure state :math:`|\\psi\\rangle` and a
+    density matrix is :math:`\\langle\\psi|\\rho|\\psi\\rangle`.
+
     Args:
         sigma: A state in terms of square matrix or vector.
         rho: A state in terms square matrix or vector.
@@ -92,7 +96,11 @@ def fidelity(
     elif sigma.ndim == 2 and rho.ndim == 1:
         val = np.abs(rho.conj().T @ sigma @ rho)
     elif sigma.ndim == 2 and rho.ndim == 2:
-        val = np.abs(np.trace(sqrtm(sigma) @ rho @ sqrtm(sigma)))
+        # Uhlmann fidelity. The inner square root is required: without it
+        # the expression reduces to tr(sigma @ rho), which for equal states
+        # is the purity rather than 1.
+        sqrt_sigma = sqrtm(sigma)
+        val = np.abs(np.trace(sqrtm(sqrt_sigma @ rho @ sqrt_sigma))) ** 2.0
     else:
         raise ValueError("Invalid input dimensions")
     return float(val)
