@@ -9,7 +9,7 @@ import pytest
 from braket.circuits import Circuit as BKCircuit
 from braket.circuits import Instruction
 from braket.circuits import gates as braket_gates
-from cirq import Circuit, LineQubit, ops, protocols, testing
+from cirq import Circuit, GridQubit, LineQubit, ops, protocols, testing
 
 from mitiq.interface.mitiq_braket.conversions import from_braket, to_braket
 from mitiq.utils import _equal
@@ -382,3 +382,77 @@ def test_to_from_braket_common_three_qubit_gates(common_gate):
     )
 
     assert _equal(test_circuit, cirq_circuit, require_qubit_equality=True)
+
+
+@pytest.mark.parametrize(
+    "qubits",
+    [
+        LineQubit.range(3),
+        [LineQubit(10), LineQubit(11), LineQubit(12)],
+        ops.NamedQubit.range(3, prefix="q"),
+        list(GridQubit.rect(1, 3)),
+    ],
+)
+def test_to_braket_accepts_any_qubit_type(qubits):
+    """Braket indexes qubits by integer, so non-LineQubits are relabelled.
+
+    ``to_braket`` read ``op.qubits[0].x`` directly, which only exists on
+    ``LineQubit``: a ``NamedQubit`` or ``GridQubit`` circuit raised
+    ``AttributeError: 'NamedQubit' object has no attribute 'x'``. Circuits
+    from ``cirq.testing.random_circuit`` use ``NamedQubit``, so they could
+    not be converted at all.
+    """
+    cirq_circuit = Circuit(
+        ops.H(qubits[0]),
+        ops.CNOT(qubits[0], qubits[1]),
+        ops.X(qubits[2]),
+    )
+
+    test_circuit = from_braket(to_braket(cirq_circuit))
+
+    testing.assert_allclose_up_to_global_phase(
+        protocols.unitary(test_circuit),
+        protocols.unitary(cirq_circuit),
+        atol=1e-7,
+    )
+
+
+def test_to_braket_preserves_line_qubit_indices():
+    """Relabelling must not renumber a circuit that is already LineQubits.
+
+    ``test_to_from_braket_non_zero_qubit`` depends on the indices being
+    carried through, so the relabelling has to be a no-op for LineQubits
+    even when they do not start at zero.
+    """
+    qubits = [LineQubit(10), LineQubit(11), LineQubit(12)]
+    cirq_circuit = Circuit(
+        ops.X(qubits[0]),
+        ops.CNOT(qubits[0], qubits[1]),
+        ops.CZ(qubits[1], qubits[2]),
+    )
+
+    braket_circuit = to_braket(cirq_circuit)
+
+    targets = sorted(
+        {int(t) for instr in braket_circuit.instructions for t in instr.target}
+    )
+    assert targets == [10, 11, 12]
+
+
+def test_to_braket_random_circuit():
+    """``cirq.testing.random_circuit`` output converts.
+
+    It builds circuits on ``NamedQubit``, which is what surfaced the
+    missing relabelling.
+    """
+    cirq_circuit = testing.random_circuit(
+        3, n_moments=6, op_density=0.8, random_state=5
+    )
+
+    test_circuit = from_braket(to_braket(cirq_circuit))
+
+    testing.assert_allclose_up_to_global_phase(
+        protocols.unitary(test_circuit),
+        protocols.unitary(cirq_circuit),
+        atol=1e-7,
+    )

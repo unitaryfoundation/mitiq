@@ -53,9 +53,20 @@ def from_braket(circuit: BKCircuit) -> Circuit:
 def to_braket(circuit: Circuit) -> BKCircuit:
     """Returns a Braket circuit equivalent to the input Cirq circuit.
 
+    Braket addresses qubits by integer index, so qubits that are not
+    ``cirq.LineQubit`` are relabelled to ``cirq.LineQubit`` in sorted order
+    first. This leaves ``LineQubit`` circuits untouched, and preserves the
+    unitary for the rest.
+
     Args:
         circuit: Cirq circuit to convert to a Braket circuit.
     """
+    qubits = sorted(circuit.all_qubits())
+    if any(not isinstance(qubit, LineQubit) for qubit in qubits):
+        circuit = circuit.transform_qubits(
+            {qubit: LineQubit(index) for index, qubit in enumerate(qubits)}
+        )
+
     return BKCircuit(
         _translate_cirq_operation_to_braket_instruction(op)
         for op in circuit.all_operations()
