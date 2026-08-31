@@ -33,9 +33,6 @@ _cirq_gates_to_string_keys = {
     ops.I: "I",
     ops.S: "S",
     ops.T: "T",
-    ops.rx: "rx",
-    ops.ry: "ry",
-    ops.rz: "rz",
     ops.CNOT: "CNOT",
     ops.CZ: "CZ",
     ops.SWAP: "SWAP",
@@ -43,16 +40,44 @@ _cirq_gates_to_string_keys = {
     ops.CSWAP: "CSWAP",
     ops.TOFFOLI: "TOFFOLI",
 }
+# Rotations are parametrized, so a single gate instance cannot represent them
+# and they are identified by their gate type instead.
+_cirq_gate_types_to_string_keys: dict[type[ops.Gate], str] = {
+    ops.Rx: "rx",
+    ops.Ry: "ry",
+    ops.Rz: "rz",
+}
 _string_keys_to_cirq_gates = {
     opstring: op for op, opstring in _cirq_gates_to_string_keys.items()
+}
+_string_keys_to_cirq_gate_types = {
+    opstring: gate_type
+    for gate_type, opstring in _cirq_gate_types_to_string_keys.items()
 }
 
 _valid_gate_names = list(
     map(
         lambda gate_name: gate_name.lower(),
-        _cirq_gates_to_string_keys.values(),
+        [
+            *_cirq_gates_to_string_keys.values(),
+            *_cirq_gate_types_to_string_keys.values(),
+        ],
     )
 ) + ["single", "double", "triple"]
+
+
+def _gate_string_key(gate: ops.Gate | None) -> str | None:
+    """Returns the string key associated to a gate, or None if the gate has
+    no associated key.
+
+    Args:
+        gate: The gate to get the string key of.
+    """
+    if gate is None:
+        return None
+    if gate in _cirq_gates_to_string_keys:
+        return _cirq_gates_to_string_keys[gate]
+    return _cirq_gate_types_to_string_keys.get(type(gate))
 
 
 # Helper functions
@@ -123,35 +148,39 @@ def _fold_all(
     # Parse the exclude argument.
     all_gates = set(cast(ops.Gate, op.gate) for op in circuit.all_operations())
     to_exclude = set()
+    types_to_exclude: set[type[ops.Gate]] = set()
     for item in exclude:
         if isinstance(item, str):
-            try:
+            if item in _string_keys_to_cirq_gates:
                 to_exclude.add(_string_keys_to_cirq_gates[item])
-            except KeyError:
-                if item == "single":
-                    to_exclude.update(
-                        gate for gate in all_gates if gate.num_qubits() == 1
-                    )
-                elif item == "double":
-                    to_exclude.update(
-                        gate for gate in all_gates if gate.num_qubits() == 2
-                    )
-                elif item == "triple":
-                    to_exclude.update(
-                        gate for gate in all_gates if gate.num_qubits() == 3
-                    )
-                else:
-                    raise ValueError(
-                        f"Do not know how to parse item '{item}' in exclude. "
-                        f"Valid items are Cirq gates, string keys specifying"
-                        f"gates, and 'single', 'double', or 'triple'."
-                    )
+            elif item in _string_keys_to_cirq_gate_types:
+                types_to_exclude.add(_string_keys_to_cirq_gate_types[item])
+            elif item == "single":
+                to_exclude.update(
+                    gate for gate in all_gates if gate.num_qubits() == 1
+                )
+            elif item == "double":
+                to_exclude.update(
+                    gate for gate in all_gates if gate.num_qubits() == 2
+                )
+            elif item == "triple":
+                to_exclude.update(
+                    gate for gate in all_gates if gate.num_qubits() == 3
+                )
+            else:
+                raise ValueError(
+                    f"Do not know how to parse item '{item}' in exclude. "
+                    f"Valid items are Cirq gates, string keys specifying"
+                    f"gates, and 'single', 'double', or 'triple'."
+                )
         elif isinstance(item, ops.Gate):
             to_exclude.add(item)
         else:
             raise ValueError(
                 f"Do not know how to exclude {item} of type {type(item)}."
             )
+
+    excluded_types = tuple(types_to_exclude)
 
     folded = deepcopy(circuit)[:0]
     for i, moment in enumerate(circuit):
@@ -161,7 +190,9 @@ def _fold_all(
 
         for op in moment:
             folded.append(op, strategy=InsertStrategy.EARLIEST)
-            if op.gate not in to_exclude:
+            if op.gate not in to_exclude and not isinstance(
+                op.gate, excluded_types
+            ):
                 folded.append(
                     [inverse(op), op] * num_folds,
                     strategy=InsertStrategy.EARLIEST,
@@ -197,11 +228,10 @@ def _get_weight_for_gate(
     elif "triple" in weights.keys() and len(op.qubits) == 3:
         weight = weights["triple"]
 
-    if op.gate and op.gate in _cirq_gates_to_string_keys.keys():
-        # Get the string key for this gate
-        key = _cirq_gates_to_string_keys[op.gate]
-        if key in weights.keys():
-            weight = weights[_cirq_gates_to_string_keys[op.gate]]
+    # Get the string key for this gate
+    key = _gate_string_key(op.gate)
+    if key is not None and key in weights.keys():
+        weight = weights[key]
     return weight
 
 
