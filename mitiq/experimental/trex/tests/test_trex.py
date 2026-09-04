@@ -161,6 +161,22 @@ def test_trex_observable_on_subset_of_qubits(spec, expected):
     assert np.isclose(result, expected, atol=0.1)
 
 
+def test_trex_observable_on_noncontiguous_circuit_qubits():
+    qreg = [cirq.LineQubit(i) for i in (0, 2, 4)]
+    circuit = cirq.Circuit(cirq.X.on_each(*qreg))
+    # Position 2 in the canonical ordering targets LineQubit(4).
+    obs = Observable(PauliString("Z", support=(2,)))
+
+    result = execute_with_trex(
+        circuit,
+        noiseless_executor,
+        obs,
+        num_randomizations=16,
+        random_state=0,
+    )
+    assert np.isclose(result, -1.0, atol=0.1)
+
+
 def test_trex_identity_circuit():
     """TREX on an identity circuit should give expectation +1 for Z."""
     q = cirq.LineQubit(0)
