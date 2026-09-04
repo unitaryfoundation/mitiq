@@ -216,6 +216,17 @@ def test_fold_all_exclude_rotations_with_strings():
     assert _equal(folded, correct, require_qubit_equality=True)
 
 
+def test_fold_all_exclude_does_not_match_powers_of_a_gate():
+    qubit = LineQubit(0)
+    h_op = ops.H.on(qubit)
+    h_half_op = (ops.H**0.5).on(qubit)
+    circuit = Circuit([h_op], [h_half_op])
+
+    folded = fold_all(circuit, scale_factor=3.0, exclude={"H"})
+    correct = Circuit([h_op], [h_half_op, inverse(h_half_op), h_half_op])
+    assert _equal(folded, correct, require_qubit_equality=True)
+
+
 @pytest.mark.parametrize("skip", (frozenset((0, 1)), frozenset((0, 3, 7))))
 def test_fold_all_skip_moments(skip):
     circuit = testing.random_circuit(
