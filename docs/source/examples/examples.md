@@ -19,6 +19,7 @@ ZNE with Qiskit: Energy landscape of a variational circuit <simple-landscape-qis
 ZNE with Pennylane Energy landscape of a variational circuit <simple-landscape-pennylane.md>
 ZNE with Qiskit: Layerwise folding <layerwise-folding.md>
 ZNE with Qiskit: Quantum simulation of quantum many body scars <quantum_simulation_scars_ibmq.md>
+ZNE with Qiskit: Time evolution of light-driven spin chains <quantum_simulation_light_driven_spin_chains.md>
 ZNE with Qiskit: Simulation of Loschmidt echo revival <loschmidt_echo_revival_zne.md>
 ZNE with Cirq: Solving MaxCut with QAOA <maxcut-demo.md>
 ZNE with Cirq: Hamiltonian simulation with Pauli gates<hamiltonians.md>
