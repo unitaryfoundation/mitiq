@@ -62,25 +62,24 @@ wheels = [
 
 [[package]]
 name = "amazon-braket-schemas"
-version = "1.29.0"
+version = "1.32.1"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "pydantic" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/fa/39/e802a71ad0c2f46ae4983ee49a58e1aa7631e640a1eabdac857d6e34830b/amazon_braket_schemas-1.29.0.tar.gz", hash = "sha256:7e4cd2e2d481082dc6f931691d85ac16b2d5b03dcdee0c0867b362ea7a3f4534", size = 59761, upload-time = "2026-01-30T23:06:24.107Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/c3/7d/a3bc64c3fd3f60967607208d2ec1974c4b51b188e8dae893ba9ebedf4806/amazon_braket_schemas-1.32.1.tar.gz", hash = "sha256:0bb0f95063710a85ff36283ec5aa54b9fb5dc67d80815c4ff9b560357fe5cf4e", size = 60440, upload-time = "2026-07-30T16:12:48.955Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/ad/b5/d07815124693c9cc8611d719279bf8c9b7870462166a31a1fe035dd2141f/amazon_braket_schemas-1.29.0-py3-none-any.whl", hash = "sha256:e5ae92212fe4e2e592d7a536f663120ed4c7f8b1f16ff99993cf138e70e5acea", size = 152815, upload-time = "2026-01-30T23:06:22.775Z" },
+    { url = "https://files.pythonhosted.org/packages/ca/2e/453c948ff7dc518393224ae22c04149efd09e86f6b2428f42114407b9ab7/amazon_braket_schemas-1.32.1-py3-none-any.whl", hash = "sha256:250b566aa7bcc42fd95aee91e3d1af263716ea57cf76eaf5a9092b2dcbd5a6ec", size = 153152, upload-time = "2026-07-30T16:12:47.395Z" },
 ]
 
 [[package]]
 name = "amazon-braket-sdk"
-version = "1.124.0"
+version = "1.126.0"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "amazon-braket-default-simulator" },
     { name = "amazon-braket-schemas" },
     { name = "backoff" },
-    { name = "backports-entry-points-selectable" },
     { name = "boltons" },
     { name = "boto3" },
     { name = "cloudpickle" },
@@ -92,9 +91,9 @@ dependencies = [
     { name = "oqpy" },
     { name = "sympy" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/7b/39/7f240963ca1d5620e142c4b1af677f915ed6896126a5e52631ed8f262009/amazon_braket_sdk-1.124.0.tar.gz", hash = "sha256:2ac3b4ff92551841c93a918705b7e13584ef2e62c3910dd4f6a8bfedf199dafa", size = 273350, upload-time = "2026-07-14T16:33:51.12Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/30/54/dcb5ee928f29693e13b8ecc8a71a2e7bf85cb034771891c5a7f91adbc198/amazon_braket_sdk-1.126.0.tar.gz", hash = "sha256:55bcd7561f9a0e410fab7e65cd007c342a113b0c79566c11d459e6906b3c077c", size = 279478, upload-time = "2026-08-24T16:18:42.085Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/29/e5/85746667e666dcedfd13ad7a9c7a643557604f6cb2cbc4a7d8d79343e036/amazon_braket_sdk-1.124.0-py3-none-any.whl", hash = "sha256:bbfb9b4ecbb8c8db9cc1654e36cdac074c4f60214ced00f623c3722b751466a7", size = 400627, upload-time = "2026-07-14T16:33:49.445Z" },
+    { url = "https://files.pythonhosted.org/packages/eb/a5/663117012237024c77ed7e5d34881044c7892a401c86d847a97f4f5ca320/amazon_braket_sdk-1.126.0-py3-none-any.whl", hash = "sha256:456f407f54703b7ff017c408f8e703da475a442e6404027cbb096c5cdef81183", size = 402315, upload-time = "2026-08-24T16:18:40.362Z" },
 ]
 
 [[package]]
@@ -214,15 +213,6 @@ source = { registry = "https://pypi.org/simple" }
 sdist = { url = "https://files.pythonhosted.org/packages/47/d7/5bbeb12c44d7c4f2fb5b56abce497eb5ed9f34d85701de869acedd602619/backoff-2.2.1.tar.gz", hash = "sha256:03f829f5bb1923180821643f8753b0502c3b682293992485b0eef2807afa5cba", size = 17001, upload-time = "2022-10-05T19:19:32.061Z" }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/df/73/b6e24bd22e6720ca8ee9a85a0c4a2971af8497d8f3193fa05390cbd46e09/backoff-2.2.1-py3-none-any.whl", hash = "sha256:63579f9a0628e06278f7e47b7d7d5b6ce20dc65c5e96a6f3ca99a6adca0396e8", size = 15148, upload-time = "2022-10-05T19:19:30.546Z" },
-]
-
-[[package]]
-name = "backports-entry-points-selectable"
-version = "1.3.0"
-source = { registry = "https://pypi.org/simple" }
-sdist = { url = "https://files.pythonhosted.org/packages/fc/25/dae014b114397a6f60578d7358bf5fcb103f71556e5363a50d7b42e9bc51/backports.entry_points_selectable-1.3.0.tar.gz", hash = "sha256:17a8b44ae700fba548686dd274ddc91c060371565cd63806c20a1d33911746e6", size = 9882, upload-time = "2023-11-27T19:03:06.585Z" }
-wheels = [
-    { url = "https://files.pythonhosted.org/packages/5a/78/b3ba5d804ae21e26e6179bbe4e1338deaaba9d20161918f59e20e9d92ea0/backports.entry_points_selectable-1.3.0-py3-none-any.whl", hash = "sha256:66f5da003eb4b283c7b60581bc8bb0baf0d810eb3e3068da786d3821b4d5746a", size = 6217, upload-time = "2023-11-27T19:03:04.844Z" },
 ]
 
 [[package]]
@@ -1797,7 +1787,7 @@ docs = [
 
 [package.metadata]
 requires-dist = [
-    { name = "amazon-braket-sdk", marker = "extra == 'braket'", specifier = ">=1.97,<1.125" },
+    { name = "amazon-braket-sdk", marker = "extra == 'braket'", specifier = ">=1.97,<1.127" },
     { name = "cirq-core", specifier = ">=1.6.0,<1.7.0" },
     { name = "cirq-ionq", marker = "extra == 'braket'", specifier = ">=1.6.0,<1.7.0" },
     { name = "llvmlite", marker = "extra == 'braket'", specifier = "==0.46.0" },
