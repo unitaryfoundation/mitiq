@@ -1281,6 +1281,86 @@ wheels = [
 ]
 
 [[package]]
+name = "jax"
+version = "0.10.2"
+source = { registry = "https://pypi.org/simple" }
+resolution-markers = [
+    "python_full_version < '3.12'",
+]
+dependencies = [
+    { name = "jaxlib", version = "0.10.2", source = { registry = "https://pypi.org/simple" } },
+    { name = "ml-dtypes" },
+    { name = "numpy" },
+    { name = "opt-einsum" },
+    { name = "scipy" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/d2/73/eb91d98fcadfa2cbcfdd4e417ab116e47eb20882acc5ee678e47c35d6b57/jax-0.10.2.tar.gz", hash = "sha256:bf77428a8c2e6904c4f46d5ab12aa5cfc6cad2179f07f7e4c0fc75ac86ef0639", size = 2775110, upload-time = "2026-06-17T23:44:57.818Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/89/82/5ab5211079a151b6f661529369c0c8e98ec64cabf5c0cf22a0a05af124d8/jax-0.10.2-py3-none-any.whl", hash = "sha256:724d73c4678d8b06f6a6ab4db1b8a2fea8cd4f1e2c2564f99601634ec7b8d1c6", size = 3219515, upload-time = "2026-06-17T23:42:41.259Z" },
+]
+
+[[package]]
+name = "jax"
+version = "0.11.1"
+source = { registry = "https://pypi.org/simple" }
+resolution-markers = [
+    "python_full_version >= '3.12'",
+]
+dependencies = [
+    { name = "jaxlib", version = "0.11.1", source = { registry = "https://pypi.org/simple" } },
+    { name = "ml-dtypes" },
+    { name = "numpy" },
+    { name = "opt-einsum" },
+    { name = "scipy" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/90/aa/c3b6ac3863a490661e255d2356802b54d57b533460fa221d30743d81a6c1/jax-0.11.1.tar.gz", hash = "sha256:43e0d45b1dac002eca04c2de73298395225dd0d4651e3f573a540eaa18abfd80", size = 2864119, upload-time = "2026-08-17T20:31:29.938Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/8f/f4/5f9a286e1eeca9faa8b83885edccf63ab2f1b22e17f6a5ea66ac86b1afe4/jax-0.11.1-py3-none-any.whl", hash = "sha256:72ed60bf85a0b53d0f5b5cd61e37a8b25f369f6f88481feb98ab489894861a82", size = 3302513, upload-time = "2026-08-17T20:29:00.294Z" },
+]
+
+[[package]]
+name = "jaxlib"
+version = "0.10.2"
+source = { registry = "https://pypi.org/simple" }
+resolution-markers = [
+    "python_full_version < '3.12'",
+]
+dependencies = [
+    { name = "ml-dtypes" },
+    { name = "numpy" },
+    { name = "scipy" },
+]
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/b2/2c/7038fc73154307389631b5b2dbe5ac529e1918eecc19a27e6644ad114bbf/jaxlib-0.10.2-cp311-cp311-macosx_11_0_arm64.whl", hash = "sha256:5a98873fc867623b81f2bee15d554b8edd6588a183d01fa50d21b1e3db96ff2b", size = 61429039, upload-time = "2026-06-17T23:43:44.858Z" },
+    { url = "https://files.pythonhosted.org/packages/66/c6/d69a0a33046f84930b89387861c061996d5207671b35080898679ca9960a/jaxlib-0.10.2-cp311-cp311-manylinux_2_27_aarch64.whl", hash = "sha256:d44565dcfd1b4f60f76d911c6512118a8a4fc764bdef92663fecb8bfccd54f23", size = 81079180, upload-time = "2026-06-17T23:43:48.245Z" },
+    { url = "https://files.pythonhosted.org/packages/e2/27/fb54e3265c0ffcb687f93e9fb761c589acebbe958c3fed1b2c74c3f0e782/jaxlib-0.10.2-cp311-cp311-manylinux_2_27_x86_64.whl", hash = "sha256:1faca3c5d4662cb4a6130a68105d68bb520764817e165d6eebfd6786c0d1f30f", size = 85448560, upload-time = "2026-06-17T23:43:51.724Z" },
+    { url = "https://files.pythonhosted.org/packages/21/bc/31fbb3d892c3cb97c73af9226eca63d60d8e224017145bdb6871d1d24da6/jaxlib-0.10.2-cp311-cp311-win_amd64.whl", hash = "sha256:e7a9214e6b0b9e0825d905573d1bbf2253c20e9d7464a63e085b60519975553f", size = 65867603, upload-time = "2026-06-17T23:43:54.939Z" },
+    { url = "https://files.pythonhosted.org/packages/ca/93/ee9cc8743191544f65d26ab7eeb82d65968fe60905662d1a5554d056654b/jaxlib-0.10.2-cp312-cp312-macosx_11_0_arm64.whl", hash = "sha256:47bb7c011515ea862be7e8313f40f9c56cbec09dc98a0fcb5016785fcd454c01", size = 61434612, upload-time = "2026-06-17T23:43:57.808Z" },
+    { url = "https://files.pythonhosted.org/packages/11/06/8cc36021bf74d617c312eeed94c280282bb1bcbb32b63f2a42b10ae41575/jaxlib-0.10.2-cp312-cp312-manylinux_2_27_aarch64.whl", hash = "sha256:53b72977ae582c03a9e8e1cdee1efbf8ebc1418270965b0e69eade57acf40331", size = 81085366, upload-time = "2026-06-17T23:44:01.067Z" },
+    { url = "https://files.pythonhosted.org/packages/48/17/38b718af2353dba7753300871e83fbb64a88a772e12727ae27373ab675ce/jaxlib-0.10.2-cp312-cp312-manylinux_2_27_x86_64.whl", hash = "sha256:fe88ec443714c4379968b6c109f9fa617c7ad19b802828e4d7bf861cd66da4b7", size = 85467828, upload-time = "2026-06-17T23:44:04.238Z" },
+    { url = "https://files.pythonhosted.org/packages/b4/c2/d41d13826ebdfe62e56cd87ba70fab3bb9fcbea4a6c9086739a91667e5bf/jaxlib-0.10.2-cp312-cp312-win_amd64.whl", hash = "sha256:4b08f5fbc596b83f76308181863996f93d901d1f09cfd4e130a65c1998e1b371", size = 65900139, upload-time = "2026-06-17T23:44:07.476Z" },
+]
+
+[[package]]
+name = "jaxlib"
+version = "0.11.1"
+source = { registry = "https://pypi.org/simple" }
+resolution-markers = [
+    "python_full_version >= '3.12'",
+]
+dependencies = [
+    { name = "ml-dtypes" },
+    { name = "numpy" },
+    { name = "scipy" },
+]
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/6a/b4/9a7caf8704536e694ab8b4286eb4afa2224f3f75283f370d2246343e7bbc/jaxlib-0.11.1-cp312-cp312-macosx_11_0_arm64.whl", hash = "sha256:384f633331c012491ccd65c38d47cd80d4131f5b3852694766bffa9385ddc9f3", size = 63173264, upload-time = "2026-08-17T20:30:07.721Z" },
+    { url = "https://files.pythonhosted.org/packages/77/d9/26613efbc0e219ef16b6069c38378a9b360f85926573e1995c391e48d73e/jaxlib-0.11.1-cp312-cp312-manylinux_2_27_aarch64.whl", hash = "sha256:47bab3a7da8a818f9e7ddecd4ed815429caa2840eda9e968bb6d33b9d8c52067", size = 82772925, upload-time = "2026-08-17T20:30:11.388Z" },
+    { url = "https://files.pythonhosted.org/packages/05/41/07c259ea10a5eeb100a66222507e2ce3a01474fa8f13c250bf1a3559a5bb/jaxlib-0.11.1-cp312-cp312-manylinux_2_27_x86_64.whl", hash = "sha256:c3dcec3bb33ebf5c76dc33f962c796652c077edb246464fa32cb1d8fcb6087e6", size = 87903454, upload-time = "2026-08-17T20:30:14.889Z" },
+    { url = "https://files.pythonhosted.org/packages/77/d7/555041e5d4116c0aaf8ff513b380da38df547844c30c7c1d41c36e18d12b/jaxlib-0.11.1-cp312-cp312-win_amd64.whl", hash = "sha256:eef943b42d6d42a2b2f3dc2a66e7a3dc89aeb1541f5a13ad8e1e94001bb590ec", size = 68531585, upload-time = "2026-08-17T20:30:18.488Z" },
+]
+
+[[package]]
 name = "jedi"
 version = "0.19.2"
 source = { registry = "https://pypi.org/simple" }
@@ -1728,7 +1808,7 @@ requires-dist = [
     { name = "pennylane", marker = "extra == 'pennylane'", specifier = ">=0.44.1,<0.46.0" },
     { name = "pennylane-qiskit", marker = "extra == 'pennylane'", specifier = "~=0.43.0" },
     { name = "ply", marker = "extra == 'qiskit'", specifier = "==3.11" },
-    { name = "pyquil", marker = "extra == 'pyquil'", specifier = "~=4.17.0" },
+    { name = "pyquil", marker = "extra == 'pyquil'", specifier = ">=4.17,<4.19" },
     { name = "qbraid", marker = "extra == 'pyquil'", specifier = ">=0.10,<0.13" },
     { name = "qermit", marker = "extra == 'benchmarking'" },
     { name = "qibo", marker = "extra == 'qibo'", specifier = ">=0.2.16,<0.4.0" },
@@ -1777,6 +1857,27 @@ docs = [
     { name = "stim", specifier = "==1.16.0" },
     { name = "stimcirq", specifier = "==1.16.0" },
     { name = "ucc", marker = "python_full_version == '3.12.*'", specifier = "==0.4.12" },
+]
+
+[[package]]
+name = "ml-dtypes"
+version = "0.6.0"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "numpy" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/12/72/307d7c4bd0600601c7133fba5cb78af7db968152951c1cd473abb1cda782/ml_dtypes-0.6.0.tar.gz", hash = "sha256:5e60251d32ced5598972e4d5e06a2f044341f9291402551a3f6f0ec44f9299b0", size = 3032327, upload-time = "2026-08-13T14:14:40.215Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/b8/2c/318cd1a9014c63939ffe687e19559ae12831fcc37d66c71ad1f616f1ffd6/ml_dtypes-0.6.0-cp311-cp311-macosx_10_9_universal2.whl", hash = "sha256:f4f59f83c82ab480e924b988e7b1b4eb4de836dfcf5390c6f59148d1a00e1d02", size = 566813, upload-time = "2026-08-13T14:13:55.053Z" },
+    { url = "https://files.pythonhosted.org/packages/d9/83/706b8a39449f0d55a7d5f7d07a169da4decfafae8a1f4983a9236d4b49e8/ml_dtypes-0.6.0-cp311-cp311-manylinux_2_27_aarch64.manylinux_2_28_aarch64.whl", hash = "sha256:7728c0420ec1c338564fc8b01015ff2d58567e70f17fedce5a0a7c0308c0d5b9", size = 356864, upload-time = "2026-08-13T14:13:56.249Z" },
+    { url = "https://files.pythonhosted.org/packages/2e/b1/135a7bf47633f5b9184f0d0316af819884124d12b40965064bd216266514/ml_dtypes-0.6.0-cp311-cp311-manylinux_2_27_x86_64.manylinux_2_28_x86_64.whl", hash = "sha256:6c8e39b53e90afda8ce52859c93de4dba3e02b76d85dcf091cc469f9184c6dae", size = 412043, upload-time = "2026-08-13T14:13:57.614Z" },
+    { url = "https://files.pythonhosted.org/packages/07/23/8870bb62d6e499d6bcbc1242b9f11689bae00a3d39d3684a9aefad8b6ee6/ml_dtypes-0.6.0-cp311-cp311-win_amd64.whl", hash = "sha256:3035518e3e19add1a4cac9236ab22888b208a4074912514313ccb2d6d242cde8", size = 433670, upload-time = "2026-08-13T14:13:59.097Z" },
+    { url = "https://files.pythonhosted.org/packages/cf/7a/5d8fbe24d0bffd0d7cb5165a89f8ab7c3de000f26d6705242aeed99d583c/ml_dtypes-0.6.0-cp311-cp311-win_arm64.whl", hash = "sha256:5a519c9e95a216fbcb8e759793ef7fb40793fc803ed839142d6dc5be9be5bc89", size = 551915, upload-time = "2026-08-13T14:14:00.368Z" },
+    { url = "https://files.pythonhosted.org/packages/84/6a/441eb053b078954f7fea284dfb288701884d0a1404d39babb858e1649023/ml_dtypes-0.6.0-cp312-cp312-macosx_10_13_universal2.whl", hash = "sha256:5359c588cc62de6f78d7430f06b65853d884955494d86d6ad90b6dd64a3f3a08", size = 565447, upload-time = "2026-08-13T14:14:01.737Z" },
+    { url = "https://files.pythonhosted.org/packages/ed/cf/87e8a6c57eed63a91782a0d229856ddf73e138ce004dd71e2799a9dcdb33/ml_dtypes-0.6.0-cp312-cp312-manylinux_2_27_aarch64.manylinux_2_28_aarch64.whl", hash = "sha256:37da32aa97749251025666d62372775019594577b9c9e9cfda83bed48d778fdb", size = 360227, upload-time = "2026-08-13T14:14:02.938Z" },
+    { url = "https://files.pythonhosted.org/packages/c7/f9/7d76c1eae866f5d4636401b31b6d6dd90e4b4ced1fa7cfdfcca9c60e4bd3/ml_dtypes-0.6.0-cp312-cp312-manylinux_2_27_x86_64.manylinux_2_28_x86_64.whl", hash = "sha256:3b4a480aa8fd54a1805b8ac10f3f91763926a74f73c0c364c10f9231854f4170", size = 409890, upload-time = "2026-08-13T14:14:04.248Z" },
+    { url = "https://files.pythonhosted.org/packages/ba/db/9c61ec2760b5cbfb1c6558d5c991a6d8fd3271053c32db20506a9a90272b/ml_dtypes-0.6.0-cp312-cp312-win_amd64.whl", hash = "sha256:2a3e9d53925597fbffafd2a37048dadeddd0bdaba58058f6ae0869ed709a184d", size = 439333, upload-time = "2026-08-13T14:14:05.501Z" },
+    { url = "https://files.pythonhosted.org/packages/6a/57/780ca3e5ab135b9fbdd8e5441abf5f801b30398371b691291e05ab9834c0/ml_dtypes-0.6.0-cp312-cp312-win_arm64.whl", hash = "sha256:6eaed129a4afe90694b8685e2f9b6294849f5eda4af9a15be83a4326eeebd775", size = 552268, upload-time = "2026-08-13T14:14:06.866Z" },
 ]
 
 [[package]]
@@ -2663,7 +2764,7 @@ wheels = [
 
 [[package]]
 name = "pyquil"
-version = "4.17.0"
+version = "4.18.0"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "deprecated" },
@@ -2672,13 +2773,14 @@ dependencies = [
     { name = "packaging" },
     { name = "qcs-sdk-python" },
     { name = "quil" },
+    { name = "rigetti-quax" },
     { name = "rpcq" },
     { name = "scipy" },
     { name = "types-deprecated" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/d2/bc/9ebba80515193692b4f83a19bf377abc4887f3eeeb3d8bf46de032e42064/pyquil-4.17.0.tar.gz", hash = "sha256:9b1838eb9bc3ffbff260b12ff48cf1766dcefe5c8c80594cb7ae37616da50d2d", size = 167260, upload-time = "2025-10-08T21:32:18.874Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/d1/42/36d1fdee56f2ec90b28f6f2297116691d7f283536421b8f8db65e704fc83/pyquil-4.18.0.tar.gz", hash = "sha256:a8e55379e7f898e7496ec285423866968ae7e0881ae18990351ee6453398fff6", size = 203553, upload-time = "2026-08-19T23:23:12.885Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/93/24/16d63bb278453ec316ef8dafffd14caa0382d4dfaf75b6d3d3106232c9ba/pyquil-4.17.0-py3-none-any.whl", hash = "sha256:40124ccb63126251c1eb0c014f7c5d8a2fcd7f4534e4b6d0f00d0bb8b7390148", size = 203330, upload-time = "2025-10-08T21:32:17.389Z" },
+    { url = "https://files.pythonhosted.org/packages/56/ed/f83fe4f2a880a485721d7f35da4d41a5dde10309ff6904875e30adcf7daf/pyquil-4.18.0-py3-none-any.whl", hash = "sha256:124fc0bd9d980f4a2bf992c0de7bd212e8c404fef03423fb78aaa60a48f65c74", size = 241151, upload-time = "2026-08-19T23:23:14.032Z" },
 ]
 
 [[package]]
@@ -3219,6 +3321,19 @@ dependencies = [
 sdist = { url = "https://files.pythonhosted.org/packages/15/74/5d4e1815107e9d78c44c3ad04740b00efd1189e5a9ec11e5275b60864e54/requests_ntlm-1.3.0.tar.gz", hash = "sha256:b29cc2462623dffdf9b88c43e180ccb735b4007228a542220e882c58ae56c668", size = 16112, upload-time = "2024-06-09T23:52:04.854Z" }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/9e/5d/836b97537a390cf811b0488490c389c5a614f0a93acb23f347bd37a2d914/requests_ntlm-1.3.0-py3-none-any.whl", hash = "sha256:4c7534a7d0e482bb0928531d621be4b2c74ace437e88c5a357ceb7452d25a510", size = 6577, upload-time = "2024-06-09T23:52:03.241Z" },
+]
+
+[[package]]
+name = "rigetti-quax"
+version = "0.7.2"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "jax", version = "0.10.2", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version < '3.12'" },
+    { name = "jax", version = "0.11.1", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version >= '3.12'" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/26/9d/f6ba771f38cd91cd6f664ebfc638aa5184800b9d21c4738b440833db282e/rigetti_quax-0.7.2.tar.gz", hash = "sha256:c37a05128b12319b6b47fa10d45277ea89eec7a17ed41681d0c641d5113cdb0d", size = 94963, upload-time = "2026-07-29T20:20:35.535Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/f8/6e/47c5e62680a4c7c82fb66afaf99f4e61e9ed2f271354c1a42d58e721c97f/rigetti_quax-0.7.2-py3-none-any.whl", hash = "sha256:d93c8151062f7540b3fb1cb88b5cbf0cb11a0e84f4ffc124d4f719e3b1e6c073", size = 113297, upload-time = "2026-07-29T20:20:36.654Z" },
 ]
 
 [[package]]
