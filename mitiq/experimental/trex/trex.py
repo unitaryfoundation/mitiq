@@ -163,7 +163,7 @@ def construct_circuits(
     group_qubits = []
     for group in observable.groups:
         meas_cirq = cast(cirq.Circuit, group.measure_in(cirq_circuit))
-        measured_qubits = sorted(group._qubits_to_measure())
+        measured_qubits = [all_qubits[i] for i in sorted(group.support())]
         measurement_circuits.append(meas_cirq)
         group_qubits.append(measured_qubits)
 
@@ -227,12 +227,12 @@ def combine_results(
         raise ValueError(
             "At least one randomization string is required for TREX."
         )
-    all_qubits = sorted(observable._qubits())
-    qubit_to_idx = {q: i for i, q in enumerate(all_qubits)}
 
     total: complex = 0.0
     for group_idx, group in enumerate(observable.groups):
-        measured_qubits = sorted(group._qubits_to_measure())
+        # Observable support uses canonical positions in the circuit's sorted
+        # qubit order, which is also how randomization strings are indexed.
+        measured_qubit_indices = sorted(group.support())
 
         for pauli in group.elements:
             support = sorted(pauli.support())
@@ -245,7 +245,7 @@ def combine_results(
 
                 # XOR with the randomization bits for measured qubits.
                 s_group = np.array(
-                    [s[qubit_to_idx[q]] for q in measured_qubits],
+                    [s[i] for i in measured_qubit_indices],
                     dtype=np.int64,
                 )
                 flipped_twirled = xor_bitstrings(twirled_res, s_group)
@@ -260,8 +260,10 @@ def combine_results(
                 # XOR calibration with full randomization string.
                 flipped_calib = xor_bitstrings(calib_res, s)
 
-                # Compute calibration parity on same support qubits.
-                calib_bits = flipped_calib.filter_qubits(support)
+                # Calibration results measure every circuit qubit in the same
+                # order as the randomization strings. Select support by its
+                # canonical circuit position, not by physical qubit label.
+                calib_bits = flipped_calib.asarray[:, support]
                 calib_factor = float(
                     np.mean([(-1) ** np.sum(b) for b in calib_bits])
                 )
