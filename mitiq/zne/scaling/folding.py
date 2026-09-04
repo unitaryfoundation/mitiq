@@ -24,35 +24,52 @@ class UnfoldableCircuitError(Exception):
     pass
 
 
-_cirq_gates_to_string_keys = {
-    ops.H: "H",
-    ops.X: "X",
-    ops.Y: "Y",
-    ops.Z: "Z",
-    ops.T: "T",
-    ops.I: "I",
-    ops.S: "S",
-    ops.T: "T",
-    ops.rx: "rx",
-    ops.ry: "ry",
-    ops.rz: "rz",
-    ops.CNOT: "CNOT",
-    ops.CZ: "CZ",
-    ops.SWAP: "SWAP",
-    ops.ISWAP: "ISWAP",
-    ops.CSWAP: "CSWAP",
-    ops.TOFFOLI: "TOFFOLI",
+# Gates are matched with ``cirq.GateFamily``, which accepts either a gate
+# instance (matched exactly, without accepting powers of the gate) or a gate
+# type. The latter is needed for rotations, which are parametrized and so
+# cannot be represented by a single gate instance.
+_cirq_gate_families_to_string_keys: dict[ops.GateFamily, str] = {
+    ops.GateFamily(ops.H, ignore_global_phase=False): "H",
+    ops.GateFamily(ops.X, ignore_global_phase=False): "X",
+    ops.GateFamily(ops.Y, ignore_global_phase=False): "Y",
+    ops.GateFamily(ops.Z, ignore_global_phase=False): "Z",
+    ops.GateFamily(ops.T, ignore_global_phase=False): "T",
+    ops.GateFamily(ops.I, ignore_global_phase=False): "I",
+    ops.GateFamily(ops.S, ignore_global_phase=False): "S",
+    ops.GateFamily(ops.CNOT, ignore_global_phase=False): "CNOT",
+    ops.GateFamily(ops.CZ, ignore_global_phase=False): "CZ",
+    ops.GateFamily(ops.SWAP, ignore_global_phase=False): "SWAP",
+    ops.GateFamily(ops.ISWAP, ignore_global_phase=False): "ISWAP",
+    ops.GateFamily(ops.CSWAP, ignore_global_phase=False): "CSWAP",
+    ops.GateFamily(ops.TOFFOLI, ignore_global_phase=False): "TOFFOLI",
+    ops.GateFamily(ops.Rx): "rx",
+    ops.GateFamily(ops.Ry): "ry",
+    ops.GateFamily(ops.Rz): "rz",
 }
-_string_keys_to_cirq_gates = {
-    opstring: op for op, opstring in _cirq_gates_to_string_keys.items()
+_string_keys_to_cirq_gate_families = {
+    opstring: family
+    for family, opstring in _cirq_gate_families_to_string_keys.items()
 }
 
-_valid_gate_names = list(
-    map(
-        lambda gate_name: gate_name.lower(),
-        _cirq_gates_to_string_keys.values(),
-    )
-) + ["single", "double", "triple"]
+_valid_gate_names = [
+    gate_name.lower()
+    for gate_name in _cirq_gate_families_to_string_keys.values()
+] + ["single", "double", "triple"]
+
+
+def _gate_string_key(gate: ops.Gate | None) -> str | None:
+    """Returns the string key associated to a gate, or None if the gate has
+    no associated key.
+
+    Args:
+        gate: The gate to get the string key of.
+    """
+    if gate is None:
+        return None
+    for family, opstring in _cirq_gate_families_to_string_keys.items():
+        if gate in family:
+            return opstring
+    return None
 
 
 # Helper functions
@@ -122,32 +139,30 @@ def _fold_all(
 
     # Parse the exclude argument.
     all_gates = set(cast(ops.Gate, op.gate) for op in circuit.all_operations())
-    to_exclude = set()
+    num_qubits_keys = {"single": 1, "double": 2, "triple": 3}
+    families_to_exclude: set[ops.GateFamily] = set()
     for item in exclude:
         if isinstance(item, str):
-            try:
-                to_exclude.add(_string_keys_to_cirq_gates[item])
-            except KeyError:
-                if item == "single":
-                    to_exclude.update(
-                        gate for gate in all_gates if gate.num_qubits() == 1
-                    )
-                elif item == "double":
-                    to_exclude.update(
-                        gate for gate in all_gates if gate.num_qubits() == 2
-                    )
-                elif item == "triple":
-                    to_exclude.update(
-                        gate for gate in all_gates if gate.num_qubits() == 3
-                    )
-                else:
-                    raise ValueError(
-                        f"Do not know how to parse item '{item}' in exclude. "
-                        f"Valid items are Cirq gates, string keys specifying"
-                        f"gates, and 'single', 'double', or 'triple'."
-                    )
+            if item in _string_keys_to_cirq_gate_families:
+                families_to_exclude.add(
+                    _string_keys_to_cirq_gate_families[item]
+                )
+            elif item in num_qubits_keys:
+                families_to_exclude.update(
+                    ops.GateFamily(gate, ignore_global_phase=False)
+                    for gate in all_gates
+                    if gate.num_qubits() == num_qubits_keys[item]
+                )
+            else:
+                raise ValueError(
+                    f"Do not know how to parse item '{item}' in exclude. "
+                    f"Valid items are Cirq gates, string keys specifying"
+                    f"gates, and 'single', 'double', or 'triple'."
+                )
         elif isinstance(item, ops.Gate):
-            to_exclude.add(item)
+            families_to_exclude.add(
+                ops.GateFamily(item, ignore_global_phase=False)
+            )
         else:
             raise ValueError(
                 f"Do not know how to exclude {item} of type {type(item)}."
@@ -161,7 +176,7 @@ def _fold_all(
 
         for op in moment:
             folded.append(op, strategy=InsertStrategy.EARLIEST)
-            if op.gate not in to_exclude:
+            if not any(op in family for family in families_to_exclude):
                 folded.append(
                     [inverse(op), op] * num_folds,
                     strategy=InsertStrategy.EARLIEST,
@@ -197,11 +212,10 @@ def _get_weight_for_gate(
     elif "triple" in weights.keys() and len(op.qubits) == 3:
         weight = weights["triple"]
 
-    if op.gate and op.gate in _cirq_gates_to_string_keys.keys():
-        # Get the string key for this gate
-        key = _cirq_gates_to_string_keys[op.gate]
-        if key in weights.keys():
-            weight = weights[_cirq_gates_to_string_keys[op.gate]]
+    # Get the string key for this gate
+    key = _gate_string_key(op.gate)
+    if key is not None and key in weights.keys():
+        weight = weights[key]
     return weight
 
 
