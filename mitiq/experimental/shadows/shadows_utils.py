@@ -11,9 +11,9 @@
 
 from collections.abc import Generator
 
+import cirq
 import numpy as np
 import numpy.typing as npt
-from scipy.linalg import sqrtm
 
 import mitiq
 
@@ -78,6 +78,11 @@ def fidelity(
     """
     Calculate the fidelity between two states.
 
+    Delegates to :func:`cirq.fidelity`, which uses the squared convention: the
+    fidelity of a state with itself is 1, and the fidelity between a pure state
+    :math:`|\\psi\\rangle` and a density matrix is
+    :math:`\\langle\\psi|\\rho|\\psi\\rangle`.
+
     Args:
         sigma: A state in terms of square matrix or vector.
         rho: A state in terms square matrix or vector.
@@ -85,17 +90,20 @@ def fidelity(
     Returns:
         Scalar corresponding to the fidelity.
     """
-    if sigma.ndim == 1 and rho.ndim == 1:
-        val = np.abs(np.dot(sigma.conj(), rho)) ** 2.0
-    elif sigma.ndim == 1 and rho.ndim == 2:
-        val = np.abs(sigma.conj().T @ rho @ sigma)
-    elif sigma.ndim == 2 and rho.ndim == 1:
-        val = np.abs(rho.conj().T @ sigma @ rho)
-    elif sigma.ndim == 2 and rho.ndim == 2:
-        val = np.abs(np.trace(sqrtm(sigma) @ rho @ sqrtm(sigma)))
-    else:
+    if sigma.ndim not in (1, 2) or rho.ndim not in (1, 2):
         raise ValueError("Invalid input dimensions")
-    return float(val)
+
+    # Validation stays off because calibrated shadow reconstructions are
+    # unnormalized PTM vectors rather than states. The explicit ``qid_shape``
+    # lets Cirq tell a density matrix apart from a state tensor.
+    return float(
+        cirq.fidelity(
+            sigma,
+            rho,
+            qid_shape=(sigma.shape[0],),
+            validate=False,
+        )
+    )
 
 
 def batch_calibration_data(
