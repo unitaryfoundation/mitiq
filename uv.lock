@@ -1120,7 +1120,7 @@ wheels = [
 
 [[package]]
 name = "ibm-cloud-sdk-core"
-version = "3.24.4"
+version = "3.26.0"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "pyjwt" },
@@ -1128,9 +1128,9 @@ dependencies = [
     { name = "requests" },
     { name = "urllib3" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/4a/0c/965f4f4b34f1a9a2210bec224ac489c631153f18ef75c6e694750efda654/ibm_cloud_sdk_core-3.24.4.tar.gz", hash = "sha256:20498959ce0177a58938e1855ee09f08b9712e43cc3209e95010c046e8c6d2a6", size = 81778, upload-time = "2026-02-03T08:44:42.217Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/25/d3/92cdfedfeb2154478fbd72db414ad41402f361da2c0107c29f7f326bc5df/ibm_cloud_sdk_core-3.26.0.tar.gz", hash = "sha256:80f427f2413c9eef536169bddbba60301692831b6bcdfccc5b790dba26862d06", size = 83808, upload-time = "2026-07-16T10:04:29.78Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/5e/8d/90cf967468fd81f9fd22bd42dbf3b1fbb1234485d1f81b6f17c8de138fff/ibm_cloud_sdk_core-3.24.4-py3-none-any.whl", hash = "sha256:4c3487ed5eb5180770ea2d07d95cfed1e69002ed249bbbc7d155226985c0b785", size = 75786, upload-time = "2026-02-03T08:44:41.094Z" },
+    { url = "https://files.pythonhosted.org/packages/da/ce/8efbda90d7d253aea0f1ff6b830aa0b9d0869b1311c007efc6dfe73b7e83/ibm_cloud_sdk_core-3.26.0-py3-none-any.whl", hash = "sha256:e96098cbd7abce67ad856bccf3696443b5ae497dde644cd532d7fc6040db4240", size = 76595, upload-time = "2026-07-16T10:04:28.49Z" },
 ]
 
 [[package]]
