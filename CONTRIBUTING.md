@@ -166,10 +166,23 @@ Contributors can use any tools that aid in understanding the mitiq codebase and 
 However, as noted above, contributors always need to understand and explain the changes they're proposing to make, whether or not they used an LLM as part of your process to produce them.
 The answer to "Why is X an improvement?" should never be "I'm not sure. The AI did it."
 
-Contributors are expected to **be transparent and label contributions that contain substantial amounts of tool-generated content**.
+Contributors are expected to **be transparent and label any contribution that used AI tooling**, whether it produced a whole feature or a single function.
 Our policy on labelling is intended to facilitate reviews, and not to track which parts of mitiq are generated.
 Contributors should note tool usage in their pull request description, commit message, or wherever authorship is normally indicated for the work.
 For instance, use a commit message trailer like `Assisted-by: `.
+The pull request template includes an AI use section; please fill it in rather than leaving it blank.
 This transparency helps the community develop best practices and understand the role of these new tools.
+
+### Disclosing AI use
+
+Say so whenever AI tooling contributed to a change, in both places authorship is recorded:
+
+- **In the commit**, with a trailer such as `Assisted-by: <tool name>`.
+- **In the pull request**, by ticking the appropriate box in the AI use section of the template. If the work was partially generated, give a rough estimate of how much of it you wrote yourself — a ballpark figure is fine, nobody is going to audit it.
+
+**Please write issue and pull request descriptions by hand.**
+This is a preference rather than a rule, but a strong one.
+A description is the one place you explain *why* a change is worth making, what you considered and rejected, and where you are unsure — none of which a tool can infer from the diff.
+Generated descriptions tend to restate what the diff already shows, which makes review slower rather than faster, and they hide exactly the uncertainty a reviewer most needs to see.
 
 Maintainers have the right to close contributor PRs and after warnings, ban contributors who do not abide by this policy.
