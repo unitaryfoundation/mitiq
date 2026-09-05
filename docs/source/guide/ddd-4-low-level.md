@@ -122,6 +122,32 @@ circuit_with_ddd = ddd.insert_ddd_sequences(circuit, rule=xyxy_rule)
 circuit_with_ddd
 ```
 
+### Checking whether DDD sequences were inserted
+
+By default, {func}`.insert_ddd_sequences()` returns only the modified circuit.
+If the input has no sufficiently long idle windows, DDD may leave the circuit unchanged.
+To inspect what happened without changing the default API, pass ``return_info=True``:
+
+```{code-cell} ipython3
+circuit_with_ddd, ddd_info = ddd.insert_ddd_sequences(
+    circuit, rule=xyxy_rule, return_info=True
+)
+print(ddd_info.num_idle_windows)
+print(ddd_info.num_sequences_inserted)
+print(ddd_info.idle_window_lengths)
+```
+
+The returned {class}`~mitiq.ddd.insertion.DDDInfo` reports how many idle windows were found,
+how many non-empty DDD sequences were inserted, and the length of each candidate window.
+
+{func}`.ddd.construct_circuits` logs the same counts at INFO on the ``mitiq.ddd`` logger
+(one line per trial). Enable it with:
+
+```{code-block} python
+import logging
+logging.getLogger("mitiq.ddd").setLevel(logging.INFO)
+```
+
 ```{note}
 In principle, the function {func}`.insert_ddd_sequences()` is all one needs to apply DDD.
 Indeed, since in DDD there is not a final post-processing step, one can simply insert DDD sequences before running the circuit on a noisy backend.

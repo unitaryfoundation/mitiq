@@ -123,6 +123,7 @@ In this section we demonstrate the use of {func}`.ddd.construct_circuits` for th
 ### Generating circuits with DDD sequences
 
 Here we will generate a list of circuits with DDD sequences inserted, which will later be passed to the executor. The number of circuits generated can be checked using the `len` function.
+Each trial is also logged at INFO on ``mitiq.ddd`` (idle windows found and sequences inserted).
 
 ```{code-cell} ipython3
 circuits_with_ddd = ddd.construct_circuits(circuit=circuit, rule=rule, num_trials=10)
