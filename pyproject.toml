@@ -159,3 +159,6 @@ exclude_lines = [
 
 [tool.setuptools.packages.find]
 where = ["."]
+
+[tool.setuptools.package-data]
+mitiq = ["py.typed"]
