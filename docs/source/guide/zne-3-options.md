@@ -411,6 +411,69 @@ Richardson extrapolation is equivalent to an exact polynomial interpolation.
 This means that a {class}`.RichardsonFactory` object is equivalent to a {class}`.PolyFactory` with `order=len(scale_factors) - 1`.
 ```
 
+### Allocating a shot budget
+
+For an extrapolated estimate $\sum_j \eta_j A(\lambda_j)$, independent
+measurements with equal per-shot variance have minimum estimator variance when
+the shots at each scale factor are proportional to $|\eta_j|$.
+{meth}`.BatchedFactory.get_optimal_shot_list` computes a positive-integer
+approximation to this allocation for {class}`.LinearFactory`,
+{class}`.PolyFactory`, {class}`.RichardsonFactory`, and {class}`.FakeNodesFactory`.
+Nonlinear extrapolation methods, such as exponential fits, are not supported.
+
+```{code-cell} ipython3
+from mitiq.zne.inference import RichardsonFactory
+
+scale_factors = [1, 2, 3]
+shot_list = RichardsonFactory(scale_factors).get_optimal_shot_list(7000)
+print(shot_list)  # [3000, 3000, 1000]
+factory = RichardsonFactory(scale_factors, shot_list=shot_list)
+```
+
+The returned list sums exactly to the budget and follows the configured scale
+factor order. The method distributes shots proportionally, enforces a one-shot
+minimum by redistributing shots from the other factors where necessary, and
+rounds using the largest fractional remainders.
+The budget must therefore be an integer at least as large as the number of scale
+factors. Integer rounding and the one-shot minimum mean that the allocation is
+not necessarily the exact integer variance minimum, especially for small budgets.
+Computing the list does not modify the factory or any previously fitted results;
+pass the list as `shot_list` when constructing the factory used for execution.
+
+The executor must accept the keyword argument `shots`. For example, this
+shot-based Cirq executor estimates the Pauli-Z expectation value of a noisy
+single-qubit circuit:
+
+```{code-cell} ipython3
+import numpy as np
+
+qubit = cirq.LineQubit(0)
+shot_circuit = cirq.Circuit(cirq.X(qubit) for _ in range(5))
+shot_simulator = cirq.DensityMatrixSimulator(seed=1)
+
+def execute_with_shots(circuit, shots: int) -> float:
+    noisy = circuit.with_noise(cirq.depolarize(0.01))
+    measured = noisy + cirq.Circuit(cirq.measure(qubit, key="z"))
+    results = shot_simulator.run(measured, repetitions=shots)
+    return float(1 - 2 * np.mean(results.measurements["z"]))
+
+zne_value = zne.execute_with_zne(
+    shot_circuit,
+    execute_with_shots,
+    factory=factory,
+    scale_noise=zne.scaling.fold_global,
+    num_to_average=1,
+)
+print(zne_value)
+```
+
+The budget applies to one repetition and one measurement group. Setting
+`num_to_average=k` repeats the allocation `k` times. When an executor returns
+measurement results for an `Observable` with multiple measurement groups, each
+group also receives the allocation. Include these multipliers when planning a
+total hardware shot budget. Additional sampling performed inside a custom
+executor is outside the factory's control.
+
 ## Running ZNE with advanced options
 
 To show an example, we define a circuit and an executor as shown in [How do I use ZNE?](zne-1-intro.md) but apply ZNE with advanced options.
