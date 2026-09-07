@@ -27,7 +27,10 @@ def test_single_qubit_representation_norm(gate: Gate, noise: float):
     assert np.isclose(optimal_norm, norm)
 
 
-@pytest.mark.parametrize("circuit_type", ["cirq", "qiskit", "pyquil"])
+# pyquil is omitted: the damping basis contains `reset`, which the Quil
+# conversion cannot express (`CircuitConversionError`). The depolarizing
+# representation supports pyquil because its basis is Paulis only.
+@pytest.mark.parametrize("circuit_type", ["cirq", "qiskit"])
 @pytest.mark.parametrize("noise", [0, 0.1, 0.7])
 @pytest.mark.parametrize("gate", [X, Y, Z, H])
 def test_amplitude_damping_representation_with_choi(
@@ -66,7 +69,7 @@ def test_amplitude_damping_representation_with_choi(
     assert np.allclose(ideal_choi, combination_choi, atol=1e-7)
 
 
-@pytest.mark.parametrize("circuit_type", ["qiskit", "pyquil"])
+@pytest.mark.parametrize("circuit_type", ["qiskit"])
 @pytest.mark.parametrize("noise", [0.1, 0.7])
 def test_amplitude_damping_representation_is_frontend_independent(
     circuit_type: str,

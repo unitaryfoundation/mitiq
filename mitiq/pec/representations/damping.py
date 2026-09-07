@@ -54,6 +54,12 @@ def _represent_operation_with_amplitude_damping_noise(
         This is possible as long as the unitary associated to the input
         QPROGRAM, followed by a single final amplitude damping channel, is
         physically implementable.
+
+    .. note::
+        The basis of implementable operations contains a ``reset``, so the
+        returned :class:`.NoisyOperation` circuits can only be expressed in
+        frontends that support it. Quil has no such instruction, so a pyquil
+        input raises a ``CircuitConversionError``.
     """
 
     circuit_copy = copy.deepcopy(ideal_operation)
