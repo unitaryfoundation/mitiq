@@ -913,8 +913,14 @@ class RichardsonFactory(BatchedFactory):
             parameters, use the ``reduce`` method.
         """
         # Richardson extrapolation is a particular case of a polynomial fit
-        # with order equal to the number of data points minus 1.
-        order = len(scale_factors) - 1
+        # with order equal to the number of *distinct* data points minus 1.
+        # Counting repeated scale factors would request a degree the data
+        # cannot determine: np.polyfit then returns a rank-deficient
+        # least-squares fit, which silently misses the zero-noise limit even
+        # when the underlying signal is exactly polynomial. Repeating a scale
+        # factor to average shot noise is legitimate, so reduce the order
+        # rather than rejecting the input.
+        order = len(set(scale_factors)) - 1
         return PolyFactory.extrapolate(
             scale_factors, exp_values, order, full_output
         )

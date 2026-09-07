@@ -318,6 +318,71 @@ def test_richardson_extr(test_f: Callable[[float], float]):
     )
 
 
+@mark.parametrize(
+    "scale_factors",
+    [
+        [1.0, 1.0, 2.0],
+        [1.0, 2.0, 2.0],
+        [1.0, 1.0, 2.0, 2.0],
+    ],
+)
+def test_richardson_extr_repeated_scale_factors_linear(scale_factors):
+    """Richardson stays exact on a linear signal when scale factors repeat.
+
+    The fit order is set by the number of *distinct* scale factors. Using the
+    raw count asks np.polyfit for a degree the data cannot determine, and the
+    rank-deficient least-squares result misses the zero-noise limit even for
+    an exactly polynomial signal. Repeating a scale factor to average shot
+    noise is legitimate, so this must extrapolate rather than degrade.
+
+    Two distinct scale factors determine a line, so f(0) is recovered exactly.
+    """
+
+    def exactly_linear(scale_factor: float) -> float:
+        return 1.0 - 0.1 * scale_factor
+
+    fac = RichardsonFactory(scale_factors=scale_factors)
+    for scale_factor in fac.get_scale_factors():
+        fac.push({"scale_factor": scale_factor}, exactly_linear(scale_factor))
+
+    assert np.isclose(fac.reduce(), exactly_linear(0.0), atol=CLOSE_TOL)
+
+
+def test_richardson_extr_repeated_scale_factors_quadratic():
+    """Three distinct scale factors still determine a quadratic exactly.
+
+    Each is measured twice, the idiom used to average shot noise. Counting
+    the six raw points would request a degree-5 fit through three abscissas.
+    """
+
+    def exactly_quadratic(scale_factor: float) -> float:
+        return 1.0 - 0.1 * scale_factor + 0.05 * scale_factor**2
+
+    scale_factors = [1.0, 1.0, 2.0, 2.0, 3.0, 3.0]
+    fac = RichardsonFactory(scale_factors=scale_factors)
+    for scale_factor in fac.get_scale_factors():
+        fac.push(
+            {"scale_factor": scale_factor}, exactly_quadratic(scale_factor)
+        )
+
+    assert np.isclose(fac.reduce(), exactly_quadratic(0.0), atol=CLOSE_TOL)
+
+
+def test_richardson_extr_all_scale_factors_equal():
+    """A single distinct scale factor carries no zero-noise information.
+
+    The order collapses to zero, so the fit is the mean of the measured
+    values. That is all one abscissa can support; the point of this test is
+    that the result is defined and finite rather than a rank-deficient
+    extrapolation far from every measured value.
+    """
+    fac = RichardsonFactory(scale_factors=[2.0, 2.0])
+    for scale_factor in fac.get_scale_factors():
+        fac.push({"scale_factor": scale_factor}, 0.7)
+
+    assert np.isclose(fac.reduce(), 0.7, atol=CLOSE_TOL)
+
+
 def test_fake_nodes_factory():
     """Test FakeNodesFactory in a specific regime in which the fake nodes
     interpolation method works well.
