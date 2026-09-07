@@ -408,7 +408,8 @@ adaptive_factory = zne.inference.AdaExpFactory(steps=5, asymptote=0.5)
 
 ```{tip}
 Richardson extrapolation is equivalent to an exact polynomial interpolation.
-This means that a {class}`.RichardsonFactory` object is equivalent to a {class}`.PolyFactory` with `order=len(scale_factors) - 1`.
+This means that a {class}`.RichardsonFactory` object is equivalent to a {class}`.PolyFactory` with `order=len(set(scale_factors)) - 1`.
+For distinct scale factors that is simply `len(scale_factors) - 1`; counting repeated scale factors would request a degree the data cannot determine.
 ```
 
 ## Running ZNE with advanced options
