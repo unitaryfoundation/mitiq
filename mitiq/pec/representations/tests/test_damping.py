@@ -27,9 +27,7 @@ def test_single_qubit_representation_norm(gate: Gate, noise: float):
     assert np.isclose(optimal_norm, norm)
 
 
-# When _represent_operation_with_amplitude_damping_noise will
-# support more circuit types we can add them below.
-@pytest.mark.parametrize("circuit_type", ["cirq"])
+@pytest.mark.parametrize("circuit_type", ["cirq", "qiskit", "pyquil"])
 @pytest.mark.parametrize("noise", [0, 0.1, 0.7])
 @pytest.mark.parametrize("gate", [X, Y, Z, H])
 def test_amplitude_damping_representation_with_choi(
@@ -47,7 +45,16 @@ def test_amplitude_damping_representation_with_choi(
     )
     choi_components = []
     for coeff, noisy_op in op_rep.basis_expansion:
+        # A frontend round-trip renames the qubit (qiskit yields
+        # `NamedQubit("q_0")`, not `LineQubit(0)`), and `_circuit_to_choi`
+        # builds its maximally entangled state on `LineQubit`s. Map the
+        # circuit back onto `LineQubit(0)` so the two do not add up to a
+        # three-qubit system.
         implementable_circ = noisy_op.circuit
+        (noisy_qubit,) = implementable_circ.all_qubits()
+        implementable_circ = implementable_circ.transform_qubits(
+            {noisy_qubit: q}
+        )
         depolarizing_op = AmplitudeDampingChannel(noise).on(q)
         # Apply noise after each sequence.
         # NOTE: noise is not applied after each operation.
@@ -57,6 +64,28 @@ def test_amplitude_damping_representation_with_choi(
 
     combination_choi = np.sum(choi_components, axis=0)
     assert np.allclose(ideal_choi, combination_choi, atol=1e-7)
+
+
+@pytest.mark.parametrize("circuit_type", ["qiskit", "pyquil"])
+@pytest.mark.parametrize("noise", [0.1, 0.7])
+def test_amplitude_damping_representation_is_frontend_independent(
+    circuit_type: str,
+    noise: float,
+):
+    """The quasi-probabilities must not depend on the input frontend."""
+    q = LineQubit(0)
+    cirq_circuit = Circuit(X(q))
+    converted = convert_from_mitiq(cirq_circuit, circuit_type)
+
+    cirq_rep = _represent_operation_with_amplitude_damping_noise(
+        cirq_circuit, noise
+    )
+    converted_rep = _represent_operation_with_amplitude_damping_noise(
+        converted, noise
+    )
+
+    assert np.allclose(cirq_rep.coeffs, converted_rep.coeffs)
+    assert np.isclose(cirq_rep.norm, converted_rep.norm)
 
 
 def test_damping_kraus():

@@ -4,19 +4,24 @@
 # LICENSE file in the root directory of this source tree.
 """Functions related to representations with amplitude damping noise."""
 
+import copy
 from itertools import product
 
 import numpy as np
 import numpy.typing as npt
 from cirq import AmplitudeDampingChannel, Circuit, Z, kraus, reset
 
+from mitiq import QPROGRAM
+from mitiq.interface.conversions import (
+    append_cirq_circuit_to_qprogram,
+    convert_to_mitiq,
+)
 from mitiq.pec.types import NoisyOperation, OperationRepresentation
 from mitiq.utils import arbitrary_tensor_product
 
 
-# TODO: this may be extended to an arbitrary QPROGRAM (GitHub issue gh-702).
 def _represent_operation_with_amplitude_damping_noise(
-    ideal_operation: Circuit,
+    ideal_operation: QPROGRAM,
     noise_level: float,
     is_qubit_dependent: bool = True,
 ) -> OperationRepresentation:
@@ -49,17 +54,11 @@ def _represent_operation_with_amplitude_damping_noise(
         This is possible as long as the unitary associated to the input
         QPROGRAM, followed by a single final amplitude damping channel, is
         physically implementable.
-
-    .. note::
-        The input ``ideal_operation`` must be a ``cirq.Circuit``.
     """
 
-    if not isinstance(ideal_operation, Circuit):
-        raise NotImplementedError(
-            "The input ideal_operation must be a cirq.Circuit.",
-        )
-
-    qubits = ideal_operation.all_qubits()
+    circuit_copy = copy.deepcopy(ideal_operation)
+    converted_circ, _ = convert_to_mitiq(circuit_copy)
+    qubits = converted_circ.all_qubits()
 
     if len(qubits) == 1:
         q = tuple(qubits)[0]
@@ -76,7 +75,10 @@ def _represent_operation_with_amplitude_damping_noise(
         )  # pragma: no cover
 
     # Basis of implementable operations as circuits
-    imp_op_circuits = [ideal_operation + Circuit(op) for op in post_ops]
+    imp_op_circuits = [
+        append_cirq_circuit_to_qprogram(ideal_operation, Circuit(op))
+        for op in post_ops
+    ]
     noisy_operations = [NoisyOperation(c) for c in imp_op_circuits]
 
     return OperationRepresentation(
