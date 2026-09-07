@@ -56,10 +56,14 @@ def _represent_operation_with_amplitude_damping_noise(
         physically implementable.
 
     .. note::
-        The basis of implementable operations contains a ``reset``, so the
-        returned :class:`.NoisyOperation` circuits can only be expressed in
-        frontends that support it. Quil has no such instruction, so a pyquil
-        input raises a ``CircuitConversionError``.
+        The basis of implementable operations contains a ``reset``, which is
+        not a unitary. A frontend can only receive the returned
+        :class:`.NoisyOperation` circuits if its converter has a case for it,
+        and neither the Quil nor the Braket converter does, so a ``pyquil`` or
+        ``braket`` input raises a ``CircuitConversionError``. ``cirq`` and
+        ``qiskit`` inputs are supported. This is a property of the basis, not
+        of the conversion layer: the depolarizing representations work on every
+        frontend because their basis is Paulis only.
     """
 
     circuit_copy = copy.deepcopy(ideal_operation)

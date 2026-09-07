@@ -8,6 +8,7 @@ import pytest
 from cirq import AmplitudeDampingChannel, Circuit, Gate, H, LineQubit, X, Y, Z
 
 from mitiq.interface import convert_from_mitiq
+from mitiq.interface.conversions import CircuitConversionError
 from mitiq.pec.channels import _circuit_to_choi, _operation_to_choi
 from mitiq.pec.representations.damping import (
     _represent_operation_with_amplitude_damping_noise,
@@ -27,9 +28,11 @@ def test_single_qubit_representation_norm(gate: Gate, noise: float):
     assert np.isclose(optimal_norm, norm)
 
 
-# pyquil is omitted: the damping basis contains `reset`, which the Quil
-# conversion cannot express (`CircuitConversionError`). The depolarizing
-# representation supports pyquil because its basis is Paulis only.
+# pyquil and braket are omitted: the damping basis contains `reset`, which is
+# not a unitary and which neither converter has a case for
+# (`CircuitConversionError`). See
+# test_amplitude_damping_representation_rejects_frontends_without_reset. The
+# depolarizing representation supports them because its basis is Paulis only.
 @pytest.mark.parametrize("circuit_type", ["cirq", "qiskit"])
 @pytest.mark.parametrize("noise", [0, 0.1, 0.7])
 @pytest.mark.parametrize("gate", [X, Y, Z, H])
@@ -89,6 +92,27 @@ def test_amplitude_damping_representation_is_frontend_independent(
 
     assert np.allclose(cirq_rep.coeffs, converted_rep.coeffs)
     assert np.isclose(cirq_rep.norm, converted_rep.norm)
+
+
+@pytest.mark.parametrize("circuit_type", ["pyquil", "braket"])
+def test_amplitude_damping_representation_rejects_frontends_without_reset(
+    circuit_type: str,
+) -> None:
+    """Frontends with no `reset` cannot carry this basis, and say so.
+
+    This pins the boundary rather than the bug: if a converter later grows a
+    reset case, this test fails and the docstring's claim about that frontend
+    should be revisited.
+    """
+    pytest.importorskip(
+        {"pyquil": "pyquil", "braket": "braket"}[circuit_type],
+        reason=f"{circuit_type} is not installed",
+    )
+    q = LineQubit(0)
+    circuit = convert_from_mitiq(Circuit(X(q)), circuit_type)
+
+    with pytest.raises(CircuitConversionError):
+        _represent_operation_with_amplitude_damping_noise(circuit, 0.1)
 
 
 def test_damping_kraus():
