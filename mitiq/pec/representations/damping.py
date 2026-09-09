@@ -8,15 +8,32 @@ from itertools import product
 
 import numpy as np
 import numpy.typing as npt
-from cirq import AmplitudeDampingChannel, Circuit, Z, kraus, reset
+from cirq import (
+    AmplitudeDampingChannel,
+    Circuit,
+    ResetChannel,
+    Z,
+    kraus,
+    reset,
+)
 
+from mitiq import QPROGRAM
+from mitiq.interface.conversions import (
+    CircuitConversionError,
+    append_cirq_circuit_to_qprogram,
+    convert_to_mitiq,
+)
 from mitiq.pec.types import NoisyOperation, OperationRepresentation
 from mitiq.utils import arbitrary_tensor_product
 
 
-# TODO: this may be extended to an arbitrary QPROGRAM (GitHub issue gh-702).
+# Partial support for arbitrary QPROGRAM inputs (GitHub issue gh-702):
+# extension to the remaining frontends is blocked on their conversion
+# paths carrying the non-unitary reset operation — a converter-level gap
+# for pyQuil and PennyLane, a language-level gap for Braket and Qibo
+# (see the docstring note).
 def _represent_operation_with_amplitude_damping_noise(
-    ideal_operation: Circuit,
+    ideal_operation: QPROGRAM,
     noise_level: float,
     is_qubit_dependent: bool = True,
 ) -> OperationRepresentation:
@@ -43,6 +60,12 @@ def _represent_operation_with_amplitude_damping_noise(
     Returns:
         The quasi-probability representation of the ``ideal_operation``.
 
+    Raises:
+        ValueError: If the input operation acts on more than one qubit.
+        CircuitConversionError: If the frontend of ``ideal_operation``
+            cannot faithfully represent the non-unitary reset operation
+            contained in the basis of implementable operations.
+
     .. note::
         The input ``ideal_operation`` is typically a QPROGRAM with a single
         gate but could also correspond to a sequence of more gates.
@@ -51,15 +74,23 @@ def _represent_operation_with_amplitude_damping_noise(
         physically implementable.
 
     .. note::
-        The input ``ideal_operation`` must be a ``cirq.Circuit``.
+        The basis of implementable operations contains a non-unitary reset
+        operation, so this representation can only be returned for
+        frontends whose Mitiq conversions preserve reset. These are
+        currently Cirq and Qiskit circuits, as well as the OpenQASM 2.0
+        strings returned by
+        ``mitiq.interface.convert_from_mitiq(circuit, "openqasm")``.
+        For the other frontends a ``CircuitConversionError`` is raised
+        instead of returning a physically incorrect representation:
+        the Cirq-to-pyQuil converter does not support
+        ``cirq.ResetChannel`` (although pyQuil itself has a ``RESET``
+        instruction), the Braket circuit model has no reset instruction,
+        the Qibo OpenQASM parser rejects reset statements, and the
+        PennyLane converter silently discards the reset.
     """
+    converted_circ, input_circuit_type = convert_to_mitiq(ideal_operation)
 
-    if not isinstance(ideal_operation, Circuit):
-        raise NotImplementedError(
-            "The input ideal_operation must be a cirq.Circuit.",
-        )
-
-    qubits = ideal_operation.all_qubits()
+    qubits = converted_circ.all_qubits()
 
     if len(qubits) == 1:
         q = tuple(qubits)[0]
@@ -71,13 +102,39 @@ def _represent_operation_with_amplitude_damping_noise(
         post_ops = [[], Z(q), reset(q)]
 
     else:
-        raise ValueError(  # pragma: no cover
-            "Only single-qubit operations are supported."  # pragma: no cover
-        )  # pragma: no cover
+        raise ValueError("Only single-qubit operations are supported.")
 
     # Basis of implementable operations as circuits
-    imp_op_circuits = [ideal_operation + Circuit(op) for op in post_ops]
+    imp_op_circuits = [
+        append_cirq_circuit_to_qprogram(
+            ideal_operation,
+            Circuit(op),
+        )
+        for op in post_ops
+    ]
     noisy_operations = [NoisyOperation(c) for c in imp_op_circuits]
+
+    # The last basis element ends with a non-unitary reset. Some frontend
+    # conversions accept it but silently delete the reset, which would make
+    # the returned representation wrong at any nonzero noise level. The
+    # round trip through the native frontend must keep every reset and
+    # keep the appended reset as the final operation.
+    num_ideal_resets = sum(
+        isinstance(op.gate, ResetChannel)
+        for op in converted_circ.all_operations()
+    )
+    roundtrip_ops = list(noisy_operations[-1].circuit.all_operations())
+    num_roundtrip_resets = sum(
+        isinstance(op.gate, ResetChannel) for op in roundtrip_ops
+    )
+    if num_roundtrip_resets != num_ideal_resets + 1 or not isinstance(
+        roundtrip_ops[-1].gate, ResetChannel
+    ):
+        raise CircuitConversionError(
+            f"Conversion to the circuit type '{input_circuit_type}' does "
+            "not preserve the non-unitary reset operation required by the "
+            "amplitude damping representation."
+        )
 
     return OperationRepresentation(
         ideal_operation, noisy_operations, etas, is_qubit_dependent
