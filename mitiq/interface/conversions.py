@@ -363,6 +363,7 @@ def accept_qprogram_and_validate(
                 from pyquil.quilbase import Declare, Measurement
 
                 circuit = cast(Program, circuit)
+                out_circuit = cast(Program, out_circuit)
 
                 # Grab all measurements from the input circuit.
                 measurements = [
@@ -398,11 +399,16 @@ def accept_qprogram_and_validate(
 
             # Qiskit: Keep the same register structure and measurement order.
             if "qiskit" in out_circuit.__module__:
+                from qiskit import QuantumCircuit
+
                 from mitiq.interface.mitiq_qiskit.conversions import (
                     _measurement_order,
                     _remove_identity_from_idle,
                     _transform_registers,
                 )
+
+                circuit = cast(QuantumCircuit, circuit)
+                out_circuit = cast(QuantumCircuit, out_circuit)
 
                 out_circuit.remove_final_measurements()
                 out_circuit = _transform_registers(
