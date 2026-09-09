@@ -261,7 +261,7 @@ class Executor:
                 observable._expectation_from_measurements(
                     all_results[i : i + result_step]
                 )
-                for i in range(len(all_results) // result_step)
+                for i in range(0, len(all_results), result_step)
             ]
 
         else:

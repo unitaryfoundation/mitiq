@@ -261,6 +261,28 @@ def test_executor_evaluate_measurements(execute):
 
 
 @pytest.mark.parametrize(
+    "execute", [executor_measurements_typed, executor_measurements_batched]
+)
+def test_executor_evaluate_measurements_multiple_groups(execute):
+    # X and Z do not qubit-wise commute, so each input circuit is measured
+    # with two different circuits, one per group.
+    obs = Observable(PauliString("X"), PauliString("Z"))
+    assert obs.ngroups == 2
+
+    q = cirq.LineQubit(0)
+    circuits = [
+        cirq.Circuit(cirq.I.on(q)),  # <X> + <Z> = 0 + 1.
+        cirq.Circuit(cirq.H.on(q)),  # <X> + <Z> = 1 + 0.
+        cirq.Circuit(cirq.X.on(q)),  # <X> + <Z> = 0 - 1.
+    ]
+
+    results = Executor(execute).evaluate(circuits, obs)
+
+    assert len(results) == len(circuits)
+    assert np.allclose(results, [1, 1, -1], atol=0.1)
+
+
+@pytest.mark.parametrize(
     "execute", [executor_density_matrix_typed, executor_density_matrix_batched]
 )
 def test_executor_evaluate_density_matrix(execute):
