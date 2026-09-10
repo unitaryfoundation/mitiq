@@ -502,3 +502,38 @@ def test_compare_cost_with_shots(circuit_type):
     qem_native = [convert_from_mitiq(c, circuit_type) for c in qem_circuits]
     cost = compare_cost(base_native, qem_native, shots=100)
     assert cost["shots_per_circuit"] == 50
+
+
+@pytest.mark.parametrize("circuit_type", SUPPORTED_PROGRAM_TYPES.keys())
+def test_compare_cost_counts_multi_qubit_gates(circuit_type):
+    """Gates on three or more qubits are counted under ``nq``.
+
+    ``test_compare_cost_basic`` asserts ``"nq": 0``, so the arity counters
+    have only ever been exercised on 1- and 2-qubit gates. Each frontend
+    counts arity with its own code path, and this pins that all of them
+    agree on a 3-qubit gate rather than silently dropping it or filing it
+    under ``2q``.
+    """
+    q0, q1, q2 = cirq.LineQubit.range(3)
+    base = cirq.Circuit(
+        cirq.H(q0),
+        cirq.CNOT(q0, q1),
+        cirq.TOFFOLI(q0, q1, q2),
+        cirq.measure(q0, q1, q2),
+    )
+    qem_circuits = [
+        base,
+        cirq.Circuit(
+            cirq.H(q0),
+            cirq.CNOT(q0, q1),
+            cirq.TOFFOLI(q0, q1, q2),
+            cirq.CSWAP(q0, q1, q2),
+            cirq.measure(q0, q1, q2),
+        ),
+    ]
+    base_native = convert_from_mitiq(base, circuit_type)
+    qem_native = [convert_from_mitiq(c, circuit_type) for c in qem_circuits]
+
+    cost = compare_cost(base_native, qem_native)
+
+    assert cost["gate_overhead"] == {"1q": 1, "2q": 1, "nq": 2}
