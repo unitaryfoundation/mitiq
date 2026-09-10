@@ -1410,21 +1410,23 @@ class PolyExpFactory(BatchedFactory):
         if avoid_log:
             # First guess for the parameters
             p_zero = [sign, -1.0] + [0.0 for _ in range(order - 1)]
-            opt_params, params_cov = mitiq_curve_fit(
+            fit_params, params_cov = mitiq_curve_fit(
                 _ansatz_known, scale_factors, exp_values, p_zero
             )
             # The zero noise limit is ansatz(0)= asymptote + b
-            zne_limit = asymptote + opt_params[0]
+            zne_limit = asymptote + fit_params[0]
 
             def zne_curve(scale_factor: float) -> float:
-                return _ansatz_known(scale_factor, *opt_params)
+                return _ansatz_known(scale_factor, *fit_params)
 
             # Use propagation of errors to calculate zne_error
             if params_cov is not None:
                 if params_cov.shape == (order + 1, order + 1):
                     zne_error = np.sqrt(params_cov[0, 0])
 
-            opt_params = [asymptote] + list(opt_params)
+            # The reported parameters describe the full ansatz, so they
+            # carry the asymptote that `_ansatz_known` takes as given.
+            opt_params = [asymptote] + list(fit_params)
 
             if full_output:
                 return (

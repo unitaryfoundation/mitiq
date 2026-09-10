@@ -1019,3 +1019,124 @@ def test_extrapolate_raises_error_on_complex_expectation_values():
     PolyExpFactory.extrapolate(
         scale_factors=[1, 2, 3], exp_values=[1, 0.5 + 1e-5j, 6], order=1
     )
+
+
+def test_poly_exp_factory_bad_asymptote_type():
+    """``asymptote`` must be a float or None, and an int is neither.
+
+    ``ExpFactory`` already covers the complex case, but it does not
+    subclass ``PolyExpFactory``, so this check is a separate branch.
+    """
+    with raises(ValueError, match="must be either a float or None"):
+        PolyExpFactory(X_VALS, order=1, asymptote=1)
+
+
+@mark.parametrize(
+    "scale_factors, exp_values",
+    [
+        (None, None),
+        ([1.0, 2.0, 3.0], None),
+        ([1.0, 2.0], [1.0]),  # mismatched lengths
+        ([1.0], [1.0]),  # fewer than two points
+        ([], []),
+    ],
+)
+def test_poly_exp_factory_extrapolate_insufficient_data(
+    scale_factors, exp_values
+):
+    """Missing, mismatched, or too-short data is rejected."""
+    with raises(ValueError, match="at least two data points are necessary"):
+        PolyExpFactory.extrapolate(scale_factors, exp_values, order=1)
+
+
+def test_poly_exp_factory_extrapolate_order_too_high():
+    """The fit order cannot exceed what the data can determine.
+
+    With an unknown asymptote the ansatz costs an extra degree of
+    freedom, so the same order that is fine with a known asymptote is
+    rejected without one.
+    """
+    scale_factors = [1.0, 2.0, 3.0]
+    exp_values = [0.9, 0.8, 0.72]
+
+    with raises(ValueError, match="Extrapolation order is too high"):
+        PolyExpFactory.extrapolate(
+            scale_factors, exp_values, order=3, asymptote=0.5
+        )
+
+    # Legal with a known asymptote, rejected without one.
+    PolyExpFactory.extrapolate(
+        scale_factors, exp_values, order=2, asymptote=0.5
+    )
+    with raises(ValueError, match="Extrapolation order is too high"):
+        PolyExpFactory.extrapolate(scale_factors, exp_values, order=2)
+
+
+@mark.parametrize(
+    "asymptote, avoid_log",
+    [
+        (None, False),  # unknown asymptote
+        (A, False),  # known asymptote, fitted in log space
+        (A, True),  # known asymptote, avoiding the log
+    ],
+)
+def test_poly_exp_factory_zne_curve_interpolates_data(asymptote, avoid_log):
+    """The returned curve reproduces the fitted points and zne_limit.
+
+    ``PolyExpFactory.extrapolate`` builds a separate closure for each of
+    its three cases (unknown asymptote, known asymptote with
+    ``avoid_log``, and known asymptote via the log fit), so all three are
+    exercised. Asserting values rather than merely calling the curve is
+    what makes this a regression test: a curve that ignored its fitted
+    parameters would still be callable.
+    """
+    scale_factors = [1.0, 1.5, 2.0, 2.5]
+    exp_values = [f_exp_down(s, err=0) for s in scale_factors]
+
+    zne_limit, _, _, _, zne_curve = PolyExpFactory.extrapolate(
+        scale_factors,
+        exp_values,
+        order=1,
+        asymptote=asymptote,
+        avoid_log=avoid_log,
+        full_output=True,
+    )
+
+    assert np.isclose(zne_curve(0.0), zne_limit, atol=CLOSE_TOL)
+    for scale_factor, exp_value in zip(scale_factors, exp_values):
+        assert np.isclose(zne_curve(scale_factor), exp_value, atol=CLOSE_TOL)
+
+
+def test_fake_nodes_factory_zne_curve_interpolates_data():
+    """``FakeNodesFactory``'s curve is mapped back to the real space.
+
+    The fit happens in "fake node space", so the returned curve has to
+    map its argument through ``_map_to_fake_nodes`` before evaluating.
+    Omitting that mapping would still produce a callable curve, but it
+    would not pass through the measured points.
+    """
+    scale_factors = [1.0, 1.5, 2.0, 2.5]
+    exp_values = [f_exp_down(s, err=0) for s in scale_factors]
+
+    zne_limit, _, _, _, zne_curve = FakeNodesFactory.extrapolate(
+        scale_factors, exp_values, full_output=True
+    )
+
+    assert np.isclose(zne_curve(0.0), zne_limit, atol=CLOSE_TOL)
+    for scale_factor, exp_value in zip(scale_factors, exp_values):
+        assert np.isclose(zne_curve(scale_factor), exp_value, atol=CLOSE_TOL)
+
+
+def test_ada_exp_factory_is_converged_unequal_stacks():
+    """``is_converged`` refuses to answer from inconsistent state.
+
+    ``self._instack`` and ``self._outstack`` are appended in lockstep,
+    so a length mismatch means a circuit was recorded without its
+    result. Answering True or False there would hide the inconsistency.
+    """
+    fac = AdaExpFactory(steps=4, scale_factor=2.0, asymptote=None)
+    fac._instack = [{"scale_factor": 1.0}, {"scale_factor": 2.0}]
+    fac._outstack = [1.0]
+
+    with raises(IndexError, match="must be equal"):
+        fac.is_converged()
