@@ -5,15 +5,20 @@
 
 """Unit tests for high-level DDD tools."""
 
+import inspect
+import logging
+
 import cirq
 import numpy as np
 from pytest import mark
 
 from mitiq import QPROGRAM, SUPPORTED_PROGRAM_TYPES, Executor
 from mitiq.ddd import (
+    DDDInfo,
     construct_circuits,
     ddd_decorator,
     execute_with_ddd,
+    insert_ddd_sequences,
     mitigate_executor,
 )
 from mitiq.ddd.rules import xx, xyxy, yy
@@ -240,3 +245,95 @@ def test_num_trials_generates_circuits(num_trials: int):
     )
 
     assert num_trials == len(circuits)
+
+
+def test_construct_circuits_return_info_default_is_list_only():
+    """Default API remains a plain list of circuits (no tuple)."""
+    circuits = construct_circuits(circuit_cirq_a, rule=xx, num_trials=3)
+    assert isinstance(circuits, list)
+    assert all(isinstance(c, QPROGRAM) for c in circuits)
+
+
+def test_construct_circuits_return_info_true():
+    """Optional return_info reports one DDDInfo per trial."""
+    circuits, infos = construct_circuits(
+        circuit_cirq_a, rule=xx, num_trials=3, return_info=True
+    )
+
+    assert len(circuits) == 3
+    assert len(infos) == 3
+    assert isinstance(infos, tuple)
+    assert all(isinstance(info, DDDInfo) for info in infos)
+    assert circuits == construct_circuits(
+        circuit_cirq_a, rule=xx, num_trials=3
+    )
+
+
+def test_construct_circuits_and_insert_have_no_mutable_defaults():
+    """Public kwargs use None/immutable defaults, not a shared list/dict."""
+    for func in (construct_circuits, insert_ddd_sequences, execute_with_ddd):
+        for param in inspect.signature(func).parameters.values():
+            default = param.default
+            if default is inspect.Parameter.empty:
+                continue
+            assert not isinstance(default, (list, dict, set)), param.name
+
+
+def test_construct_circuits_return_info_not_shared_across_calls():
+    """Tuple info from one call must not leak into the next."""
+    q = cirq.LineQubit(0)
+    empty = cirq.Circuit(cirq.H(q), cirq.X(q), cirq.H(q))
+    idle = cirq.Circuit(cirq.H(q), cirq.I(q), cirq.I(q), cirq.H(q))
+
+    _, infos_empty = construct_circuits(empty, rule=xx, return_info=True)
+    _, infos_idle = construct_circuits(idle, rule=xx, return_info=True)
+    _, infos_empty_again = construct_circuits(empty, rule=xx, return_info=True)
+
+    assert infos_empty[0].num_idle_windows == 0
+    assert infos_idle[0].num_idle_windows == 1
+    assert infos_empty_again[0].num_idle_windows == 0
+    assert infos_idle[0].idle_window_lengths == (2,)
+
+
+def test_construct_circuits_logs_insertion(caplog):
+    """INFO logging on mitiq.ddd reports idle windows and insertions."""
+    caplog.set_level(logging.INFO, logger="mitiq.ddd")
+    construct_circuits(circuit_cirq_a, rule=xx, num_trials=1)
+
+    assert "idle windows" in caplog.text
+    assert "inserted" in caplog.text
+    assert "sequences" in caplog.text
+
+
+def test_construct_circuits_logs_each_trial(caplog):
+    """Multiple trials log one line each, not a single combined message."""
+    caplog.set_level(logging.INFO, logger="mitiq.ddd")
+    construct_circuits(circuit_cirq_a, rule=xx, num_trials=3)
+
+    trial_records = [
+        rec
+        for rec in caplog.records
+        if rec.name == "mitiq.ddd" and "DDD trial" in rec.getMessage()
+    ]
+    assert len(trial_records) == 3
+    assert "1/3" in trial_records[0].getMessage()
+    assert "3/3" in trial_records[2].getMessage()
+
+
+def test_construct_circuits_logs_when_nothing_inserted(caplog):
+    """Logging still reports zeros when DDD finds no idle windows."""
+    caplog.set_level(logging.INFO, logger="mitiq.ddd")
+    q = cirq.LineQubit(0)
+    circuit = cirq.Circuit(cirq.H(q), cirq.X(q), cirq.H(q))
+    construct_circuits(circuit, rule=xx)
+
+    assert "found 0 idle windows; inserted 0 sequences" in caplog.text
+
+
+def test_insert_ddd_sequences_does_not_log(caplog):
+    """Logging lives on construct_circuits only (no duplicate noise)."""
+    caplog.set_level(logging.INFO, logger="mitiq.ddd")
+    insert_ddd_sequences(circuit_cirq_a, rule=xx)
+    insert_ddd_sequences(circuit_cirq_a, rule=xx, return_info=True)
+
+    assert caplog.records == []
