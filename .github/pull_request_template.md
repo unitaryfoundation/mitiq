@@ -13,13 +13,31 @@ For more information, check the Mitiq style guidelines (https://mitiq.readthedoc
 
 ## Description
 
-<!-- Please explain the changes you made here. -->
-
+<!--
+Please explain the changes you made here.
+Please write this PR's description by hand, even if AI tooling wrote some of the code.
+Explaining why the change is worth making, and where you are unsure, is the part a
+reviewer cannot get from reading the diff.
+-->
 ---
 
 ### License
 
 - [ ] I license this contribution under the terms of the GNU GPL, version 3 and grant Unitary Foundation the right to provide additional permissions as described in section 7 of the GNU GPL, version 3.
+
+### AI use
+
+<!--
+Mitiq's AI use policy: https://mitiq.readthedocs.io/en/stable/contributing.html#ai-use-policy-and-guidelines
+Please tick exactly one box. Disclosure helps reviewers; it is not held against you.
+Whichever you pick, you remain the author and are accountable for the contribution.
+-->
+
+- [ ] The code contains no generative AI work
+- [ ] The code is partially written by generative AI
+- [ ] The code is fully written by generative AI
+
+---
 
 Before opening the PR, please ensure you have completed the following where appropriate.
 
