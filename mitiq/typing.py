@@ -256,6 +256,6 @@ class MeasurementResult:
 # - float: The expectation value itself.
 # - MeasurementResult: Sampled bitstrings.
 # - np.ndarray: Density matrix.
-QuantumResult = float | MeasurementResult | np.ndarray
+QuantumResult = float | MeasurementResult | npt.NDArray[Any]
 
 Numeric: TypeAlias = int | float | complex
