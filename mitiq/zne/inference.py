@@ -9,6 +9,8 @@ import warnings
 from abc import ABC, abstractmethod
 from collections.abc import Callable, Sequence
 from copy import deepcopy
+from fractions import Fraction
+from numbers import Integral
 from typing import Any, TypeAlias, cast
 
 import matplotlib.pyplot as plt
@@ -461,6 +463,102 @@ class BatchedFactory(Factory, ABC):
         self._shot_list = shot_list
 
         super(BatchedFactory, self).__init__()
+
+    def get_optimal_shot_list(self, num_shots: int) -> list[int]:
+        """Returns a shot allocation for a fixed linear extrapolation model.
+
+        For independent estimates with equal per-shot variances, the
+        continuous variance-minimizing allocation is proportional to the
+        absolute coefficients of the linear zero-noise estimator. This
+        method approximates that allocation with positive integers: quotas
+        below one shot are fixed at one and the remaining budget is
+        redistributed proportionally, then quotas are rounded using the
+        largest fractional remainders.
+
+        Supported factories are ``PolyFactory``, ``RichardsonFactory``,
+        ``LinearFactory``, and ``FakeNodesFactory`` (not subclasses).
+        The returned list can be passed as ``shot_list`` when constructing
+        a factory; this method does not modify the current factory.
+
+        Args:
+            num_shots: Total shots to distribute, at least the number of
+                scale factors. This budget is for one execution per scale
+                factor: ``num_to_average`` repeats the allocation, and an
+                observable with multiple measurement groups may require
+                additional executions with the same shot counts.
+
+        Returns:
+            Positive integer shot counts in the configured scale-factor
+            order, summing to ``num_shots``.
+
+        Raises:
+            TypeError: If ``num_shots`` is not an integer or is a boolean.
+            ValueError: If the budget is too small or the extrapolation
+                coefficients cannot define a finite allocation.
+            NotImplementedError: If the factory is not supported.
+        """
+        if type(self) not in (
+            PolyFactory,
+            RichardsonFactory,
+            LinearFactory,
+            FakeNodesFactory,
+        ):
+            raise NotImplementedError(
+                "Optimal shot allocation is only supported for PolyFactory, "
+                "RichardsonFactory, LinearFactory, and FakeNodesFactory."
+            )
+        if isinstance(num_shots, bool) or not isinstance(num_shots, Integral):
+            raise TypeError("num_shots must be an integer, not a boolean.")
+        num_shots = int(num_shots)
+        num_factors = len(self._scale_factors)
+        if num_shots < num_factors:
+            raise ValueError(
+                "num_shots must be at least the number of scale factors."
+            )
+
+        coefficients = np.array(
+            [
+                self.extrapolate(self._scale_factors, basis, **self._options)
+                for basis in np.eye(num_factors)
+            ],
+            dtype=float,
+        )
+        weights = np.abs(coefficients)
+        total_weight = np.sum(weights)
+        if not np.all(np.isfinite(weights)) or not (
+            np.isfinite(total_weight) and total_weight > 0
+        ):
+            raise ValueError(
+                "Extrapolation coefficients must be finite and nonzero."
+            )
+
+        fraction_weights = [Fraction(float(weight)) for weight in weights]
+        remaining = num_shots
+        active = list(range(num_factors))
+        quotas = [Fraction(1)] * num_factors
+        while active:
+            fraction_total = sum(fraction_weights[index] for index in active)
+            for index in active:
+                quotas[index] = (
+                    remaining * fraction_weights[index] / fraction_total
+                )
+            below_one = {index for index in active if quotas[index] < 1}
+            if not below_one:
+                break
+            for index in below_one:
+                quotas[index] = Fraction(1)
+            remaining -= len(below_one)
+            active = [index for index in active if index not in below_one]
+
+        shots = [int(quota) for quota in quotas]
+        remainder_order = sorted(
+            range(num_factors),
+            key=lambda index: quotas[index] - int(quotas[index]),
+            reverse=True,
+        )
+        for index in remainder_order[: num_shots - sum(shots)]:
+            shots[index] += 1
+        return shots
 
     @staticmethod
     @abstractmethod
