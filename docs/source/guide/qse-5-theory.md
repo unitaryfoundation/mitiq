@@ -23,7 +23,7 @@ When used in conjunction with a quantum code, a subset of the stabilizer group c
 If the full stabilizer group is used, subspace expansion is equivalent to projecting the final state of the computation onto the codeword subspace.
 ```
 
-The check operators can also include other operators outside the stabilizers group. For instance, if the final state of the computation is known to have some symmetry, including the symmetry operator as a check operator is useful in correcting errors that don’t respect the symmetry. In our code implementation, we allow the user to input the set of check operators, which can be stabilizers, symmetries, or anything else.
+The check operators can also include other operators outside the stabilizers group. For instance, if the final state of the computation is known to have some symmetry, including the symmetry operator as a check operator is useful in correcting errors that don’t respect the symmetry. In our code implementation, we allow the user to input the set of check operators, which can be stabilizers, symmetries, or anything else. Practical guidance on discovering check operators is in [Finding and creating check operators](qse-3-options.md#finding-and-creating-check-operators).
 
 Let $| \Psi \rangle$ be the state we wish to prepare on the quantum computer and $M_i$ be the set of check operators such that $ M_i | \Psi \rangle = | \Psi \rangle$. Furthermore, let $\rho$ represent the density matrix of the actual final state prepared on the device. Due to errors, $\rho \neq | \Psi \rangle \langle \Psi |$. However, we would like to use our knowledge about the state $| \Psi \rangle$ encoded in the check operators to mitigate the errors in $\rho$.
 
