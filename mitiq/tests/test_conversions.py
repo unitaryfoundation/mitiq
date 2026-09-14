@@ -85,6 +85,18 @@ one_to_many_circuit_modifier = accept_qprogram_and_validate(
 )
 
 
+def circuit_modifier_with_extra(
+    circ: cirq.Circuit, *args, **kwargs
+) -> tuple[cirq.Circuit, dict[str, int]]:
+    return circ, {"n_moments": len(circ)}
+
+
+circuit_modifier_with_extra = accept_qprogram_and_validate(
+    circuit_modifier_with_extra,
+    returns_extra=True,
+)
+
+
 @accept_any_qprogram_as_input
 def get_wavefunction(circ: cirq.Circuit) -> np.ndarray:
     return circ.final_state_vector()
@@ -250,6 +262,29 @@ def test_atomic_one_to_many_converter(to_type):
     circuits = returns_several_circuits(circuit, return_mitiq=True)
     for circuit in circuits:
         assert isinstance(circuit, cirq.Circuit)
+
+
+@pytest.mark.parametrize(
+    "circuit_and_type",
+    (
+        (cirq_circuit, "cirq"),
+        (qiskit_circuit, "qiskit"),
+        (pyquil_circuit, "pyquil"),
+        (braket_circuit, "braket"),
+    ),
+)
+def test_accept_qprogram_and_validate_returns_extra(circuit_and_type):
+    circuit, input_type = circuit_and_type
+    converted, extra = circuit_modifier_with_extra(circuit)
+    assert isinstance(converted, circuit_types[input_type])
+    assert extra == {"n_moments": 2}
+
+
+def test_accept_qprogram_and_validate_returns_extra_rejects_one_to_many():
+    with pytest.raises(ValueError, match="cannot be combined"):
+        accept_qprogram_and_validate(
+            scaling_function, one_to_many=True, returns_extra=True
+        )
 
 
 def test_noise_scaling_converter_with_qiskit_idle_qubits_and_barriers():

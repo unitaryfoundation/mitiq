@@ -5,6 +5,8 @@
 
 """Unit tests for DDD slack windows and DDD insertion tools."""
 
+import inspect
+
 import cirq
 import numpy as np
 import pyquil
@@ -12,6 +14,7 @@ import pytest
 import qiskit
 
 from mitiq.ddd.insertion import (
+    DDDInfo,
     _get_circuit_mask,
     get_slack_matrix_from_circuit_mask,
     insert_ddd_sequences,
@@ -317,3 +320,123 @@ def test_insert_sequences_with_qiskit_rule():
 
     result = insert_ddd_sequences(circuit, rule=qiskit_xx)
     assert result == expected
+
+
+def test_insert_ddd_sequences_return_info_default_is_circuit_only():
+    """Default API remains circuit-only (no tuple)."""
+    qubits = cirq.LineQubit.range(2)
+    circuit = cirq.Circuit(
+        cirq.ops.H.on_each(*qubits),
+        cirq.ops.I.on_each(*qubits),
+        cirq.ops.I.on_each(*qubits),
+        cirq.ops.H.on_each(*qubits),
+    )
+    result = insert_ddd_sequences(circuit, rule=xx)
+    assert isinstance(result, cirq.Circuit)
+    assert not isinstance(result, tuple)
+
+
+def test_insert_ddd_sequences_return_info_true():
+    """Optional return_info reports idle windows and insertions."""
+    qubits = cirq.LineQubit.range(2)
+    circuit = cirq.Circuit(
+        cirq.ops.H.on_each(*qubits),
+        cirq.ops.I.on_each(*qubits),
+        cirq.ops.I.on_each(*qubits),
+        cirq.ops.H.on_each(*qubits),
+    )
+    circuit_with_ddd, info = insert_ddd_sequences(
+        circuit, rule=xx, return_info=True
+    )
+
+    assert isinstance(circuit_with_ddd, cirq.Circuit)
+    assert isinstance(info, DDDInfo)
+    assert info.num_idle_windows == 2
+    assert info.num_sequences_inserted == 2
+    assert info.idle_window_lengths == (2, 2)
+    assert circuit_with_ddd == insert_ddd_sequences(circuit, rule=xx)
+
+
+def test_insert_ddd_sequences_return_info_no_idle_windows():
+    """When there are no insertable idle windows, info reports zeros."""
+    q = cirq.LineQubit(0)
+    # No multi-moment idle windows: consecutive non-identity ops only.
+    circuit = cirq.Circuit(cirq.H(q), cirq.X(q), cirq.H(q))
+    circuit_with_ddd, info = insert_ddd_sequences(
+        circuit, rule=xx, return_info=True
+    )
+
+    assert circuit_with_ddd == circuit
+    assert info.num_idle_windows == 0
+    assert info.num_sequences_inserted == 0
+    assert info.idle_window_lengths == ()
+
+
+def test_insert_ddd_sequences_return_info_empty_rule():
+    """Idle windows counted even if the rule inserts nothing."""
+
+    def empty_rule(slack_length: int) -> cirq.Circuit:
+        return cirq.Circuit()
+
+    qubits = cirq.LineQubit.range(2)
+    circuit = cirq.Circuit(
+        cirq.ops.H.on_each(*qubits),
+        cirq.ops.I.on_each(*qubits),
+        cirq.ops.I.on_each(*qubits),
+        cirq.ops.H.on_each(*qubits),
+    )
+    circuit_with_ddd, info = insert_ddd_sequences(
+        circuit, rule=empty_rule, return_info=True
+    )
+
+    assert circuit_with_ddd == circuit
+    assert info.num_idle_windows == 2
+    assert info.num_sequences_inserted == 0
+    assert info.idle_window_lengths == (2, 2)
+
+
+def test_insert_ddd_sequences_return_info_not_shared_across_calls():
+    """Successive return_info calls do not share mutable state."""
+    q = cirq.LineQubit(0)
+    empty = cirq.Circuit(cirq.H(q), cirq.X(q), cirq.H(q))
+    idle = cirq.Circuit(cirq.H(q), cirq.I(q), cirq.I(q), cirq.H(q))
+
+    _, info_empty = insert_ddd_sequences(empty, rule=xx, return_info=True)
+    _, info_idle = insert_ddd_sequences(idle, rule=xx, return_info=True)
+    _, info_empty_again = insert_ddd_sequences(
+        empty, rule=xx, return_info=True
+    )
+
+    assert info_empty.num_idle_windows == 0
+    assert info_idle.num_idle_windows == 1
+    assert info_empty_again.num_idle_windows == 0
+    assert info_idle.idle_window_lengths == (2,)
+    assert info_empty.idle_window_lengths == ()
+
+
+def test_insert_ddd_sequences_has_no_mutable_defaults():
+    """No shared list/dict default on the public insertion API."""
+    for param in inspect.signature(insert_ddd_sequences).parameters.values():
+        default = param.default
+        if default is inspect.Parameter.empty:
+            continue
+        assert not isinstance(default, (list, dict, set)), param.name
+
+
+def test_insert_ddd_sequences_return_info_qiskit():
+    """return_info works through frontend conversion (Qiskit)."""
+    qreg = qiskit.QuantumRegister(2)
+    circuit = qiskit.QuantumCircuit(qreg)
+    circuit.h(0)
+    circuit.h(1)
+    circuit.id(0)
+    circuit.id(1)
+    circuit.id(0)
+    circuit.id(1)
+    circuit.h(0)
+    circuit.h(1)
+
+    result, info = insert_ddd_sequences(circuit, rule=xx, return_info=True)
+    assert isinstance(result, qiskit.QuantumCircuit)
+    assert info.num_idle_windows >= 1
+    assert info.num_sequences_inserted == info.num_idle_windows
