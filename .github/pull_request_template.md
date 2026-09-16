@@ -16,8 +16,8 @@ For more information, check the Mitiq style guidelines (https://mitiq.readthedoc
 <!--
 Please explain the changes you made here.
 Please write this PR's description by hand, even if AI tooling wrote some of the code.
-Explaining why the change is worth making, and where you are unsure, is the part a
-reviewer cannot get from reading the diff.
+Explaining why the change is worth making, and where you are unsure, is the part a reviewer cannot get from reading the diff.
+Delineate clearly what parts of the PR description are human / agent written.
 -->
 ---
 
