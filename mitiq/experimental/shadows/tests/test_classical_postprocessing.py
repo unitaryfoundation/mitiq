@@ -6,6 +6,7 @@
 """Tests for classical post-processing functions for classical shadows."""
 
 import numpy as np
+import pytest
 
 import mitiq
 from mitiq.experimental.shadows.classical_postprocessing import (
@@ -15,7 +16,6 @@ from mitiq.experimental.shadows.classical_postprocessing import (
     get_single_shot_pauli_fidelity,
     shadow_state_reconstruction,
 )
-from mitiq.utils import operator_ptm_vector_rep
 
 
 def test_get_single_shot_pauli_fidelity():
@@ -101,15 +101,13 @@ def test_classical_snapshot_cal():
     b_list_shadow = "01"
     u_list_shadow = "XY"
     f_est = {"00": 1, "01": 1 / 3, "10": 1 / 3, "11": 1 / 9}
-    expected_result = operator_ptm_vector_rep(
-        np.array(
-            [
-                [0.25 + 0.0j, 0.0 + 0.75j, 0.75 + 0.0j, 0.0 + 2.25j],
-                [0.0 - 0.75j, 0.25 + 0.0j, 0.0 - 2.25j, 0.75 + 0.0j],
-                [0.75 + 0.0j, 0.0 + 2.25j, 0.25 + 0.0j, 0.0 + 0.75j],
-                [0.0 - 2.25j, 0.75 + 0.0j, 0.0 - 0.75j, 0.25 + 0.0j],
-            ]
-        )
+    expected_result = np.array(
+        [
+            [0.25 + 0.0j, 0.0 + 0.75j, 0.75 + 0.0j, 0.0 + 2.25j],
+            [0.0 - 0.75j, 0.25 + 0.0j, 0.0 - 2.25j, 0.75 + 0.0j],
+            [0.75 + 0.0j, 0.0 + 2.25j, 0.25 + 0.0j, 0.0 + 0.75j],
+            [0.0 - 2.25j, 0.75 + 0.0j, 0.0 - 0.75j, 0.25 + 0.0j],
+        ]
     )
     np.testing.assert_array_almost_equal(
         classical_snapshot(b_list_shadow, u_list_shadow, f_est),
@@ -159,18 +157,18 @@ def test_shadow_state_reconstruction_cal():
     measurement_outcomes = (bitstrings, paulistrings)
     fidelities = {"00": 1, "01": 1 / 3, "10": 1 / 3, "11": 1 / 9}
 
-    expected_state_vec = operator_ptm_vector_rep(
-        np.array(
-            [
-                [0.25, 0.75j, 0.75, 2.25j],
-                [-0.75j, 0.25, -2.25j, 0.75],
-                [0.75, 2.25j, 0.25, 0.75j],
-                [-2.25j, 0.75, -0.75j, 0.25],
-            ]
-        )
+    expected_state = np.array(
+        [
+            [0.25, 0.75j, 0.75, 2.25j],
+            [-0.75j, 0.25, -2.25j, 0.75],
+            [0.75, 2.25j, 0.25, 0.75j],
+            [-2.25j, 0.75, -0.75j, 0.25],
+        ]
     )
     state = shadow_state_reconstruction(measurement_outcomes, fidelities)
-    np.testing.assert_almost_equal(state, expected_state_vec)
+    assert state.shape == (4, 4)
+    np.testing.assert_almost_equal(np.trace(state), 1.0)
+    np.testing.assert_almost_equal(state, expected_state)
 
 
 def test_expectation_estimation_shadow():
@@ -216,6 +214,30 @@ def test_expectation_estimation_shadow_cal():
         measurement_outcomes, pauli, batch_size, fidelities
     )
     assert np.isclose(result, expected_result)
+
+
+def test_expectation_estimation_shadow_cal_locality_mismatch():
+    """An observable whose weight exceeds the calibrated locality has no
+    fidelity entry for its support and must raise instead of silently
+    returning 0."""
+    bitstrings = ["0101", "0110"]
+    paulistrings = ["YXZZ", "XXXX"]
+    # fidelities from a locality=1 calibration on 4 qubits
+    fidelities = {
+        "0000": 1,
+        "0001": 1 / 3,
+        "0010": 1 / 3,
+        "0100": 1 / 3,
+        "1000": 1 / 3,
+    }
+
+    measurement_outcomes = bitstrings, paulistrings
+    pauli = mitiq.PauliString("YX")
+
+    with pytest.raises(ValueError, match="locality >= 2"):
+        expectation_estimation_shadow(
+            measurement_outcomes, pauli, num_batches=1, fidelities=fidelities
+        )
 
 
 def test_expectation_estimation_shadow_no_indices():
