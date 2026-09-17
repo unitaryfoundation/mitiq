@@ -491,14 +491,14 @@ wheels = [
 
 [[package]]
 name = "cma"
-version = "3.4.0"
+version = "4.5.0"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "numpy" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/06/5f/658c47e31255b3f41eb7db690a4e0675752fa1ee788ea76a9f37b7120541/cma-3.4.0.tar.gz", hash = "sha256:a1ebd969b99871be3715d5a24b7bf54cf04ea94e80d6b8536d7147620dd10f6c", size = 263869, upload-time = "2024-07-05T15:01:25.429Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/86/d7/c92532c0a2922aacb3b7e0cf0fde5d2ba3f67c30692c8f9c4c35b9b42b68/cma-4.5.0.tar.gz", hash = "sha256:5e6774388d4a3798116bf9aff7684cf44d59f966d868f375e61811f74e132934", size = 335637, upload-time = "2026-09-13T21:49:14.757Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/5d/50/132ffca648bcbff4b4a1420cc5d68104b1db5bd0f0f113345ee7589c83c7/cma-3.4.0-py3-none-any.whl", hash = "sha256:4140e490cc4e68cf8c7b1114e079c0561c9b78b1bf9ec69362c20865636ae5ca", size = 269676, upload-time = "2024-07-05T15:01:23.067Z" },
+    { url = "https://files.pythonhosted.org/packages/7a/c2/859dcb6fc39476c78fde66005883edaab09f3fc561fa52a3b9d4cc036937/cma-4.5.0-py3-none-any.whl", hash = "sha256:9b37fa8bd541f1f4cf8e2cc4f98e6f02ec89d6d39ded8ec8a90d4f44c88c62c8", size = 347222, upload-time = "2026-09-13T21:49:13.51Z" },
 ]
 
 [[package]]
@@ -3113,7 +3113,7 @@ wheels = [
 
 [[package]]
 name = "qibo"
-version = "0.3.3"
+version = "0.3.5"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "cma" },
@@ -3126,9 +3126,9 @@ dependencies = [
     { name = "sympy" },
     { name = "tabulate" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/90/61/a732634a0396f8088034bacca5c3ce83deedf6de607e3661c920dd16a9cf/qibo-0.3.3.tar.gz", hash = "sha256:e7976b9e36b0c02d5f1e69adc24e7b52c82081c21d7eda05ce20c5bd39d12548", size = 311812, upload-time = "2026-05-15T08:33:18.661Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/12/0c/b0a9fe725fe4fbe2620ae0404d58db39440ec74e89056ee65199f7527a34/qibo-0.3.5.tar.gz", hash = "sha256:79b20727fb5829186cdd74c257a10c6b4fd17646a837791882414544cbd54313", size = 328846, upload-time = "2026-09-16T13:09:52.27Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/89/f0/9b403899ad32e7352b6b7cad78b9fc2197b647ec5c60b2b5933fec187b66/qibo-0.3.3-py3-none-any.whl", hash = "sha256:235b33a4f20939c7ecc27371c9f92b058e9d88a562af5be5962ce308dd00405c", size = 356174, upload-time = "2026-05-15T08:33:17.178Z" },
+    { url = "https://files.pythonhosted.org/packages/f1/43/be8c8d29a9b1f24adfd772031b118e054d1526bbfa1bfb393f632a342c9b/qibo-0.3.5-py3-none-any.whl", hash = "sha256:f77b95411f11e9376756466589960cd60a12ebc0e8893a497865a4d3d88c85b2", size = 369537, upload-time = "2026-09-16T13:09:51.153Z" },
 ]
 
 [[package]]
@@ -3862,11 +3862,11 @@ wheels = [
 
 [[package]]
 name = "tabulate"
-version = "0.9.0"
+version = "0.10.0"
 source = { registry = "https://pypi.org/simple" }
-sdist = { url = "https://files.pythonhosted.org/packages/ec/fe/802052aecb21e3797b8f7902564ab6ea0d60ff8ca23952079064155d1ae1/tabulate-0.9.0.tar.gz", hash = "sha256:0095b12bf5966de529c0feb1fa08671671b3368eec77d7ef7ab114be2c068b3c", size = 81090, upload-time = "2022-10-06T17:21:48.54Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/46/58/8c37dea7bbf769b20d58e7ace7e5edfe65b849442b00ffcdd56be88697c6/tabulate-0.10.0.tar.gz", hash = "sha256:e2cfde8f79420f6deeffdeda9aaec3b6bc5abce947655d17ac662b126e48a60d", size = 91754, upload-time = "2026-03-04T18:55:34.402Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/40/44/4a5f08c96eb108af5cb50b41f76142f0afa346dfa99d5296fe7202a11854/tabulate-0.9.0-py3-none-any.whl", hash = "sha256:024ca478df22e9340661486f85298cff5f6dcdba14f3813e8830015b9ed1948f", size = 35252, upload-time = "2022-10-06T17:21:44.262Z" },
+    { url = "https://files.pythonhosted.org/packages/99/55/db07de81b5c630da5cbf5c7df646580ca26dfaefa593667fc6f2fe016d2e/tabulate-0.10.0-py3-none-any.whl", hash = "sha256:f0b0622e567335c8fabaaa659f1b33bcb6ddfe2e496071b743aa113f8774f2d3", size = 39814, upload-time = "2026-03-04T18:55:31.284Z" },
 ]
 
 [[package]]
