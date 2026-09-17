@@ -144,6 +144,17 @@ def construct_circuits(
 ) -> tuple[list[QPROGRAM], tuple[DDDInfo, ...]]: ...
 
 
+@overload
+def construct_circuits(
+    circuit: QPROGRAM,
+    rule: Callable[[int], QPROGRAM],
+    rule_args: dict[str, Any] | None = None,
+    num_trials: int = 1,
+    *,
+    return_info: bool,
+) -> list[QPROGRAM] | tuple[list[QPROGRAM], tuple[DDDInfo, ...]]: ...
+
+
 def construct_circuits(
     circuit: QPROGRAM,
     rule: Callable[[int], QPROGRAM],

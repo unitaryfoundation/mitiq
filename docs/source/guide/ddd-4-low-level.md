@@ -145,6 +145,8 @@ how many non-empty DDD sequences were inserted, and the length of each candidate
 
 ```{code-block} python
 import logging
+
+logging.basicConfig()
 logging.getLogger("mitiq.ddd").setLevel(logging.INFO)
 ```
 

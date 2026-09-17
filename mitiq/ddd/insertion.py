@@ -238,6 +238,15 @@ def insert_ddd_sequences(
 ) -> tuple[QPROGRAM, DDDInfo]: ...
 
 
+@overload
+def insert_ddd_sequences(
+    circuit: QPROGRAM,
+    rule: Callable[[int], QPROGRAM],
+    *,
+    return_info: bool,
+) -> QPROGRAM | tuple[QPROGRAM, DDDInfo]: ...
+
+
 def insert_ddd_sequences(
     circuit: QPROGRAM,
     rule: Callable[[int], QPROGRAM],
