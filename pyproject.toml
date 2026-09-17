@@ -69,7 +69,7 @@ dev = [
     "pytest-xdist[psutil]==3.0.2",
     "pytest-cov==7.0.0",
     "ruff==0.15.6",
-    "mypy==1.0.0",
+    "mypy==2.1.0",
     "types-tabulate",
 ]
 docs = [
