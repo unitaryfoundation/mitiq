@@ -34,6 +34,7 @@ ZNE with circuit compilation: UCC + Mitiq <ucc.md>
 LRE vs ZNE: comparing performance and overhead <lre-zne-comparison.md>
 PEC on a Braket simulator: Mirror circuits <pec_tutorial.md>
 PEC with Cirq: Learning representations <learning-depolarizing-noise.md>
+PEA with Cirq: Randomized benchmarking circuits <pea_tutorial.md>
 Classical Shadows with Cirq: State Reconstruction and Observable Estimation <shadows_tutorial.md>
 Robust Shadow Estimation with Cirq: Pauli Twirling Calibration of Classical Shadows <rshadows_tutorial.md>
 DDD with Cirq: Mirror circuits <ddd_tutorial.md>
