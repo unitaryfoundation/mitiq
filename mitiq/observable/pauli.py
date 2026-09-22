@@ -304,7 +304,7 @@ class PauliStringCollection:
     def _expectation_from_measurements(
         self, measurements: MeasurementResult
     ) -> float:
-        total = 0.0
+        total: complex = 0.0
         for pauli in self.elements:
             bitstrings = measurements.filter_qubits(sorted(pauli.support()))
             value = (
@@ -313,7 +313,7 @@ class PauliStringCollection:
                 else 1.0
             )
             total += pauli.coeff * value
-        return total
+        return total.real
 
     def __eq__(self, other: Any) -> bool:
         return self._paulis_by_weight == other._paulis_by_weight
