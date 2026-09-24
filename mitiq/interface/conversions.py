@@ -305,6 +305,22 @@ def atomic_one_to_many_converter(
     return qprogram_modifier
 
 
+def _wrap_openqasm_string(circuit: QPROGRAM) -> QPROGRAM:
+    """Wrap a bare OpenQASM ``str`` in :class:`~mitiq.typing.QasmStringType`.
+
+    Downstream code (both here and inside :func:`convert_to_mitiq`) reads
+    ``circuit.__module__`` to dispatch by frontend. A plain ``str`` has no
+    ``__module__`` attribute; ``QasmStringType`` does. Wrapping preserves
+    the string content and lets the rest of the pipeline treat all inputs
+    uniformly.
+    """
+    if isinstance(circuit, str) and not hasattr(circuit, "__module__"):
+        from mitiq.typing import QasmStringType
+
+        return QasmStringType(circuit)
+    return circuit
+
+
 def accept_qprogram_and_validate(
     cirq_circuit_modifier: Callable[..., Any],
     one_to_many: bool = False,
@@ -328,6 +344,11 @@ def accept_qprogram_and_validate(
 
     @wraps(cirq_circuit_modifier)
     def new_function(circuit: QPROGRAM, *args: Any, **kwargs: Any) -> QPROGRAM:
+        # A bare ``str`` (OpenQASM program) has no ``__module__``. Mirror the
+        # wrap done in :func:`convert_to_mitiq` so downstream ``.__module__``
+        # reads on both the input and the returned circuit stay valid.
+        circuit = _wrap_openqasm_string(circuit)
+
         # Pre atomic conversion
         if "qiskit" in circuit.__module__:
             from qiskit.transpiler.passes import RemoveBarriers
