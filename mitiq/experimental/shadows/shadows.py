@@ -26,7 +26,7 @@ from mitiq.experimental.shadows.quantum_processing import (
 def pauli_twirling_calibrate(
     k_calibration: int = 1,
     locality: int | None = None,
-    zero_state_shadow_outcomes: tuple[list[str] | list[str]] | None = None,
+    zero_state_shadow_outcomes: tuple[list[str], list[str]] | None = None,
     qubits: list[cirq.Qid] | None = None,
     executor: Callable[[cirq.Circuit], MeasurementResult] | None = None,
     num_total_measurements_calibration: int | None = 20000,
@@ -37,9 +37,9 @@ def pauli_twirling_calibrate(
     The number of :math:`f_b` is :math:`2^n`, or :math:`\sum_{i=1}^d C_n^i` if
     the locality :math:`d` is given.
 
-    In the notation of :cite:`chen2021robust`, this function estimates
-    the coefficient :math:`f_b`, which are expansion coefficients of the
-    twirled channel :math:`\mathcal{M}=\sum_b f_b\Pi_b`.
+    In the notation of Chen et al. (https://arxiv.org/abs/2103.07510), this
+    function estimates the coefficient :math:`f_b`, which are expansion
+    coefficients of the twirled channel :math:`\mathcal{M}=\sum_b f_b\Pi_b`.
 
     In practice, the output of this function can be used as calibration data
     for performing the classical shadows protocol in a way which is more
@@ -69,17 +69,17 @@ def pauli_twirling_calibrate(
     if zero_state_shadow_outcomes is None:
         if qubits is None:
             raise TypeError(
-                "qubits must be specified when"
+                "qubits must be specified when "
                 "zero_state_shadow_outcomes is None."
             )
         if executor is None:
             raise TypeError(
-                "executor must be specified when"
+                "executor must be specified when "
                 "zero_state_shadow_outcomes is None."
             )
         if num_total_measurements_calibration is None:
             raise TypeError(
-                "num_total_measurements_calibration must be"
+                "num_total_measurements_calibration must be "
                 "specified when zero_state_shadow_outcomes is None."
             )
 
@@ -93,7 +93,7 @@ def pauli_twirling_calibrate(
             qubits=qubits,
         )
     else:
-        calibration_measurement_outcomes = zero_state_shadow_outcomes  # type: ignore
+        calibration_measurement_outcomes = zero_state_shadow_outcomes
     # get the median of means estimation of Pauli fidelities
     return get_pauli_fidelities(
         calibration_measurement_outcomes, k_calibration, locality=locality

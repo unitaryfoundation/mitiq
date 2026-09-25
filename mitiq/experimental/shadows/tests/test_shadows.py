@@ -8,6 +8,7 @@
 from numbers import Number
 
 import cirq
+import pytest
 
 import mitiq
 from mitiq import MeasurementResult
@@ -65,6 +66,41 @@ def test_pauli_twirling_calibrate():
 
     for value in result.values():
         assert isinstance(value, Number)
+
+
+def test_pauli_twirling_calibrate_missing_args():
+    with pytest.raises(
+        TypeError,
+        match=(
+            "qubits must be specified when zero_state_shadow_outcomes is None."
+        ),
+    ):
+        pauli_twirling_calibrate(qubits=None, zero_state_shadow_outcomes=None)
+
+    with pytest.raises(
+        TypeError,
+        match=(
+            "executor must be specified when "
+            "zero_state_shadow_outcomes is None."
+        ),
+    ):
+        pauli_twirling_calibrate(
+            qubits=qubits, executor=None, zero_state_shadow_outcomes=None
+        )
+
+    with pytest.raises(
+        TypeError,
+        match=(
+            "num_total_measurements_calibration must be "
+            "specified when zero_state_shadow_outcomes is None."
+        ),
+    ):
+        pauli_twirling_calibrate(
+            qubits=qubits,
+            executor=executor,
+            num_total_measurements_calibration=None,
+            zero_state_shadow_outcomes=None,
+        )
 
 
 def test_shadow_quantum_processing_return_type():
