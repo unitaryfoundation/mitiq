@@ -81,7 +81,7 @@ Follow these [instructions for contributing to the documentation](contributing_d
 
 ### Style guidelines
 
-Mitiq code is developed according the best practices of Python development.
+Mitiq code is developed according to the best practices of Python development.
 - Please get familiar with [PEP 8](https://peps.python.org/pep-0008/) (code) and [PEP 257](https://peps.python.org/pep-0257/) (docstrings) guidelines.
 - Use annotations for type hints in the objects' signature.
 - Write [google-style docstrings](https://google.github.io/styleguide/pyguide.html#383-functions-and-methods).
