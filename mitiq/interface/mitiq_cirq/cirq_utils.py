@@ -28,7 +28,8 @@ def sample_bitstrings(
 
     Args:
         circuit: The input Cirq circuit with measurements applied.
-        noise_model: Input Cirq noise model. Default is amplitude damping.
+        noise_model_function: Input Cirq noise model. Default is amplitude
+            damping.
         noise_level: Noise rate as a tuple of floats.
         sampler: Cirq simulator from which the result will be sampled from.
         shots: Number of measurements.
@@ -63,7 +64,8 @@ def compute_density_matrix(
 
     Args:
         circuit: The input Cirq circuit.
-        noise_model: Input Cirq noise model. Default is amplitude damping.
+        noise_model_function: Input Cirq noise model. Default is amplitude
+            damping.
         noise_level: Noise rate as a tuple of floats.
 
     Returns:

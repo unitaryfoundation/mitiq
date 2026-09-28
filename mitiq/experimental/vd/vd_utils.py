@@ -97,7 +97,8 @@ def _generate_diagonalizing_gate(num_copies: int = 2) -> cirq.Gate:
     ``num_copies=2`` is supported.
 
     Args:
-        num_qubits: The number of qubits that the gate acts on.
+        num_copies: The number of copies of the quantum state. Currently only
+            ``2`` is supported.
 
     Returns: The diagonalizing gate.
     """
@@ -174,7 +175,6 @@ def _apply_symmetric_observable(
         N_qubits: The number of qubits in each register.
         observable: The observable that should be applied.
             If None, the Z observable is used.
-        num_registers: The number of registers.
 
     Returns:
         The matrix or vector with the observable applied.
