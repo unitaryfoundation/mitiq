@@ -63,7 +63,7 @@ def closest_clifford(angles: npt.NDArray[np.float64]) -> float:
     """Returns the nearest Clifford angles to the input angles.
 
     Args:
-        non_Clifford_ops: Non-Clifford operations.
+        angles: The input angles.
     """
     ang_scaled = angles / (np.pi / 2)
     # if just one min value, return the corresponding nearest cliff.

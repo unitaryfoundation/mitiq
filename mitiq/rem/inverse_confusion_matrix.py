@@ -172,7 +172,7 @@ def mitigate_measurements(
     result and returns the adjusted measurements.
 
     Args:
-        noisy_results: The unmitigated ``MeasurementResult``.
+        noisy_result: The unmitigated ``MeasurementResult``.
         inverse_confusion_matrix: The inverse confusion matrix to apply to the
             probability vector estimated with noisy measurement results.
 
