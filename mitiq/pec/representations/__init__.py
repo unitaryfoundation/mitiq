@@ -14,7 +14,7 @@ from mitiq.pec.representations.depolarizing import (
 )
 
 from mitiq.pec.representations.damping import (
-    _represent_operation_with_amplitude_damping_noise,
+    represent_operation_with_amplitude_damping_noise,
     amplitude_damping_kraus,
 )
 
