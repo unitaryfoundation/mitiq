@@ -44,7 +44,7 @@ pennylane = [
 ]
 pyquil = [
     "pyquil>=4.17,<4.19",
-    "qbraid>=0.10,<0.13",
+    "qbraid>=0.10,<0.14",
 ]
 qibo = [
     "qibo>=0.2.16,<0.4.0",
