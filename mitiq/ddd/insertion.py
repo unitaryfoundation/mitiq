@@ -5,6 +5,7 @@
 
 """Tools to determine slack windows in circuits and to insert DDD sequences."""
 
+import logging
 from collections.abc import Callable
 
 import cirq
@@ -15,6 +16,8 @@ from cirq import Circuit, I, LineQubit, synchronize_terminal_measurements
 from mitiq import QPROGRAM
 from mitiq.interface import accept_qprogram_and_validate
 from mitiq.interface.conversions import convert_to_mitiq
+
+logger = logging.getLogger(__name__)
 
 
 def _get_circuit_mask(circuit: Circuit) -> npt.NDArray[np.int64]:
@@ -146,14 +149,20 @@ def _insert_ddd_sequences(
     # Copy to avoid mutating the input circuit
     circuit_with_ddd = circuit.copy()
     qubits = sorted(circuit.all_qubits())
+    num_idle_windows = 0
+    num_sequences_inserted = 0
     for moment_idx in range(len(circuit)):
         slack_column = slack_matrix[:, moment_idx]
         for row_index, slack_length in enumerate(slack_column):
             if slack_length > 1:
+                num_idle_windows += 1
                 ddd_sequence = cirq_rule(slack_length).transform_qubits(
                     {LineQubit(0): qubits[row_index]}
                 )
-                for idx, op in enumerate(ddd_sequence.all_operations()):
+                sequence_operations = list(ddd_sequence.all_operations())
+                if sequence_operations:
+                    num_sequences_inserted += 1
+                for idx, op in enumerate(sequence_operations):
                     moment = circuit_with_ddd[moment_idx + idx]
                     op_to_replace = moment.operation_at(*op.qubits)
 
@@ -163,4 +172,12 @@ def _insert_ddd_sequences(
                     circuit_with_ddd[moment_idx + idx] = moment.with_operation(
                         op
                     )
+    if num_idle_windows > 0:
+        logger.info(
+            "DDD inserted %d sequence(s) into %d idle window(s).",
+            num_sequences_inserted,
+            num_idle_windows,
+        )
+    else:
+        logger.info("DDD found no idle windows; no sequences were inserted.")
     return circuit_with_ddd

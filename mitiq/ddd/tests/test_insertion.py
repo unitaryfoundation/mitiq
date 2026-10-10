@@ -5,6 +5,8 @@
 
 """Unit tests for DDD slack windows and DDD insertion tools."""
 
+import logging
+
 import cirq
 import numpy as np
 import pyquil
@@ -317,3 +319,54 @@ def test_insert_sequences_with_qiskit_rule():
 
     result = insert_ddd_sequences(circuit, rule=qiskit_xx)
     assert result == expected
+
+
+def test_insert_ddd_sequences_logs_sequences_inserted(caplog):
+    """DDD insertion logs the number of idle windows and sequences."""
+    qubits = cirq.LineQubit.range(2)
+    # Qubit 1 is idle in the last two moments: one idle window of length 2.
+    circuit = cirq.Circuit(
+        cirq.ops.H.on_each(*qubits),
+        cirq.ops.H.on(qubits[0]),
+        cirq.ops.H.on(qubits[0]),
+    )
+
+    with caplog.at_level(logging.INFO, logger="mitiq.ddd.insertion"):
+        insert_ddd_sequences(circuit, rule=xx)
+
+    assert "DDD inserted 1 sequence(s) into 1 idle window(s)." in caplog.text
+
+
+def test_insert_ddd_sequences_logs_no_idle_windows(caplog):
+    """DDD insertion logs when the circuit has no idle windows."""
+    qubits = cirq.LineQubit.range(2)
+    # Every qubit is active in every moment, so there are no idle windows.
+    circuit = cirq.Circuit(
+        cirq.ops.H.on_each(*qubits),
+        cirq.ops.X.on_each(*qubits),
+    )
+
+    with caplog.at_level(logging.INFO, logger="mitiq.ddd.insertion"):
+        insert_ddd_sequences(circuit, rule=xx)
+
+    assert (
+        "DDD found no idle windows; no sequences were inserted." in caplog.text
+    )
+
+
+def test_insert_ddd_sequences_logs_empty_sequences(caplog):
+    """Windows too short for the rule are counted, but nothing inserted."""
+    qubits = cirq.LineQubit.range(2)
+    # Qubit 1 is idle in the last two moments: one idle window of length 2.
+    circuit = cirq.Circuit(
+        cirq.ops.H.on_each(*qubits),
+        cirq.ops.H.on(qubits[0]),
+        cirq.ops.H.on(qubits[0]),
+    )
+
+    # The xyxy rule needs a slack length of at least 4, so it returns an
+    # empty sequence for a window of length 2.
+    with caplog.at_level(logging.INFO, logger="mitiq.ddd.insertion"):
+        insert_ddd_sequences(circuit, rule=xyxy)
+
+    assert "DDD inserted 0 sequence(s) into 1 idle window(s)." in caplog.text
