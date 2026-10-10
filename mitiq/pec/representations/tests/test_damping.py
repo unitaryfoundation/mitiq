@@ -59,6 +59,15 @@ def test_amplitude_damping_representation_with_choi(
     assert np.allclose(ideal_choi, combination_choi, atol=1e-7)
 
 
+def test_represent_operation_with_multiple_qubits_raises():
+    q0, q1 = LineQubit.range(2)
+    circuit = Circuit(X(q0), X(q1))
+    with pytest.raises(
+        ValueError, match="Only single-qubit operations are supported."
+    ):
+        _represent_operation_with_amplitude_damping_noise(circuit, 0.1)
+
+
 def test_damping_kraus():
     expected = [[[1.0, 0.0], [0.0, 0.0]], [[0.0, 1.0], [0.0, 0.0]]]
     assert np.allclose(amplitude_damping_kraus(1, 1), expected)
