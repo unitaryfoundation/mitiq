@@ -10,10 +10,17 @@ import numpy as np
 import pytest
 from cirq import LineQubit
 
-from mitiq import QPROGRAM, SUPPORTED_PROGRAM_TYPES, Observable, PauliString
+from mitiq import (
+    QPROGRAM,
+    SUPPORTED_PROGRAM_TYPES,
+    Executor,
+    Observable,
+    PauliString,
+)
 from mitiq.cdr import (
     cdr_decorator,
     execute_with_cdr,
+    generate_training_circuits,
     linear_fit_function,
     linear_fit_function_no_intercept,
     mitigate_executor,
@@ -36,6 +43,43 @@ def simulate(circuit: QPROGRAM) -> np.ndarray:
     return compute_density_matrix(
         convert_to_mitiq(circuit)[0], noise_level=(0,)
     )
+
+
+@pytest.mark.parametrize(
+    "widths",
+    [
+        {},
+        {"sigma_select": 1.0},
+        {"sigma_replace": 1.0},
+        {"sigma_select": 1.0, "sigma_replace": 1.5},
+        {"sigma_select": 0.5, "sigma_replace": 0.5},
+    ],
+)
+def test_execute_with_cdr_gaussian_widths(widths: dict[str, float]) -> None:
+    q = LineQubit(0)
+    circuit = cirq.Circuit(
+        [cirq.H(q), cirq.rz(angle)(q)]
+        for angle in [np.pi / 3, np.pi / 5, np.pi / 7, np.pi / 9]
+    )
+    expected = generate_training_circuits(
+        circuit, 12, 0.5, "gaussian", "gaussian", 4, **widths
+    )
+    simulator = Executor(simulate)
+
+    execute_with_cdr(
+        circuit,
+        execute,
+        Observable(PauliString("Z")),
+        simulator=simulator,
+        num_training_circuits=12,
+        fraction_non_clifford=0.5,
+        method_select="gaussian",
+        method_replace="gaussian",
+        random_state=4,
+        **widths,
+    )
+
+    assert simulator.executed_circuits == expected
 
 
 @pytest.mark.parametrize("circuit_type", SUPPORTED_PROGRAM_TYPES.keys())
