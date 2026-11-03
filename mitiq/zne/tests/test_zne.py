@@ -236,6 +236,9 @@ def test_execute_with_zne_bad_arguments():
     with pytest.raises(TypeError, match="Argument `scale_noise` must be"):
         execute_with_zne(circ, executor, scale_noise=None)
 
+    with pytest.raises(ValueError, match="Argument `num_to_average` must"):
+        execute_with_zne(circ, executor, num_to_average=0)
+
 
 def test_error_zne_decorator():
     """Tests that the proper error is raised if the decorator is

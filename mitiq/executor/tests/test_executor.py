@@ -115,6 +115,21 @@ def test_executor_non_hermitian_observable():
         executor.evaluate(circuits, obs)
 
 
+def test_executor_non_hermitian_pauli_string_warns():
+    obs = PauliString("Z", coeff=1j)
+
+    q = cirq.LineQubit(0)
+    circuit = cirq.Circuit(cirq.X.on(q))
+
+    executor = Executor(executor_serial_typed)
+
+    # The non-Hermitian warning is emitted before the
+    # observable/executor compatibility check fails.
+    with pytest.warns(UserWarning, match="hermitian"):
+        with pytest.raises(ValueError, match="float-like"):
+            executor.evaluate(circuit, obs)
+
+
 def test_run_executor_single_circuit():
     collector = Executor(executor=executor_serial)
     circuit = cirq.Circuit(cirq.H(cirq.LineQubit(0)))
