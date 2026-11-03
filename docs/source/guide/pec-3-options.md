@@ -192,6 +192,23 @@ depolarizing_h_rep = represent_operation_with_local_depolarizing_noise(
 assert depolarizing_h_rep == h_rep
 ```
 
+Amplitude damping noise has an analytical representation too, given in
+{cite}`Takagi_2020_PRR`.
+
+```{code-cell} ipython3
+from mitiq.pec.representations.damping import represent_operation_with_amplitude_damping_noise
+
+damping_h_rep = represent_operation_with_amplitude_damping_noise(
+    ideal_operation,
+    noise_level=BASE_NOISE,
+)
+
+print(f"Amplitude damping representation:\n{damping_h_rep}")
+```
+
+Its basis contains a reset of the qubit, so it is only defined for frontends which can express one
+(Cirq, Qiskit and OpenQASM circuits). For the others, Mitiq raises an `UnsupportedCircuitError`.
+
 ### Qubit-independent representations
 
 It is possible to define a qubit-independent {class}`.OperationRepresentation` by setting the option `is_qubit_dependent` to `False`.

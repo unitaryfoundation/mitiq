@@ -33,9 +33,9 @@ from mitiq.pec.channels import (
     kraus_to_super,
 )
 from mitiq.pec.representations import (
-    _represent_operation_with_amplitude_damping_noise,
     amplitude_damping_kraus,
     global_depolarizing_kraus,
+    represent_operation_with_amplitude_damping_noise,
     represent_operation_with_local_depolarizing_noise,
 )
 from mitiq.pec.representations.optimal import (
@@ -302,7 +302,7 @@ def test_find_optimal_representation_single_qubit_amp_damping(circ_type):
             initial_guess=[0, 0, 0],
         )
         # Expected analytical result
-        expected_rep = _represent_operation_with_amplitude_damping_noise(
+        expected_rep = represent_operation_with_amplitude_damping_noise(
             ideal_op_native,
             noise_level,
         )
