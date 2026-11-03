@@ -8,6 +8,7 @@
 from numbers import Number
 
 import cirq
+import pytest
 
 import mitiq
 from mitiq import MeasurementResult
@@ -65,6 +66,34 @@ def test_pauli_twirling_calibrate():
 
     for value in result.values():
         assert isinstance(value, Number)
+
+
+@pytest.mark.parametrize(
+    "kwargs, message",
+    [
+        (
+            {"executor": executor, "num_total_measurements_calibration": 2},
+            "qubits must be specified when zero_state_shadow_outcomes",
+        ),
+        (
+            {"qubits": qubits, "num_total_measurements_calibration": 2},
+            "executor must be specified when zero_state_shadow_outcomes",
+        ),
+        (
+            {
+                "qubits": qubits,
+                "executor": executor,
+                "num_total_measurements_calibration": None,
+            },
+            "num_total_measurements_calibration must be specified when "
+            "zero_state_shadow_outcomes",
+        ),
+    ],
+)
+def test_pauli_twirling_calibrate_missing_arguments(kwargs, message):
+    """Tests the error messages for missing arguments are well formed."""
+    with pytest.raises(TypeError, match=message):
+        pauli_twirling_calibrate(**kwargs)
 
 
 def test_shadow_quantum_processing_return_type():

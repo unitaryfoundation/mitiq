@@ -324,6 +324,28 @@ def test_fold_with_channels_raises_error(fold_method):
         fold_global,
     ],
 )
+def test_fold_with_channels_error_message_is_well_formed(fold_method):
+    """Tests the error message for non-invertible channels has a space
+    between "not" and "terminal" (the two string literals making up the
+    message used to be joined without one).
+    """
+    qbit = LineQubit(0)
+    circ = Circuit(
+        ops.H.on(qbit), ops.depolarize(p=0.1).on(qbit), ops.measure(qbit)
+    )
+    with pytest.raises(
+        UnfoldableCircuitError, match="which are not terminal measurements"
+    ):
+        fold_method(circ, scale_factor=3.0)
+
+
+@pytest.mark.parametrize(
+    "fold_method",
+    [
+        fold_gates_at_random,
+        fold_global,
+    ],
+)
 def test_parametrized_circuit_folding(fold_method):
     """Checks if the circuit is folded as expected when the circuit operations
     have a valid inverse.
