@@ -43,7 +43,7 @@ def create_string(str_len: int, loc_list: list[int]) -> str:
 
 def valid_bitstrings(
     num_qubits: int, max_hamming_weight: int | None = None
-) -> set[str]:
+) -> list[str]:
     """Return all bitstrings on ``num_qubits`` bits up to a Hamming weight.
 
     Args:
@@ -52,8 +52,8 @@ def valid_bitstrings(
             (number of 1s) is at most this value are returned. Must be >= 1.
 
     Returns:
-        The set of all valid bitstrings on ``num_qubits`` bits, optionally
-        filtered to a maximum Hamming weight.
+        A lexicographically ordered list of all valid bitstrings on
+        ``num_qubits`` bits, optionally filtered to a maximum Hamming weight.
 
     Raises:
         ValueError: If ``max_hamming_weight`` is provided and less than 1.
@@ -64,11 +64,11 @@ def valid_bitstrings(
             f"Got {max_hamming_weight}."
         )
 
-    bitstrings = {
+    bitstrings = [
         bin(i)[2:].zfill(num_qubits)
         for i in range(2**num_qubits)
         if bin(i).count("1") <= (max_hamming_weight or num_qubits)
-    }
+    ]
     return bitstrings
 
 

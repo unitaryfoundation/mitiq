@@ -10,11 +10,6 @@ from collections.abc import Callable, Sequence
 import cirq
 import numpy as np
 
-try:
-    from tqdm import tqdm
-except ImportError:
-    tqdm = None
-
 from mitiq import MeasurementResult
 
 
@@ -118,12 +113,6 @@ def random_pauli_measurement(
         qubits=qubits,
     )
 
-    if tqdm is not None:
-        rotated_circuits = tqdm(
-            rotated_circuits,
-            desc="Measurement",
-            leave=False,
-        )
     results = [
         executor(rotated_circuit) for rotated_circuit in rotated_circuits
     ]
