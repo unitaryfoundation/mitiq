@@ -105,8 +105,8 @@ def execute_with_cdr(
     method_replace = kwargs.get("method_replace", "closest")
     random_state = kwargs.get("random_state", None)
     kwargs_for_training_set_generation = {
-        "sigma_select": kwargs.get("sigma_select"),
-        "sigma_replace": kwargs.get("sigma_replace"),
+        "sigma_select": kwargs.get("sigma_select", 0.5),
+        "sigma_replace": kwargs.get("sigma_replace", 0.5),
     }
 
     if num_fit_parameters is None:
@@ -138,7 +138,7 @@ def execute_with_cdr(
         method_select,
         method_replace,
         random_state,
-        kwargs=kwargs_for_training_set_generation,
+        **kwargs_for_training_set_generation,
     )
 
     # [Optionally] Scale noise in circuits.
