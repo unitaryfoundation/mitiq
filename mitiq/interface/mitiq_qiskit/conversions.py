@@ -131,7 +131,7 @@ def _remove_identity_from_idle(
 
     Args:
         circuit: Qiskit circuit to have identities removed
-        idle_indices: Set of altered idle qubits.
+        idle_qubits: Set of altered idle qubits.
     """
     to_delete_indices: list[int] = []
     for index, op in enumerate(circuit._data):

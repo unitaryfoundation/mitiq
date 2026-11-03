@@ -244,9 +244,10 @@ def _operation_to_choi(
     the input operation tree (including the effect of noise if present).
 
     Args:
-        circuit: The input circuit.
+        operation_tree: The input operation tree.
     Returns:
-        The density matrix of the Choi state associated to the input circuit.
+        The density matrix of the Choi state associated to the input
+        operation tree.
     """
     circuit = Circuit(operation_tree)
     return _circuit_to_choi(circuit)

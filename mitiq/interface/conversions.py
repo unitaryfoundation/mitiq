@@ -57,7 +57,7 @@ def register_mitiq_converters(
         convert_to_function: User specified function to convert to an
             unsupported circuit type. This function returns a Non-Mitiq
             circuit.
-        convert_function: User specified function to convert from an
+        convert_from_function: User specified function to convert from an
             unsupported circuit type. This function returns a Mitiq/Cirq
             circuit.
     """

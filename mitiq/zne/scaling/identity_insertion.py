@@ -24,7 +24,7 @@ def _check_scalable(input_circuit: Circuit) -> None:
     identity layers.
 
     Args:
-        circuit: Checks whether this circuit can be scaled.
+        input_circuit: Checks whether this circuit can be scaled.
 
     Raises:
         UnscalableCircuitError:
