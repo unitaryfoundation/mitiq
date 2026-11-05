@@ -1,7 +1,7 @@
 # Quantum Subspace Expansion
 
 Quantum Subspace Expansion (QSE) is an error mitigation technique in which
-we define a small subspace around the output state, then search this subspace for the state with the least amount of error. Regardless of the output state, the same procedure applies. The subspace is defined by a set of operators that act on the output state called the check operators. Subspace expansion can be used in conjunction with a stabilizer code, in which case the stabilizers, or a subset of them, can be used as the check operators.
+we define a small subspace around the output state, then search this subspace for the state with the least amount of error. Regardless of the output state, the same procedure applies. The subspace is defined by a set of operators that act on the output state called the check operators. Subspace expansion can be used in conjunction with a stabilizer code, in which case the stabilizers, or a subset of them, can be used as the check operators. Check operators can also come from problem symmetries or other known invariants of the ideal state; see [Finding and creating check operators](qse-3-options.md#finding-and-creating-check-operators).
 For more discussion of the theory of QSE, see the section [What is the theory behind QSE?](qse-5-theory.md).
 
 ```{figure} ../img/qse-data-flow-diagram-v2.png
