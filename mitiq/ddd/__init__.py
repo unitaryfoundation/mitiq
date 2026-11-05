@@ -10,6 +10,7 @@ from mitiq.ddd import rules
 from mitiq.ddd import insertion
 
 from mitiq.ddd.insertion import (
+    DDDInfo,
     get_slack_matrix_from_circuit_mask,
     insert_ddd_sequences,
 )

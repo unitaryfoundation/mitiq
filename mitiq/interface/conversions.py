@@ -247,31 +247,45 @@ def accept_any_qprogram_as_input(
 
 def atomic_converter(
     cirq_circuit_modifier: Callable[..., Any],
+    returns_extra: bool = False,
 ) -> Callable[..., Any]:
     """Decorator which allows for a function which inputs and returns a Cirq
     circuit to input and return any QPROGRAM.
 
     Args:
         cirq_circuit_modifier: Function which inputs a Cirq circuit and returns
-            a (potentially modified) Cirq circuit.
+            a (potentially modified) Cirq circuit. If ``returns_extra`` is
+            ``True``, it must return ``(circuit, extra)`` instead.
+        returns_extra: If ``True``, ``cirq_circuit_modifier`` is expected to
+            return ``(cirq.Circuit, extra)``. The converted circuit is
+            returned as ``(QPROGRAM, extra)``.
     """
 
     @wraps(cirq_circuit_modifier)
     def qprogram_modifier(
         circuit: QPROGRAM, *args: Any, **kwargs: Any
-    ) -> QPROGRAM:
+    ) -> QPROGRAM | tuple[QPROGRAM, Any]:
         # Convert to Mitiq representation.
         mitiq_circuit, input_circuit_type = convert_to_mitiq(circuit)
 
         # Modify the Cirq circuit.
-        scaled_circuit = cirq_circuit_modifier(mitiq_circuit, *args, **kwargs)
+        result = cirq_circuit_modifier(mitiq_circuit, *args, **kwargs)
+        if returns_extra:
+            scaled_circuit, extra = result
+        else:
+            scaled_circuit = result
+            extra = None
 
         if kwargs.get("return_mitiq") is True:
+            if returns_extra:
+                return scaled_circuit, extra
             return scaled_circuit
 
         # Base conversion back to input type.
         scaled_circuit = convert_from_mitiq(scaled_circuit, input_circuit_type)
 
+        if returns_extra:
+            return scaled_circuit, extra
         return scaled_circuit
 
     return qprogram_modifier
@@ -308,6 +322,7 @@ def atomic_one_to_many_converter(
 def accept_qprogram_and_validate(
     cirq_circuit_modifier: Callable[..., Any],
     one_to_many: bool = False,
+    returns_extra: bool = False,
 ) -> Callable[..., Any]:
     """This decorator performs two functions:
 
@@ -320,14 +335,21 @@ def accept_qprogram_and_validate(
         cirq_circuit_modifier: The function modifying a Cirq circuit.
         one_to_many: If True, ``cirq_circuit_modifier`` is expected to return
             a sequence of Cirq circuits instead of a single Cirq circuit.
+        returns_extra: If True, ``cirq_circuit_modifier`` is expected to
+            return ``(cirq.Circuit, extra)``. The converted result is
+            ``(QPROGRAM, extra)``. Cannot be combined with ``one_to_many``.
 
     Returns:
         The transformed function which can take any QPROGRAM, and performs
         circuit-level validation.
     """
+    if one_to_many and returns_extra:
+        raise ValueError("one_to_many and returns_extra cannot be combined.")
 
     @wraps(cirq_circuit_modifier)
-    def new_function(circuit: QPROGRAM, *args: Any, **kwargs: Any) -> QPROGRAM:
+    def new_function(
+        circuit: QPROGRAM, *args: Any, **kwargs: Any
+    ) -> QPROGRAM | list[QPROGRAM] | tuple[QPROGRAM, Any]:
         # Pre atomic conversion
         if "qiskit" in circuit.__module__:
             from qiskit.transpiler.passes import RemoveBarriers
@@ -344,14 +366,19 @@ def accept_qprogram_and_validate(
             # when converting to Cirq. Eventually, identities will be removed.
             idle_qubits = _add_identity_to_idle(circuit)
 
+        extra_value: Any = None
         if one_to_many:
             out_circuits = atomic_one_to_many_converter(cirq_circuit_modifier)(
                 circuit, *args, **kwargs
             )
         else:
-            out_circuit = atomic_converter(cirq_circuit_modifier)(
-                circuit, *args, **kwargs
-            )
+            converted = atomic_converter(
+                cirq_circuit_modifier, returns_extra=returns_extra
+            )(circuit, *args, **kwargs)
+            if returns_extra:
+                out_circuit, extra_value = converted
+            else:
+                out_circuit = converted
             out_circuits = [out_circuit]
 
         circuits_to_return = []
@@ -418,6 +445,8 @@ def accept_qprogram_and_validate(
 
         if not one_to_many:
             assert len(circuits_to_return) == 1
+            if returns_extra:
+                return circuits_to_return[0], extra_value
             return circuits_to_return[0]
 
         return circuits_to_return
