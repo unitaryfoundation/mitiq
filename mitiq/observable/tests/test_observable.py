@@ -381,3 +381,15 @@ def test_observable_rmul_unsupported_type_raises_type_error():
     obs = Observable(PauliString(spec="XI"))
     with pytest.raises(TypeError):
         "not a valid operand" * obs
+
+
+def test_empty_observable_expectation():
+    p1 = PauliString(spec="Z", coeff=1.0, support=(0,))
+    p2 = PauliString(spec="Z", coeff=-1.0, support=(0,))
+    obs = Observable(p1, p2)
+    assert obs.ngroups == 0
+
+    circuit = cirq.Circuit(cirq.H(cirq.LineQubit(0)))
+    executor = functools.partial(sample_bitstrings, noise_level=(0,))
+    res = obs.expectation(circuit, executor)
+    assert np.isclose(res, 0.0)

@@ -257,12 +257,15 @@ class Executor:
         elif self._executor_return_type in MeasurementResultLike:
             observable = cast(Observable, observable)
             all_results = cast(list[MeasurementResult], all_results)
-            results = [
-                observable._expectation_from_measurements(
-                    all_results[i : i + result_step]
-                )
-                for i in range(0, len(all_results), result_step)
-            ]
+            if result_step == 0:
+                results = [0.0 for _ in circuits]
+            else:
+                results = [
+                    observable._expectation_from_measurements(
+                        all_results[i : i + result_step]
+                    )
+                    for i in range(0, len(all_results), result_step)
+                ]
 
         else:
             raise ValueError(
