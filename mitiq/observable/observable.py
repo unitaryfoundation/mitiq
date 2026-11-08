@@ -214,7 +214,7 @@ class Observable:
         if density_matrix.shape != observable_matrix.shape:
             nqubits = int(np.log2(density_matrix.shape[0]))
             density_matrix = cirq.partial_trace(
-                np.reshape(density_matrix, newshape=[2, 2] * nqubits),
+                np.reshape(density_matrix, shape=[2, 2] * nqubits),
                 keep_indices=self.qubit_indices,
             ).reshape(observable_matrix.shape)
 
