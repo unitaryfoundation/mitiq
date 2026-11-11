@@ -432,6 +432,20 @@ def test_measurement_order(size):
     assert order == [(q[i], c[i]) for i in index_order]
 
 
+def test_measurement_order_invalid_measure_raises():
+    q, c = qiskit.QuantumRegister(2), qiskit.ClassicalRegister(1)
+    circuit = qiskit.QuantumCircuit(q, c)
+    # Manually append a measurement acting on two qubits, bypassing the
+    # validation performed by ``QuantumCircuit.measure``.
+    circuit._data.append(
+        qiskit.circuit.CircuitInstruction(
+            qiskit.circuit.Measure(), [q[0], q[1]], [c[0]]
+        )
+    )
+    with pytest.raises(ValueError, match="Only measurements with one qubit"):
+        _measurement_order(circuit)
+
+
 def test_add_identity_to_idle():
     circuit = qiskit.QuantumCircuit(9)
     circuit.x([0, 8])
@@ -460,6 +474,14 @@ def test_remove_identity_from_idle():
         for qubit in qubits:
             id_indices.append(qubit.index)
     assert id_indices == []
+
+
+def test_remove_identities_acting_on_idle_qubits():
+    circuit = qiskit.QuantumCircuit(2)
+    circuit.id(0)
+    circuit.x(1)
+    _remove_identity_from_idle(circuit, {circuit.qubits[0]})
+    assert [instr.operation.name for instr in circuit.data] == ["x"]
 
 
 def test_add_identity_to_idle_with_multiple_registers():

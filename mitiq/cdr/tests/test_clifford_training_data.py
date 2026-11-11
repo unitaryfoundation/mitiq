@@ -103,6 +103,16 @@ def test_replace(method):
     assert all(cirq.has_stabilizer_effect(op) for op in new_ops)
 
 
+def test_replace_default_random_state():
+    q = cirq.LineQubit(0)
+    ops = [cirq.ops.rz(0.01).on(q), cirq.ops.rz(-0.77).on(q)]
+
+    new_ops = _replace(non_clifford_ops=ops, method="closest")
+
+    assert len(new_ops) == len(ops)
+    assert all(cirq.has_stabilizer_effect(op) for op in new_ops)
+
+
 def test_map_to_near_clifford():
     q = cirq.LineQubit(0)
     ops = [cirq.ops.rz(np.pi / 2.0 + 0.01).on(q), cirq.ops.rz(-0.22).on(q)]
