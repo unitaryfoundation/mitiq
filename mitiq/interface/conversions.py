@@ -65,6 +65,15 @@ def register_mitiq_converters(
     TO_MITIQ_DICT[package_name] = convert_from_function
 
 
+def _wrap_openqasm_string(circuit: QPROGRAM) -> QPROGRAM:
+    """Give bare OpenQASM strings a module name for frontend dispatch."""
+    if isinstance(circuit, str) and not hasattr(circuit, "__module__"):
+        from mitiq.typing import QasmStringType
+
+        return QasmStringType(circuit)
+    return circuit
+
+
 def convert_to_mitiq(circuit: QPROGRAM) -> tuple[cirq.Circuit, str]:
     """Converts any valid input circuit to a mitiq circuit.
 
@@ -81,10 +90,7 @@ def convert_to_mitiq(circuit: QPROGRAM) -> tuple[cirq.Circuit, str]:
     """
     conversion_function: Callable[[Any], cirq.Circuit]
 
-    if isinstance(circuit, str) and hasattr(circuit, "__module__") is False:
-        from mitiq.typing import QasmStringType
-
-        circuit = QasmStringType(circuit)
+    circuit = _wrap_openqasm_string(circuit)
 
     try:
         package = circuit.__module__
@@ -305,22 +311,6 @@ def atomic_one_to_many_converter(
     return qprogram_modifier
 
 
-def _wrap_openqasm_string(circuit: QPROGRAM) -> QPROGRAM:
-    """Wrap a bare OpenQASM ``str`` in :class:`~mitiq.typing.QasmStringType`.
-
-    Downstream code (both here and inside :func:`convert_to_mitiq`) reads
-    ``circuit.__module__`` to dispatch by frontend. A plain ``str`` has no
-    ``__module__`` attribute; ``QasmStringType`` does. Wrapping preserves
-    the string content and lets the rest of the pipeline treat all inputs
-    uniformly.
-    """
-    if isinstance(circuit, str) and not hasattr(circuit, "__module__"):
-        from mitiq.typing import QasmStringType
-
-        return QasmStringType(circuit)
-    return circuit
-
-
 def accept_qprogram_and_validate(
     cirq_circuit_modifier: Callable[..., Any],
     one_to_many: bool = False,
@@ -344,9 +334,6 @@ def accept_qprogram_and_validate(
 
     @wraps(cirq_circuit_modifier)
     def new_function(circuit: QPROGRAM, *args: Any, **kwargs: Any) -> QPROGRAM:
-        # A bare ``str`` (OpenQASM program) has no ``__module__``. Mirror the
-        # wrap done in :func:`convert_to_mitiq` so downstream ``.__module__``
-        # reads on both the input and the returned circuit stay valid.
         circuit = _wrap_openqasm_string(circuit)
 
         # Pre atomic conversion
