@@ -227,12 +227,14 @@ class Executor:
             observable is not None
             and self._executor_return_type in MeasurementResultLike
         ):
+            result_step = observable.ngroups
+            if result_step == 0:
+                return [0.0] * len(circuits)
             all_circuits = [
                 circuit_with_measurements
                 for circuit in circuits
                 for circuit_with_measurements in observable.measure_in(circuit)
             ]
-            result_step = observable.ngroups
         else:
             all_circuits = circuits
             result_step = 1
@@ -257,15 +259,12 @@ class Executor:
         elif self._executor_return_type in MeasurementResultLike:
             observable = cast(Observable, observable)
             all_results = cast(list[MeasurementResult], all_results)
-            if result_step == 0:
-                results = [0.0 for _ in circuits]
-            else:
-                results = [
-                    observable._expectation_from_measurements(
-                        all_results[i : i + result_step]
-                    )
-                    for i in range(0, len(all_results), result_step)
-                ]
+            results = [
+                observable._expectation_from_measurements(
+                    all_results[i : i + result_step]
+                )
+                for i in range(0, len(all_results), result_step)
+            ]
 
         else:
             raise ValueError(
