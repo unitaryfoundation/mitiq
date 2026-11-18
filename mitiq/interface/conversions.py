@@ -65,6 +65,15 @@ def register_mitiq_converters(
     TO_MITIQ_DICT[package_name] = convert_from_function
 
 
+def _wrap_openqasm_string(circuit: QPROGRAM) -> QPROGRAM:
+    """Give bare OpenQASM strings a module name for frontend dispatch."""
+    if isinstance(circuit, str) and not hasattr(circuit, "__module__"):
+        from mitiq.typing import QasmStringType
+
+        return QasmStringType(circuit)
+    return circuit
+
+
 def convert_to_mitiq(circuit: QPROGRAM) -> tuple[cirq.Circuit, str]:
     """Converts any valid input circuit to a mitiq circuit.
 
@@ -81,10 +90,7 @@ def convert_to_mitiq(circuit: QPROGRAM) -> tuple[cirq.Circuit, str]:
     """
     conversion_function: Callable[[Any], cirq.Circuit]
 
-    if isinstance(circuit, str) and hasattr(circuit, "__module__") is False:
-        from mitiq.typing import QasmStringType
-
-        circuit = QasmStringType(circuit)
+    circuit = _wrap_openqasm_string(circuit)
 
     try:
         package = circuit.__module__
@@ -328,6 +334,8 @@ def accept_qprogram_and_validate(
 
     @wraps(cirq_circuit_modifier)
     def new_function(circuit: QPROGRAM, *args: Any, **kwargs: Any) -> QPROGRAM:
+        circuit = _wrap_openqasm_string(circuit)
+
         # Pre atomic conversion
         if "qiskit" in circuit.__module__:
             from qiskit.transpiler.passes import RemoveBarriers
