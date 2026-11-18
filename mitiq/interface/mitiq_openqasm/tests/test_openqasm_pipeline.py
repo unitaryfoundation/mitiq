@@ -6,13 +6,16 @@
 """End-to-end tests that error-mitigation entrypoints accept raw OpenQASM
 program strings."""
 
+import cirq
 import numpy as np
 import pytest
 from openqasm3 import parse
+from qiskit import QuantumCircuit
 
 from mitiq import ddd, lre, pec, zne
 from mitiq.ddd import rules
-from mitiq.interface import convert_to_mitiq
+from mitiq.interface import convert_from_mitiq, convert_to_mitiq
+from mitiq.interface.conversions import append_cirq_circuit_to_qprogram
 from mitiq.pec.representations import (
     represent_operations_in_circuit_with_local_depolarizing_noise,
 )
@@ -192,6 +195,88 @@ def test_zne_with_multi_qreg_qasm():
     """Circuit with more than one quantum register."""
     out = zne.construct_circuits(QASM3_MULTI_REG, scale_factors=[1.0, 3.0])
     assert_qasm_list(out, 2)
+
+
+@pytest.mark.parametrize(
+    "declarations",
+    [
+        'OPENQASM 2.0; include "qelib1.inc"; qreg data[2];',
+        'OPENQASM 3.0; include "stdgates.inc"; qubit[2] data;',
+    ],
+)
+@pytest.mark.parametrize("wire", [0, 1])
+def test_preserve_idle_wires_and_gate_targets(declarations, wire):
+    source = f"{declarations} h data[{wire}];"
+    circuit, frontend = convert_to_mitiq(source)
+    outputs = [
+        convert_from_mitiq(circuit, frontend),
+        *zne.construct_circuits(source, scale_factors=[1.0, 3.0]),
+        *ddd.construct_circuits(source, rule=rules.xx),
+        *generate_pauli_twirl_variants(source, num_circuits=2),
+    ]
+    for output in outputs:
+        native = QuantumCircuit.from_qasm_str(output)
+        assert [(r.name, r.size) for r in native.qregs] == [("data", 2)]
+        assert native.data
+        assert all(op.qubits == (native.qubits[wire],) for op in native.data)
+
+
+def test_preserve_register_order_and_two_qubit_operands():
+    source = """OPENQASM 2.0;
+        include "qelib1.inc";
+        qreg zeta[2]; qreg alpha[1]; qreg unused[3];
+        cx zeta[1], alpha[0];"""
+    circuit, frontend = convert_to_mitiq(source)
+    output = QuantumCircuit.from_qasm_str(
+        convert_from_mitiq(circuit, frontend)
+    )
+    assert [(r.name, r.size) for r in output.qregs] == [
+        ("zeta", 2),
+        ("alpha", 1),
+        ("unused", 3),
+    ]
+    (cx,) = output.data
+    assert cx.operation.name == "cx"
+    assert cx.qubits == (output.qubits[1], output.qubits[2])
+
+
+def test_preserve_measurement_and_classical_control_with_name_collision():
+    source = """OPENQASM 2.0; include "qelib1.inc";
+        qreg m_read_0[2]; creg read[1];
+        measure m_read_0[1] -> read[0];
+        if (read == 1) x m_read_0[0];"""
+    circuit, frontend = convert_to_mitiq(source)
+    native = QuantumCircuit.from_qasm_str(
+        convert_from_mitiq(circuit, frontend)
+    )
+    assert [(r.name, r.size) for r in native.qregs] == [("m_read_0", 2)]
+    measure, conditional = native.data
+    assert measure.operation.name == "measure"
+    assert measure.qubits == (native.qubits[1],)
+    assert conditional.qubits == (native.qubits[0],)
+    register, value = conditional.operation.condition
+    assert list(register) == list(measure.clbits)
+    assert value == 1
+
+
+def test_idle_register_and_wires_introduced_by_modifier():
+    source = 'OPENQASM 2.0; include "qelib1.inc"; qreg ancilla[3];'
+    circuit, frontend = convert_to_mitiq(source)
+    idle = QuantumCircuit.from_qasm_str(convert_from_mitiq(circuit, frontend))
+    assert [(r.name, r.size) for r in idle.qregs] == [("ancilla", 3)]
+    assert not idle.data
+
+    added = cirq.Circuit(
+        cirq.CNOT(cirq.LineQubit(0), cirq.NamedQubit("ancilla_2"))
+    )
+    native = QuantumCircuit.from_qasm_str(
+        append_cirq_circuit_to_qprogram(source, added)
+    )
+    assert [(r.name, r.size) for r in native.qregs] == [
+        ("ancilla", 3),
+        ("ancilla_", 1),
+    ]
+    assert native.data[0].qubits == (native.qubits[3], native.qubits[2])
 
 
 # ---- Negative test: garbage input surfaces CircuitConversionError,

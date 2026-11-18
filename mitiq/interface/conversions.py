@@ -251,6 +251,18 @@ def accept_any_qprogram_as_input(
     return accept_any_qprogram_function
 
 
+def _convert_back(
+    modified: cirq.Circuit, original: cirq.Circuit, input_type: str
+) -> QPROGRAM:
+    """Restore the input frontend and its quantum register layout."""
+    if input_type == "openqasm":
+        from mitiq.interface.mitiq_openqasm.conversions import _OpenQasmCircuit
+
+        if isinstance(original, _OpenQasmCircuit):
+            modified = _OpenQasmCircuit(modified, original.registers)
+    return convert_from_mitiq(modified, input_type)
+
+
 def atomic_converter(
     cirq_circuit_modifier: Callable[..., Any],
 ) -> Callable[..., Any]:
@@ -276,7 +288,9 @@ def atomic_converter(
             return scaled_circuit
 
         # Base conversion back to input type.
-        scaled_circuit = convert_from_mitiq(scaled_circuit, input_circuit_type)
+        scaled_circuit = _convert_back(
+            scaled_circuit, mitiq_circuit, input_circuit_type
+        )
 
         return scaled_circuit
 
@@ -304,7 +318,7 @@ def atomic_one_to_many_converter(
             return modified_circuits
 
         return [
-            convert_from_mitiq(modified_circuit, input_circuit_type)
+            _convert_back(modified_circuit, mitiq_circuit, input_circuit_type)
             for modified_circuit in modified_circuits
         ]
 
