@@ -21,7 +21,7 @@ def crx_decomp(gate: ParametrizedGate) -> list[Gate]:
     """Decomposes CRX gate to Cirq known gates.
 
     Args:
-        qibo_gate: CRX gate to decompose.
+        gate: CRX gate to decompose.
 
     Returns:
         List with gates that has the same effect as applying the original gate.
