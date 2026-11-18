@@ -80,11 +80,8 @@ def _represent_operation_with_amplitude_damping_noise(
         currently Cirq and Qiskit circuits, as well as the OpenQASM 2.0
         strings returned by
         ``mitiq.interface.convert_from_mitiq(circuit, "openqasm")``.
-        For the other frontends a ``CircuitConversionError`` is raised
-        instead of returning a physically incorrect representation:
-        the Cirq-to-pyQuil converter does not support
-        ``cirq.ResetChannel`` (although pyQuil itself has a ``RESET``
-        instruction), the Braket circuit model has no reset instruction,
+        The pyQuil conversion cannot round-trip a qubit-specific ``RESET``
+        through Cirq. The Braket circuit model has no reset instruction,
         the Qibo OpenQASM parser rejects reset statements, and the
         PennyLane converter silently discards the reset.
     """
@@ -112,7 +109,6 @@ def _represent_operation_with_amplitude_damping_noise(
         )
         for op in post_ops
     ]
-    noisy_operations = [NoisyOperation(c) for c in imp_op_circuits]
 
     # The last basis element ends with a non-unitary reset. Some frontend
     # conversions accept it but silently delete the reset, which would make
@@ -123,7 +119,10 @@ def _represent_operation_with_amplitude_damping_noise(
         isinstance(op.gate, ResetChannel)
         for op in converted_circ.all_operations()
     )
-    roundtrip_ops = list(noisy_operations[-1].circuit.all_operations())
+    # NoisyOperation wraps conversion failures in TypeError. Validate the
+    # reset first so callers receive the documented CircuitConversionError.
+    reset_basis, _ = convert_to_mitiq(imp_op_circuits[-1])
+    roundtrip_ops = list(reset_basis.all_operations())
     num_roundtrip_resets = sum(
         isinstance(op.gate, ResetChannel) for op in roundtrip_ops
     )
@@ -136,6 +135,7 @@ def _represent_operation_with_amplitude_damping_noise(
             "amplitude damping representation."
         )
 
+    noisy_operations = [NoisyOperation(c) for c in imp_op_circuits]
     return OperationRepresentation(
         ideal_operation, noisy_operations, etas, is_qubit_dependent
     )

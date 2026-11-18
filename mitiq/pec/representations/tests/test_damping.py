@@ -89,9 +89,7 @@ def test_amplitude_damping_representation_unsupported_frontend_raises(
     raise instead of returning a physically wrong representation.
 
     The pyquil, braket and qibo conversions raise while converting the
-    reset-bearing basis circuit (for pyquil the blocker is the
-    Cirq-to-pyQuil converter, not the pyQuil language, which has a
-    ``RESET`` instruction). The pennylane conversion instead succeeds
+    reset-bearing basis circuit. The pennylane conversion succeeds
     and silently deletes the reset; since the reset coefficient
     ``eta_2 = -noise / (1 - noise)`` vanishes at ``noise = 0``, the loss
     is invisible in any zero-noise check, so the raise must be
