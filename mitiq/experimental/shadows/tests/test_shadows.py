@@ -73,11 +73,13 @@ def test_pauli_twirling_calibrate():
     [
         (
             {"executor": executor, "num_total_measurements_calibration": 2},
-            "qubits must be specified when zero_state_shadow_outcomes",
+            "qubits must be specified when "
+            "zero_state_shadow_outcomes is None.",
         ),
         (
             {"qubits": qubits, "num_total_measurements_calibration": 2},
-            "executor must be specified when zero_state_shadow_outcomes",
+            "executor must be specified when "
+            "zero_state_shadow_outcomes is None.",
         ),
         (
             {
@@ -86,7 +88,7 @@ def test_pauli_twirling_calibrate():
                 "num_total_measurements_calibration": None,
             },
             "num_total_measurements_calibration must be specified when "
-            "zero_state_shadow_outcomes",
+            "zero_state_shadow_outcomes is None.",
         ),
     ],
 )
