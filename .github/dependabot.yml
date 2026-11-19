@@ -6,8 +6,6 @@ updates:
     directory: "/"
     schedule:
       interval: "daily"
-    allow:
-      - dependency-type: "all"
     exclude-paths:
       - "INTEGRATIONS.txt"
     ignore:

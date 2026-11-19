@@ -186,7 +186,7 @@ def sample_bitstrings(
     noise_model: NoiseModel | None = None,
     shots: int = 10000,
     measure_all: bool = False,
-    qubit_indices: tuple[int] | None = None,
+    qubit_indices: tuple[int, ...] | None = None,
 ) -> MeasurementResult:
     """Returns measurement bitstrings obtained from executing the input circuit
     on a Qiskit backend (passed as an argument).
@@ -253,7 +253,7 @@ def compute_expectation_value_on_noisy_backend(
     noise_model: NoiseModel | None = None,
     shots: int = 10000,
     measure_all: bool = False,
-    qubit_indices: tuple[int] | None = None,
+    qubit_indices: tuple[int, ...] | None = None,
 ) -> complex:
     """Returns the noisy expectation value of the input Mitiq observable
     obtained from executing the input circuit on a Qiskit backend.

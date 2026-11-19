@@ -8,6 +8,7 @@
 from numbers import Number
 
 import cirq
+import pytest
 
 import mitiq
 from mitiq import MeasurementResult
@@ -67,6 +68,36 @@ def test_pauli_twirling_calibrate():
         assert isinstance(value, Number)
 
 
+@pytest.mark.parametrize(
+    "kwargs, message",
+    [
+        (
+            {"executor": executor, "num_total_measurements_calibration": 2},
+            "qubits must be specified when "
+            "zero_state_shadow_outcomes is None.",
+        ),
+        (
+            {"qubits": qubits, "num_total_measurements_calibration": 2},
+            "executor must be specified when "
+            "zero_state_shadow_outcomes is None.",
+        ),
+        (
+            {
+                "qubits": qubits,
+                "executor": executor,
+                "num_total_measurements_calibration": None,
+            },
+            "num_total_measurements_calibration must be specified when "
+            "zero_state_shadow_outcomes is None.",
+        ),
+    ],
+)
+def test_pauli_twirling_calibrate_missing_arguments(kwargs, message):
+    """Tests the error messages for missing arguments are well formed."""
+    with pytest.raises(TypeError, match=message):
+        pauli_twirling_calibrate(**kwargs)
+
+
 def test_shadow_quantum_processing_return_type():
     result = shadow_quantum_processing(
         circuit, executor, num_total_measurements_shadow=10
@@ -77,6 +108,24 @@ def test_shadow_quantum_processing_return_type():
     assert len(result) == 2
     assert isinstance(result[0], list)
     assert isinstance(result[1], list)
+
+
+@pytest.mark.parametrize(
+    "fidelities",
+    [
+        {"00": 1, "01": 1 / 3, "10": 1 / 3},
+        {"00": 1, "01": 1 / 3, "10": 1 / 3, "111": 1 / 9},
+        {},
+    ],
+    ids=["locality-one", "wrong-mask", "empty"],
+)
+def test_reconstruction_requires_all_support_masks(fidelities):
+    with pytest.raises(ValueError, match="locality=2"):
+        classical_post_processing(
+            (["00"], ["ZZ"]),
+            calibration_results=fidelities,
+            state_reconstruction=True,
+        )
 
 
 def test_classical_post_processing():

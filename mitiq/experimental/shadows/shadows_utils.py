@@ -11,9 +11,9 @@
 
 from collections.abc import Generator
 
+import cirq
 import numpy as np
 import numpy.typing as npt
-from scipy.linalg import sqrtm
 
 import mitiq
 
@@ -43,7 +43,7 @@ def create_string(str_len: int, loc_list: list[int]) -> str:
 
 def valid_bitstrings(
     num_qubits: int, max_hamming_weight: int | None = None
-) -> set[str]:
+) -> list[str]:
     """Return all bitstrings on ``num_qubits`` bits up to a Hamming weight.
 
     Args:
@@ -52,8 +52,8 @@ def valid_bitstrings(
             (number of 1s) is at most this value are returned. Must be >= 1.
 
     Returns:
-        The set of all valid bitstrings on ``num_qubits`` bits, optionally
-        filtered to a maximum Hamming weight.
+        A lexicographically ordered list of all valid bitstrings on
+        ``num_qubits`` bits, optionally filtered to a maximum Hamming weight.
 
     Raises:
         ValueError: If ``max_hamming_weight`` is provided and less than 1.
@@ -64,11 +64,11 @@ def valid_bitstrings(
             f"Got {max_hamming_weight}."
         )
 
-    bitstrings = {
+    bitstrings = [
         bin(i)[2:].zfill(num_qubits)
         for i in range(2**num_qubits)
         if bin(i).count("1") <= (max_hamming_weight or num_qubits)
-    }
+    ]
     return bitstrings
 
 
@@ -78,6 +78,11 @@ def fidelity(
     """
     Calculate the fidelity between two states.
 
+    Delegates to :func:`cirq.fidelity`, which uses the squared convention: the
+    fidelity of a state with itself is 1, and the fidelity between a pure state
+    :math:`|\\psi\\rangle` and a density matrix is
+    :math:`\\langle\\psi|\\rho|\\psi\\rangle`.
+
     Args:
         sigma: A state in terms of square matrix or vector.
         rho: A state in terms square matrix or vector.
@@ -85,17 +90,20 @@ def fidelity(
     Returns:
         Scalar corresponding to the fidelity.
     """
-    if sigma.ndim == 1 and rho.ndim == 1:
-        val = np.abs(np.dot(sigma.conj(), rho)) ** 2.0
-    elif sigma.ndim == 1 and rho.ndim == 2:
-        val = np.abs(sigma.conj().T @ rho @ sigma)
-    elif sigma.ndim == 2 and rho.ndim == 1:
-        val = np.abs(rho.conj().T @ sigma @ rho)
-    elif sigma.ndim == 2 and rho.ndim == 2:
-        val = np.abs(np.trace(sqrtm(sigma) @ rho @ sqrtm(sigma)))
-    else:
+    if sigma.ndim not in (1, 2) or rho.ndim not in (1, 2):
         raise ValueError("Invalid input dimensions")
-    return float(val)
+
+    # Validation stays off because calibrated shadow reconstructions are
+    # unnormalized PTM vectors rather than states. The explicit ``qid_shape``
+    # lets Cirq tell a density matrix apart from a state tensor.
+    return float(
+        cirq.fidelity(
+            sigma,
+            rho,
+            qid_shape=(sigma.shape[0],),
+            validate=False,
+        )
+    )
 
 
 def batch_calibration_data(

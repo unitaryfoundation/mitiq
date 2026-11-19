@@ -42,6 +42,7 @@ from mitiq.utils import (
     arbitrary_tensor_product,
     matrix_kronecker_product,
     matrix_to_vector,
+    operator_from_ptm_vector,
     operator_ptm_vector_rep,
     qem_methods,
     vector_to_matrix,
@@ -441,6 +442,21 @@ def test_operator_ptm_vector_rep_raised_error():
         )
 
 
+@pytest.mark.parametrize("num_qubits", [1, 2, 3])
+def test_operator_from_ptm_vector_round_trip(num_qubits):
+    rng = np.random.RandomState(13)
+    dim = 2**num_qubits
+    opt = rng.rand(dim, dim) + 1j * rng.rand(dim, dim)
+    np.testing.assert_array_almost_equal(
+        operator_from_ptm_vector(operator_ptm_vector_rep(opt)), opt
+    )
+
+
+def test_operator_from_ptm_vector_raised_error():
+    with pytest.raises(TypeError, match="Input length must be a power of 4"):
+        operator_from_ptm_vector(np.array([1.0, 0.0, 0.0]))
+
+
 def test_qem_methods_basic():
     for module, name in qem_methods().items():
         prefix, suffix = module.split(".")
@@ -502,3 +518,38 @@ def test_compare_cost_with_shots(circuit_type):
     qem_native = [convert_from_mitiq(c, circuit_type) for c in qem_circuits]
     cost = compare_cost(base_native, qem_native, shots=100)
     assert cost["shots_per_circuit"] == 50
+
+
+@pytest.mark.parametrize("circuit_type", SUPPORTED_PROGRAM_TYPES.keys())
+def test_compare_cost_counts_multi_qubit_gates(circuit_type):
+    """Gates on three or more qubits are counted under ``nq``.
+
+    ``test_compare_cost_basic`` asserts ``"nq": 0``, so the arity counters
+    have only ever been exercised on 1- and 2-qubit gates. Each frontend
+    counts arity with its own code path, and this pins that all of them
+    agree on a 3-qubit gate rather than silently dropping it or filing it
+    under ``2q``.
+    """
+    q0, q1, q2 = cirq.LineQubit.range(3)
+    base = cirq.Circuit(
+        cirq.H(q0),
+        cirq.CNOT(q0, q1),
+        cirq.TOFFOLI(q0, q1, q2),
+        cirq.measure(q0, q1, q2),
+    )
+    qem_circuits = [
+        base,
+        cirq.Circuit(
+            cirq.H(q0),
+            cirq.CNOT(q0, q1),
+            cirq.TOFFOLI(q0, q1, q2),
+            cirq.CSWAP(q0, q1, q2),
+            cirq.measure(q0, q1, q2),
+        ),
+    ]
+    base_native = convert_from_mitiq(base, circuit_type)
+    qem_native = [convert_from_mitiq(c, circuit_type) for c in qem_circuits]
+
+    cost = compare_cost(base_native, qem_native)
+
+    assert cost["gate_overhead"] == {"1q": 1, "2q": 1, "nq": 2}

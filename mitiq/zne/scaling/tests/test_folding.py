@@ -186,6 +186,47 @@ def test_fold_all_exclude_with_strings():
     assert _equal(folded, correct, require_qubit_equality=True)
 
 
+def test_fold_all_exclude_rotations_with_strings():
+    qreg = LineQubit.range(2)
+    rx_op = ops.rx(0.1).on(qreg[0])
+    ry_op = ry(0.2).on(qreg[1])
+    cnot_op = ops.CNOT(*qreg)
+    circuit = Circuit([rx_op], [ry_op], [cnot_op])
+
+    folded = fold_all(circuit, scale_factor=3.0, exclude={"rx"})
+    correct = Circuit(
+        [rx_op],
+        [ry_op, inverse(ry_op), ry_op],
+        [cnot_op] * 3,
+    )
+    assert _equal(folded, correct, require_qubit_equality=True)
+
+    folded = fold_all(circuit, scale_factor=3.0, exclude={"rx", "ry"})
+    correct = Circuit([rx_op], [ry_op], [cnot_op] * 3)
+    assert _equal(folded, correct, require_qubit_equality=True)
+
+    # Rotations about a different axis are still folded.
+    folded = fold_all(circuit, scale_factor=3.0, exclude={"rz"})
+    correct = Circuit(
+        [rx_op, ry_op],
+        [inverse(rx_op), inverse(ry_op)],
+        [rx_op, ry_op],
+        [cnot_op] * 3,
+    )
+    assert _equal(folded, correct, require_qubit_equality=True)
+
+
+def test_fold_all_exclude_does_not_match_powers_of_a_gate():
+    qubit = LineQubit(0)
+    h_op = ops.H.on(qubit)
+    h_half_op = (ops.H**0.5).on(qubit)
+    circuit = Circuit([h_op], [h_half_op])
+
+    folded = fold_all(circuit, scale_factor=3.0, exclude={"H"})
+    correct = Circuit([h_op], [h_half_op, inverse(h_half_op), h_half_op])
+    assert _equal(folded, correct, require_qubit_equality=True)
+
+
 @pytest.mark.parametrize("skip", (frozenset((0, 1)), frozenset((0, 3, 7))))
 def test_fold_all_skip_moments(skip):
     circuit = testing.random_circuit(
@@ -272,6 +313,28 @@ def test_fold_with_channels_raises_error(fold_method):
     )
     with pytest.raises(
         UnfoldableCircuitError, match="Circuit contains non-invertible"
+    ):
+        fold_method(circ, scale_factor=3.0)
+
+
+@pytest.mark.parametrize(
+    "fold_method",
+    [
+        fold_gates_at_random,
+        fold_global,
+    ],
+)
+def test_fold_with_channels_error_message_is_well_formed(fold_method):
+    """Tests the error message for non-invertible channels has a space
+    between "not" and "terminal" (the two string literals making up the
+    message used to be joined without one).
+    """
+    qbit = LineQubit(0)
+    circ = Circuit(
+        ops.H.on(qbit), ops.depolarize(p=0.1).on(qbit), ops.measure(qbit)
+    )
+    with pytest.raises(
+        UnfoldableCircuitError, match="which are not terminal measurements"
     ):
         fold_method(circ, scale_factor=3.0)
 
@@ -1234,6 +1297,24 @@ def test_create_weight_mask_with_fidelities():
     fidelities = {"waitgate": 1.0, "H": 0.1}
     with pytest.warns(UserWarning, match="don't currently support"):
         weight_mask = _create_weight_mask(circ, fidelities)
+
+
+def test_create_weight_mask_with_rotation_fidelities():
+    qreg = LineQubit.range(2)
+    circ = Circuit(
+        ops.rx(0.1).on(qreg[0]),
+        ry(0.2).on(qreg[1]),
+        rz(0.3).on(qreg[0]),
+        ops.CNOT.on(*qreg),
+    )
+    fidelities = {"rx": 0.9, "ry": 0.8, "rz": 0.7, "CNOT": 0.6}
+    weight_mask = _create_weight_mask(circ, fidelities)
+    assert np.allclose(weight_mask, [0.1, 0.2, 0.3, 0.4])
+
+    # Rotation keys override the "single" key.
+    fidelities = {"single": 1.0, "rx": 0.9}
+    weight_mask = _create_weight_mask(circ, fidelities)
+    assert np.allclose(weight_mask, [0.1, 0.0, 0.0, 0.99**2])
 
 
 def test_create_fold_mask_with_real_scale_factors_at_random():

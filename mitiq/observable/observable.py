@@ -200,7 +200,7 @@ class Observable:
 
     def _expectation_from_measurements(
         self, measurements: list[MeasurementResult]
-    ) -> float:
+    ) -> complex:
         return sum(
             pset._expectation_from_measurements(bitstrings)
             for (pset, bitstrings) in zip(self._groups, measurements)
@@ -208,13 +208,13 @@ class Observable:
 
     def _expectation_from_density_matrix(
         self, density_matrix: npt.NDArray[np.complex64]
-    ) -> float:
+    ) -> complex:
         observable_matrix = self.matrix()
 
         if density_matrix.shape != observable_matrix.shape:
             nqubits = int(np.log2(density_matrix.shape[0]))
             density_matrix = cirq.partial_trace(
-                np.reshape(density_matrix, newshape=[2, 2] * nqubits),
+                np.reshape(density_matrix, [2, 2] * nqubits),
                 keep_indices=self.qubit_indices,
             ).reshape(observable_matrix.shape)
 
