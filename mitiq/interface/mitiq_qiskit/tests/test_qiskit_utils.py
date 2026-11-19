@@ -250,8 +250,9 @@ def test_compute_expectation_value_on_noisy_backend_with_noise_model():
         noise_model=initialized_depolarizing_noise(0),
     )
 
-    assert isinstance(noiseless_expval, float)
-    assert np.isclose(noiseless_expval, 1.0)
+    assert isinstance(noiseless_expval, complex)
+    assert np.isclose(np.imag(noiseless_expval), 0.0)
+    assert np.isclose(np.real(noiseless_expval), 1.0)
 
     # Now we try with noise
     expval = compute_expectation_value_on_noisy_backend(
@@ -260,9 +261,10 @@ def test_compute_expectation_value_on_noisy_backend_with_noise_model():
         noise_model=initialized_depolarizing_noise(0.01),
     )
 
-    assert isinstance(expval, float)
+    assert isinstance(expval, complex)
+    assert np.isclose(np.imag(expval), 0.0)
     # With noise the result is non-deterministic
-    assert 0.9 < expval < 1.0
+    assert 0.9 < np.real(expval) < 1.0
 
 
 def test_compute_expectation_value_on_noisy_backend_with_qiskit_backend():
@@ -277,6 +279,7 @@ def test_compute_expectation_value_on_noisy_backend_with_qiskit_backend():
         backend=FakeLimaV2(),
     )
 
-    assert isinstance(expval, float)
+    assert isinstance(expval, complex)
+    assert np.isclose(np.imag(expval), 0.0)
     # With noise the result is non-deterministic
-    assert 0.9 < expval < 1.0
+    assert 0.9 < np.real(expval) < 1.0
