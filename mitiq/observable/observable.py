@@ -200,7 +200,7 @@ class Observable:
 
     def _expectation_from_measurements(
         self, measurements: list[MeasurementResult]
-    ) -> float:
+    ) -> complex:
         return sum(
             pset._expectation_from_measurements(bitstrings)
             for (pset, bitstrings) in zip(self._groups, measurements)
@@ -208,7 +208,7 @@ class Observable:
 
     def _expectation_from_density_matrix(
         self, density_matrix: npt.NDArray[np.complex64]
-    ) -> float:
+    ) -> complex:
         observable_matrix = self.matrix()
 
         if density_matrix.shape != observable_matrix.shape:
