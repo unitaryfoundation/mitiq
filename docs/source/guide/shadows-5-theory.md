@@ -111,9 +111,15 @@ $$\Pi_{b_i} = \begin{cases} |\sigma_0\rangle\!\rangle\langle\!\langle\sigma_0| &
 [^ptm]: The double-ket notation refers to the Pauli transfer matrix (PTM), or Liouville, representation: a linear operator $A$ on the Hilbert space of $n$ qubits is written as a vector $|A\rangle\!\rangle$ with components $\langle\!\langle\sigma_a|A\rangle\!\rangle = \mathrm{Tr}(\sigma_a^\dagger A)$ in the basis of normalized Pauli operators $\sigma_a = P_a/\sqrt{2^n}$. In particular, $\sigma_0 = \mathbb{I}/\sqrt{2}$ is the normalized single-qubit identity, so $|\sigma_0\rangle\!\rangle\langle\!\langle\sigma_0|$ projects onto it.
 
 The expansion coefficients $\{\hat{f}_b\}_b$ are the **Pauli fidelities**.
-The single-round estimator is:
+In calibration round $r$, let $P_i^{(r)}$ be the sampled Pauli basis on
+qubit $i$ and $s_i^{(r)}$ its measured bit. The support mask $b$ selects which
+qubits contribute to the estimate:
 
-$$\hat{f}^{(r)}_b = \prod_{i=1}^n \langle b_i | \mathcal{U}_i P_Z^{b_i} \mathcal{U}_i^\dagger | b_i\rangle, \qquad \mathcal{U}_i \in \mathcal{C}_1,\ b_i \in \{0, 1\}.$$
+$$\hat{f}^{(r)}_b = \prod_{i:\,b_i=1} \mathbf{1}\!\left[P_i^{(r)}=Z\right] (-1)^{s_i^{(r)}}.$$
+
+For example, a single selected qubit measured in the $Z$ basis contributes
+$+1$ for outcome $0$ and $-1$ for outcome $1$. An $X$ or $Y$ basis on that
+qubit gives zero. The empty support mask always gives one.
 
 The final estimate uses the median-of-means estimator over $R = NK$ calibration rounds:
 
@@ -133,5 +139,8 @@ Once the Pauli fidelities $\{\hat{f}_b\}$ are estimated, the calibrated inverse 
 $$\widehat{\mathcal{M}}^{-1} = \sum_{b \in \{0,1\}^n} \hat{f}_b^{-1}\, \Pi_b.$$
 
 The robust shadow protocol then proceeds exactly as the standard protocol, with the ideal inverse channel replaced by $\widehat{\mathcal{M}}^{-1}$.
-This yields an unbiased estimator even in the presence of noise, at the cost of additional calibration measurements.
+With the exact, invertible noisy channel, the mean reconstructed snapshot equals
+the prepared state. In practice, finite calibration data introduce uncertainty
+in the fidelities. Taking their reciprocals can bias the estimate
+{cite}`chen2021robust`.
 
