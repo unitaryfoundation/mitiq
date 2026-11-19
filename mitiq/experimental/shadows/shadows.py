@@ -37,7 +37,7 @@ def pauli_twirling_calibrate(
     The number of :math:`f_b` is :math:`2^n`, or :math:`\sum_{i=1}^d C_n^i` if
     the locality :math:`d` is given.
 
-    In the notation of Chen et al. (https://arxiv.org/abs/2103.07510), this
+    In the notation of Chen et al. (https://arxiv.org/abs/2011.09636), this
     function estimates the coefficient :math:`f_b`, which are expansion
     coefficients of the twirled channel :math:`\mathcal{M}=\sum_b f_b\Pi_b`.
 
