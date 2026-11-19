@@ -112,7 +112,22 @@ def test_executor_non_hermitian_observable():
     executor = Executor(executor_measurements_typed)
 
     with pytest.warns(UserWarning, match="hermitian"):
-        executor.evaluate(circuits, obs)
+        results = executor.evaluate(circuits, obs)
+
+    assert results == [1j, -1j]
+
+
+@pytest.mark.parametrize("force_run_all", [True, False])
+def test_empty_observable_skips_execution(force_run_all):
+    circuit = cirq.Circuit(cirq.H(cirq.LineQubit(0)))
+    executor = Executor(executor_measurements_typed)
+
+    results = executor.evaluate(
+        [circuit, circuit], Observable(), force_run_all=force_run_all
+    )
+
+    assert results == [0.0, 0.0]
+    assert executor.calls_to_executor == 0
 
 
 def test_executor_non_hermitian_pauli_string_warns():

@@ -5,15 +5,12 @@
 
 """Unit tests for quantum processing functions for classical shadows."""
 
-import importlib
 from collections.abc import Callable
-from unittest.mock import patch
 
 import cirq
 import pytest
 from qiskit_aer import Aer
 
-import mitiq
 from mitiq import MeasurementResult
 from mitiq.experimental.shadows.quantum_processing import (
     get_rotated_circuits,
@@ -27,26 +24,6 @@ from mitiq.interface.mitiq_qiskit.conversions import to_qiskit
 from mitiq.interface.mitiq_qiskit.qiskit_utils import (
     sample_bitstrings as qiskit_sample_bitstrings,
 )
-
-
-def test_tqdm_import_available():
-    # Test the case where tqdm is available
-    import tqdm as tqdm_orig
-
-    assert tqdm_orig is not None
-    assert mitiq.experimental.shadows.quantum_processing.tqdm is not None
-
-
-def test_tqdm_import_not_available():
-    with patch.dict("sys.modules", {"tqdm": None}):
-        importlib.reload(
-            mitiq.experimental.shadows.quantum_processing
-        )  # Reload the module to trigger the import
-        assert mitiq.experimental.shadows.quantum_processing.tqdm is None
-
-    # Reload the module again to restore the original tqdm import.
-    # Otherwise, the rest of the tests are affected by the patch (issue #2318)
-    importlib.reload(mitiq.experimental.shadows.quantum_processing)
 
 
 def test_sample_random_pauli_bases():

@@ -19,7 +19,7 @@ def sample_bitstrings(
     noise_model_function: Callable[
         ..., cirq.NOISE_MODEL_LIKE
     ] = cirq.amplitude_damp,
-    noise_level: tuple[float] = (0.01,),
+    noise_level: tuple[float, ...] = (0.01,),
     sampler: cirq.Sampler = cirq.DensityMatrixSimulator(),
     shots: int = 8192,
 ) -> MeasurementResult:
@@ -56,7 +56,7 @@ def compute_density_matrix(
     noise_model_function: Callable[
         ..., cirq.NOISE_MODEL_LIKE
     ] = cirq.amplitude_damp,
-    noise_level: tuple[float] = (0.01,),
+    noise_level: tuple[float, ...] = (0.01,),
 ) -> npt.NDArray[np.complex64]:
     """Returns the density matrix of the quantum state after the
     (noisy) execution of the input circuit.
