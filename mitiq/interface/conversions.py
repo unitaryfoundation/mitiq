@@ -65,6 +65,15 @@ def register_mitiq_converters(
     TO_MITIQ_DICT[package_name] = convert_from_function
 
 
+def _wrap_openqasm_string(circuit: QPROGRAM) -> QPROGRAM:
+    """Give bare OpenQASM strings a module name for frontend dispatch."""
+    if isinstance(circuit, str) and not hasattr(circuit, "__module__"):
+        from mitiq.typing import QasmStringType
+
+        return QasmStringType(circuit)
+    return circuit
+
+
 def convert_to_mitiq(circuit: QPROGRAM) -> tuple[cirq.Circuit, str]:
     """Converts any valid input circuit to a mitiq circuit.
 
@@ -81,10 +90,7 @@ def convert_to_mitiq(circuit: QPROGRAM) -> tuple[cirq.Circuit, str]:
     """
     conversion_function: Callable[[Any], cirq.Circuit]
 
-    if isinstance(circuit, str) and hasattr(circuit, "__module__") is False:
-        from mitiq.typing import QasmStringType
-
-        circuit = QasmStringType(circuit)
+    circuit = _wrap_openqasm_string(circuit)
 
     try:
         package = circuit.__module__
@@ -245,6 +251,18 @@ def accept_any_qprogram_as_input(
     return accept_any_qprogram_function
 
 
+def _convert_back(
+    modified: cirq.Circuit, original: cirq.Circuit, input_type: str
+) -> QPROGRAM:
+    """Restore the input frontend and its quantum register layout."""
+    if input_type == "openqasm":
+        from mitiq.interface.mitiq_openqasm.conversions import _OpenQasmCircuit
+
+        if isinstance(original, _OpenQasmCircuit):
+            modified = _OpenQasmCircuit(modified, original.registers)
+    return convert_from_mitiq(modified, input_type)
+
+
 def atomic_converter(
     cirq_circuit_modifier: Callable[..., Any],
 ) -> Callable[..., Any]:
@@ -270,7 +288,9 @@ def atomic_converter(
             return scaled_circuit
 
         # Base conversion back to input type.
-        scaled_circuit = convert_from_mitiq(scaled_circuit, input_circuit_type)
+        scaled_circuit = _convert_back(
+            scaled_circuit, mitiq_circuit, input_circuit_type
+        )
 
         return scaled_circuit
 
@@ -298,7 +318,7 @@ def atomic_one_to_many_converter(
             return modified_circuits
 
         return [
-            convert_from_mitiq(modified_circuit, input_circuit_type)
+            _convert_back(modified_circuit, mitiq_circuit, input_circuit_type)
             for modified_circuit in modified_circuits
         ]
 
@@ -328,6 +348,8 @@ def accept_qprogram_and_validate(
 
     @wraps(cirq_circuit_modifier)
     def new_function(circuit: QPROGRAM, *args: Any, **kwargs: Any) -> QPROGRAM:
+        circuit = _wrap_openqasm_string(circuit)
+
         # Pre atomic conversion
         if "qiskit" in circuit.__module__:
             from qiskit.transpiler.passes import RemoveBarriers
@@ -363,6 +385,7 @@ def accept_qprogram_and_validate(
                 from pyquil.quilbase import Declare, Measurement
 
                 circuit = cast(Program, circuit)
+                out_circuit = cast(Program, out_circuit)
 
                 # Grab all measurements from the input circuit.
                 measurements = [
@@ -398,11 +421,16 @@ def accept_qprogram_and_validate(
 
             # Qiskit: Keep the same register structure and measurement order.
             if "qiskit" in out_circuit.__module__:
+                from qiskit import QuantumCircuit
+
                 from mitiq.interface.mitiq_qiskit.conversions import (
                     _measurement_order,
                     _remove_identity_from_idle,
                     _transform_registers,
                 )
+
+                circuit = cast(QuantumCircuit, circuit)
+                out_circuit = cast(QuantumCircuit, out_circuit)
 
                 out_circuit.remove_final_measurements()
                 out_circuit = _transform_registers(

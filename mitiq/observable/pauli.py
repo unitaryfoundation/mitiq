@@ -145,7 +145,7 @@ class PauliString:
 
     def _expectation_from_measurements(
         self, measurements: MeasurementResult
-    ) -> float:
+    ) -> complex:
         return PauliStringCollection(self)._expectation_from_measurements(
             measurements
         )
@@ -303,8 +303,8 @@ class PauliStringCollection:
 
     def _expectation_from_measurements(
         self, measurements: MeasurementResult
-    ) -> float:
-        total = 0.0
+    ) -> complex:
+        total: complex = 0.0
         for pauli in self.elements:
             bitstrings = measurements.filter_qubits(sorted(pauli.support()))
             value = (
