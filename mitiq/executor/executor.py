@@ -227,12 +227,14 @@ class Executor:
             observable is not None
             and self._executor_return_type in MeasurementResultLike
         ):
+            result_step = observable.ngroups
+            if result_step == 0:
+                return [0.0] * len(circuits)
             all_circuits = [
                 circuit_with_measurements
                 for circuit in circuits
                 for circuit_with_measurements in observable.measure_in(circuit)
             ]
-            result_step = observable.ngroups
         else:
             all_circuits = circuits
             result_step = 1

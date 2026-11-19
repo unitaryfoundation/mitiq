@@ -115,6 +115,19 @@ def test_executor_non_hermitian_observable():
         executor.evaluate(circuits, obs)
 
 
+@pytest.mark.parametrize("force_run_all", [True, False])
+def test_empty_observable_skips_execution(force_run_all):
+    circuit = cirq.Circuit(cirq.H(cirq.LineQubit(0)))
+    executor = Executor(executor_measurements_typed)
+
+    results = executor.evaluate(
+        [circuit, circuit], Observable(), force_run_all=force_run_all
+    )
+
+    assert results == [0.0, 0.0]
+    assert executor.calls_to_executor == 0
+
+
 def test_run_executor_single_circuit():
     collector = Executor(executor=executor_serial)
     circuit = cirq.Circuit(cirq.H(cirq.LineQubit(0)))
