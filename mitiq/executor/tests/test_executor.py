@@ -103,13 +103,16 @@ def test_executors_can_batch():
     assert Executor(executor_measurements_batched).can_batch
 
 
-def test_executor_non_hermitian_observable():
+@pytest.mark.parametrize(
+    "execute", [executor_measurements_typed, executor_density_matrix_typed]
+)
+def test_executor_non_hermitian_observable(execute):
     obs = Observable(PauliString("Z", coeff=1j))
 
     q = cirq.LineQubit(0)
     circuits = [cirq.Circuit(cirq.I.on(q)), cirq.Circuit(cirq.X.on(q))]
 
-    executor = Executor(executor_measurements_typed)
+    executor = Executor(execute)
 
     with pytest.warns(UserWarning, match="hermitian"):
         results = executor.evaluate(circuits, obs)
@@ -128,21 +131,6 @@ def test_empty_observable_skips_execution(force_run_all):
 
     assert results == [0.0, 0.0]
     assert executor.calls_to_executor == 0
-
-
-def test_executor_non_hermitian_pauli_string_warns():
-    obs = PauliString("Z", coeff=1j)
-
-    q = cirq.LineQubit(0)
-    circuit = cirq.Circuit(cirq.X.on(q))
-
-    executor = Executor(executor_serial_typed)
-
-    # The non-Hermitian warning is emitted before the
-    # observable/executor compatibility check fails.
-    with pytest.warns(UserWarning, match="hermitian"):
-        with pytest.raises(ValueError, match="float-like"):
-            executor.evaluate(circuit, obs)
 
 
 def test_run_executor_single_circuit():

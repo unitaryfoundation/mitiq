@@ -463,25 +463,14 @@ def test_add_identity_to_idle():
 
 
 def test_remove_identity_from_idle():
-    idle_indices = set(range(1, 8))
-    circuit = qiskit.QuantumCircuit(9)
-    circuit.x([0, 8])
-    circuit.cx(0, 8)
-    _remove_identity_from_idle(circuit, idle_indices)
-    id_indices = []
-    for op in circuit.get_instructions("id"):
-        qubits = op.qubits
-        for qubit in qubits:
-            id_indices.append(qubit.index)
-    assert id_indices == []
-
-
-def test_remove_identities_acting_on_idle_qubits():
     circuit = qiskit.QuantumCircuit(2)
     circuit.id(0)
     circuit.x(1)
     _remove_identity_from_idle(circuit, {circuit.qubits[0]})
-    assert [instr.operation.name for instr in circuit.data] == ["x"]
+
+    expected = qiskit.QuantumCircuit(2)
+    expected.x(1)
+    assert circuit == expected
 
 
 def test_add_identity_to_idle_with_multiple_registers():
