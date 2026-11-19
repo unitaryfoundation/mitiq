@@ -56,7 +56,9 @@ def from_pennylane(tape: QuantumTape) -> Circuit:
             "They should be subsequently added by the executor."
         )
 
-    tape = tape.expand(stop_at=lambda obj: obj.name in SUPPORTED)
+    (tape,), _ = qml.decompose(
+        tape, stopping_condition=lambda obj: obj.name in SUPPORTED
+    )
     qasm = qml.to_openqasm(
         tape,
         rotations=False,

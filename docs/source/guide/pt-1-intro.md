@@ -13,10 +13,6 @@ kernelspec:
 
 # How do I use PT?
 
-```{admonition} Warning:
-This user guide is still under construction and may change in the near future. 
-```
-
 As with all techniques, PT is compatible with any frontend supported by Mitiq:
 
 ```{code-cell} ipython3
@@ -139,6 +135,11 @@ designed to be composed with other techniques rather than an error mitigation te
 ```
 
 +++
+
+PT can also be stacked with dedicated quantum error mitigation techniques like ZNE or PEC.
+See [Stacking PT with other QEM techniques](pt-3-options.md#stacking-pt-with-other-qem-techniques)
+for a worked example and the
+[ZNE with Pauli Twirling example](../examples/pt_zne.md) for a full tutorial.
 
 The section
 [What additional options are available when using PT?](pt-3-options.md)

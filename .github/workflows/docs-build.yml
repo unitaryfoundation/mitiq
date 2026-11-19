@@ -20,6 +20,10 @@ jobs:
     permissions:
       contents: read
       actions: write
+    env:
+      # Skip pyquil notebook execution everywhere (including linkcheck, which
+      # also executes notebooks) since no QVM/quilc servers run in CI.
+      SKIP_PYQUIL: 1
     steps:
       - name: Check out mitiq
         uses: actions/checkout@v7
@@ -28,7 +32,7 @@ jobs:
         uses: astral-sh/setup-uv@v7
 
       - name: Set up Python
-        uses: actions/setup-python@v6
+        uses: actions/setup-python@v7
         with:
           python-version: "3.12"
 
@@ -56,7 +60,6 @@ jobs:
         run: |
           sudo apt update
           sudo apt install ocl-icd-opencl-dev
-          export SKIP_PYQUIL=1
           make docs
 
       - name: Run nightly linkcheck

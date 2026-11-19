@@ -77,3 +77,14 @@ def test_post_select_edge_cases():
 
     assert post_select(samples, lambda bits: sum(bits) == -1).result == []
     assert post_select(samples, lambda bits: sum(bits) == 23).result == []
+
+
+def test_post_select_preserves_qubit_indices():
+    res = MeasurementResult(
+        [[0, 1], [1, 0], [1, 1], [0, 0]], qubit_indices=(2, 5)
+    )
+
+    selected = post_select(res, lambda bits: sum(bits) == 1)
+
+    assert selected.qubit_indices == (2, 5)
+    assert selected.filter_qubits([5]).tolist() == [[1], [0]]

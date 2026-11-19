@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "mitiq"
-version = "1.0.0"
+version = "1.1.0"
 readme = "README.md"
 description = "Mitiq is an open source toolkit for implementing error mitigation techniques on most current intermediate-scale quantum computers." 
 authors = [ 
@@ -33,7 +33,7 @@ dependencies = [
 
 [project.optional-dependencies]
 braket = [
-    "amazon-braket-sdk>=1.97,<1.122",
+    "amazon-braket-sdk>=1.97,<1.128",
     "cirq-ionq>=1.6.0,<1.7.0",
     "llvmlite==0.46.0",
     "numba==0.64.0",
@@ -43,8 +43,8 @@ pennylane = [
     "pennylane>=0.44.1,<0.46.0",
 ]
 pyquil = [
-    "pyquil~=4.17.0",
-    "qbraid>=0.10,<0.13",
+    "pyquil>=4.17,<4.24",
+    "qbraid>=0.10,<0.14",
 ]
 qibo = [
     "qibo>=0.2.16,<0.4.0",
@@ -87,7 +87,7 @@ docs = [
     "nbsphinx==0.9.7",
     "pandas==2.3.3",
     "pyscf==2.12.0; sys_platform != 'win32'",
-    "openfermion==1.7.1; sys_platform != 'win32'",
+    "openfermion==1.8.1; sys_platform != 'win32'",
     "openfermionpyscf==0.5; sys_platform != 'win32'",
     "bqskit==1.2.1",
     "seaborn==0.13.2",
@@ -128,7 +128,7 @@ filterwarnings = [
     'ignore::DeprecationWarning',
     # Experimental modules emit FutureWarning by design; suppress in test suite
     # since the warning behavior is covered by mitiq/tests/test_experimental.py
-    'ignore:mitiq\.\w+ is experimental:FutureWarning',
+    'ignore:mitiq\.[\w.]+ is experimental:FutureWarning',
 ]
 
 [tool.mypy]
@@ -159,3 +159,6 @@ exclude_lines = [
 
 [tool.setuptools.packages.find]
 where = ["."]
+
+[tool.setuptools.package-data]
+mitiq = ["py.typed"]

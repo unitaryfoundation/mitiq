@@ -85,6 +85,17 @@ for i, folded in enumerate(folded_circuits, start=1):
     print(f"Folded Circuit {i}: {gate_count} extra gates")
 ```
 
+## Wall-clock cost and batched execution
+
+The counts above measure **how many circuits and gates** a technique needs.
+They do not automatically measure how long an experiment takes on a queue-based QPU.
+
+If your backend accepts multiple circuits in one job, define a [batched executor](executors.md)
+so Mitiq can send those circuits in fewer API calls.
+Batching does not reduce the number of circuits or gates—only the number of round-trips—so the resource counts in this guide stay the same while wall-clock time and queue overhead often drop.
+
 ## Further Reading
 
 More information on simulating and executing our GHZ circuit with LRE can be found [here](./lre-1-intro.md).
+
+For batching circuits on hardware backends, see the [Executors](executors.md) guide.

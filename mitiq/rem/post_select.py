@@ -29,6 +29,10 @@ def post_select(
         inverted: Invert the selector predicate so that bitstrings which obey
             ``selector(bitstring) == False`` are selected and returned.
     """
+    selected = [bits for bits in result.result if selector(bits) != inverted]
     return MeasurementResult(
-        [bits for bits in result.result if selector(bits) != inverted]
+        selected,
+        # A ``MeasurementResult`` without bitstrings has no qubits, so the
+        # indices can only be carried over when some shots survive.
+        result.qubit_indices if selected else None,
     )

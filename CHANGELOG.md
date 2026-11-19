@@ -1,5 +1,107 @@
 # Changelog
 
+## Version 1.1.0 (August 3, 2026)
+
+([Full Changelog](https://github.com/unitaryfoundation/mitiq/compare/v1.0.0...v1.1.0))
+
+### Highlights
+
+This release is headlined by [unitaryHACK 2026](https://unitaryhack.dev/projects/mitiq/), during which five Mitiq bounties were solved! 🎉
+
+- **New experimental technique: debiasing.** Mitiq gained a debiasing (also known as symmetrization) technique in `mitiq.experimental`, which runs variants of a circuit with the qubits relabeled by random permutations, undoes each permutation on the measured bitstrings, and combines the results — by averaging, or by shot-wise plurality vote (sharpening) — to wash out qubit-dependent errors. This closes a feature request (#1955) that had been open since 2023 (#3044). Thanks @mnn31!
+- **Hardware-agnostic PEA.** Probabilistic Error Amplification now accepts user-supplied `OperationRepresentation`s in `construct_circuits` and `execute_with_pea`, so noise representations learned from hardware characterization can be amplified directly instead of relying on the built-in depolarizing noise models (#3041). Thanks @zkasuran and @nez0b!
+- **Benchmarks against other error mitigation tools.** New standalone scripts benchmark Mitiq's ZNE, PEC, and readout-error mitigation against qermit, mthree, and manual Qiskit implementations on standard benchmarking circuits (#3033). Thanks @kim-renaud!
+- **Two new tutorials.** A worked Clifford Data Regression example using Clifft as the near-Clifford simulator (#3052, thanks @qnelsonksh!), and a tutorial combining error detection via the [[4,2,2]] code with ZNE (#3029, thanks @axif0!).
+
+Beyond the hackathon, the `Calibrator` can now report a per-problem, per-strategy cost breakdown via `Calibrator.get_cost_breakdown` (#3077), digital dynamical decoupling sequences can be inserted using rules defined with non-Cirq frontends (#3065), executor return-type detection now works in code using `from __future__ import annotations` (#3062), and PennyLane conversions are compatible with PennyLane 0.45 and later (#3072).
+
+Thanks to @axif0 for continued contributions, and to @alyabouzaid, @andyp53, @ayush268, @hijirii, @kataro92, @kim-renaud, @matti-sarjala, @mnn31, @nez0b, @phucnguyen1707, @qnelsonksh, @sankalpsthakur, and @zkasuran — an incredible thirteen contributors — for their **first** contributions, many of them made during unitaryHACK 2026!
+
+### ✨ Enhancements
+
+- Add Calibrator.get_cost_breakdown for per-problem, per-strategy cost (#3077) [@alyabouzaid]
+- Allow inserting DD sequences with non-Cirq rules (#3065) [@natestemen]
+- Support representations directly in PEA (closes #2936) (#3041) [@zkasuran + @nez0b] — unitaryHACK 2026 bounty
+- Add debiasing technique to mitiq.experimental (#3044) [@mnn31] — unitaryHACK 2026 bounty
+
+### 🐛 Bug Fixes
+
+- Replace deprecated QuantumTape.expand usage with qml.decompose so PennyLane conversion remains compatible with PennyLane 0.45 and later. (#3072) [@kataro92]
+- Fix executor return-type detection under `from __future__ import annotations` (closes #3061) (#3062) [@ayush268]
+
+### 📓 Documentation
+
+- Refactor Pauli Twirling documentation and remove construction warnings (#2959) [@axif0]
+- Document batched circuit execution in the user guide (#3090) [@sankalpsthakur]
+- fix links (#3070) [@natestemen]
+- Add CDR worked example with Clifft as a near-Clifford simulator (#3052) [@qnelsonksh] — unitaryHACK 2026 bounty
+- Add [[4,2,2]] + ZNE tutorial (#3029) [@axif0] — unitaryHACK 2026 bounty
+- Use equation references in classical shadows theory guide (#3010) [@matti-sarjala]
+- Fix typos in classical shadows intro guide (#3011) [@matti-sarjala]
+- fix broken qrack docs (#3009) [@natestemen]
+- Fix regression in scars tutorial: properly use noiseless backend when NO_NOISE=True (#2982) [@hijirii]
+
+### 🧑🏽‍💻 Developer Improvements
+
+- Remove duplicated `custom` branch in `Settings.make_problems`; cover remaining calibration lines (#2365) (#3097) [@alyabouzaid]
+- Add coverage for random_x_z_circuit (#3095) [@andyp53]
+- Set SKIP_PYQUIL for the whole docs-build job to fix nightly linkcheck (#3078) [@natestemen]
+- Fix nightly docs build (#3064) [@natestemen]
+- Add error mitigation benchmark scripts (unitaryHACK bounty #2876) (#3033) [@kim-renaud] — unitaryHACK 2026 bounty
+- Add test for OperationRepresentation.sample invalid random_state (#3024) [@phucnguyen1707]
+- Add tests for folding error paths (#3022) [@phucnguyen1707]
+- Add tests for observable and pauli error paths (#2365) (#3021) [@phucnguyen1707]
+- revert typing change on `QPROGRAM` (#3020) [@natestemen]
+- python typing/formatting consistency (#3019) [@natestemen]
+- move away from VERSION.txt (#3018) [@natestemen]
+- stop linkcheck failures (#3014) [@natestemen]
+
+### 📦 Dependency Updates
+
+- Bump pyasn1 from 0.6.3 to 0.6.4 (#3093) [@dependabot]
+- Bump actions/setup-python from 6 to 7 (#3092) [@dependabot]
+- Bump amazon-braket-sdk from 1.121.0 to 1.124.0 (#3083) [@dependabot]
+- Bump openfermion from 1.8.0 to 1.8.1 (#3084) [@dependabot]
+- Bump pillow from 12.2.0 to 12.3.0 (#3087) [@dependabot]
+- Bump requests from 2.32.5 to 2.33.0 (#3081) [@dependabot]
+- Bump openfermion from 1.7.1 to 1.8.0 (#3080) [@dependabot]
+- Bump mistune from 3.2.1 to 3.3.0 (#3075) [@dependabot]
+- Bump soupsieve from 2.8.3 to 2.8.4 (#3074) [@dependabot]
+- Bump amazon-braket-sdk from 1.119.1 to 1.121.0 (#3069) [@dependabot]
+- Bump msgpack from 1.1.2 to 1.2.1 (#3067) [@dependabot]
+- Bump actions/cache from 5 to 6 (#3068) [@dependabot]
+- Bump actions/checkout from 6 to 7 (#3063) [@dependabot]
+- Bump bleach from 6.3.0 to 6.4.0 (#3057) [@dependabot]
+- Bump tornado from 6.5.6 to 6.5.7 (#3056) [@dependabot]
+- Bump cryptography from 46.0.7 to 48.0.1 (#3055) [@dependabot]
+- Bump pyjwt from 2.12.1 to 2.13.0 (#3054) [@dependabot]
+- Bump tornado from 6.5.5 to 6.5.6 (#3051) [@dependabot]
+- Bump codecov/codecov-action from 6 to 7 (#3049) [@dependabot]
+- Bump amazon-braket-sdk from 1.118.0 to 1.119.1 (#3047) [@dependabot]
+- Bump amazon-braket-sdk from 1.117.1 to 1.118.0 (#3035) [@dependabot]
+- Bump stim from 1.15.0 to 1.16.0 (#3017) [@dependabot]
+- Bump stimcirq from 1.15.0 to 1.16.0 (#3016) [@dependabot]
+- Bump idna from 3.11 to 3.15 (#3015) [@dependabot]
+- Bump qibo from 0.3.2 to 0.3.3 (#3012) [@dependabot]
+- Bump pennylane from 0.44.1 to 0.45.0 (#3008) [@dependabot]
+- Bump urllib3 from 2.6.3 to 2.7.0 (#3005) [@dependabot]
+- Bump mako from 1.3.10 to 1.3.12 (#3001) [@dependabot]
+- Bump types-tabulate from 0.10.0.20260408 to 0.10.0.20260508 (#3004) [@dependabot]
+- Bump qibo from 0.3.1 to 0.3.2 (#2985) [@dependabot]
+- Bump amazon-braket-sdk from 1.114.0 to 1.117.1 (#2998) [@dependabot]
+- Bump pytest from 9.0.2 to 9.0.3 (#2992) [@dependabot]
+- Bump types-tabulate from 0.10.0.20260308 to 0.10.0.20260408 (#2986) [@dependabot]
+- Bump nbconvert from 7.17.0 to 7.17.1 (#2996) [@dependabot]
+- Bump cryptography from 46.0.6 to 46.0.7 (#2988) [@dependabot]
+- Bump pillow from 12.1.1 to 12.2.0 (#2991) [@dependabot]
+- Bump mistune from 3.2.0 to 3.2.1 (#3002) [@dependabot]
+- Bump qbraid from 0.11.1 to 0.12.0 (#2999) [@dependabot]
+- Bump pyqrack from 1.69.1 to 2.0.0 (#3000) [@dependabot]
+- Bump pygments from 2.19.2 to 2.20.0 (#2983) [@dependabot]
+- Bump codecov/codecov-action from 5 to 6 (#2979) [@dependabot]
+- Bump cryptography from 46.0.5 to 46.0.6 (#2981) [@dependabot]
+- Bump amazon-braket-sdk from 1.113.1 to 1.114.0 (#2975) [@dependabot]
+
 ## Version 1.0.0
 
 ([Full Changelog](https://github.com/unitaryfoundation/mitiq/compare/v0.49.0...v1.0.0))

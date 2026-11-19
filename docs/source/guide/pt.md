@@ -1,11 +1,6 @@
 # Pauli Twirling
 
-```{admonition} Warning:
-Pauli Twirling in Mitiq is still under construction. This users guide will change in the future
-after some utility functions are introduced. 
-```
-
-Pauli Twirling (PT) is an noise tailoring technique in which,
+Pauli Twirling (PT) is a noise tailoring technique in which,
 in the Mitiq implementation, particularly noisy operations (e.g. CZ and CNOT)
 are transformed by independent, random, single-qubit gates inserted into
 the circuit such that the effective logical circuit remains unchanged

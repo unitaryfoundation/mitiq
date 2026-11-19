@@ -223,6 +223,80 @@ def test_get_cost():
     assert cost["ideal_executions"] == 0
 
 
+def test_get_cost_breakdown():
+    cal = Calibrator(damping_execute, frontend="cirq", settings=settings)
+    breakdown = cal.get_cost_breakdown()
+
+    # One row per (problem, strategy) pair plus one baseline row per problem.
+    assert len(breakdown) == len(cal.problems) * (len(cal.strategies) + 1)
+    for strategy in cal.strategies:
+        rows = [r for r in breakdown if r["strategy_id"] == strategy.id]
+        assert len(rows) == len(cal.problems)
+        assert all(
+            r["noisy_executions"] == strategy.num_circuits_required()
+            and r["technique"] == strategy.technique.name
+            for r in rows
+        )
+    baseline_rows = [r for r in breakdown if r["strategy_id"] is None]
+    assert len(baseline_rows) == len(cal.problems)
+    assert all(
+        r["noisy_executions"] == 1 and r["technique"] == "baseline"
+        for r in baseline_rows
+    )
+
+    # The breakdown sums to the totals reported by get_cost.
+    cost = cal.get_cost()
+    assert cost["noisy_executions"] == sum(
+        r["noisy_executions"] for r in breakdown
+    )
+    assert cost["ideal_executions"] == 0
+    assert all(r["ideal_executions"] == 0 for r in breakdown)
+
+
+def test_get_cost_breakdown_custom_problem_with_ideal_executor():
+    q = cirq.LineQubit(0)
+    circ = cirq.Circuit(cirq.X(q))
+
+    custom_settings = Settings(
+        benchmarks=[{"circuit_type": "custom", "circuit": circ}],
+        strategies=[
+            {
+                "technique": "zne",
+                "scale_noise": fold_global,
+                "factory": LinearFactory([1.0, 2.0]),
+            }
+        ],
+    )
+    ideal_exec = Executor(partial(damping_execute, noise_level=0))
+    cal = Calibrator(
+        damping_execute,
+        frontend="cirq",
+        settings=custom_settings,
+        ideal_executor=ideal_exec,
+    )
+
+    breakdown = cal.get_cost_breakdown()
+    assert breakdown == [
+        {
+            "problem_id": 0,
+            "problem_type": "custom",
+            "strategy_id": 0,
+            "technique": "ZNE",
+            "noisy_executions": 2,
+            "ideal_executions": 0,
+        },
+        {
+            "problem_id": 0,
+            "problem_type": "custom",
+            "strategy_id": None,
+            "technique": "baseline",
+            "noisy_executions": 1,
+            "ideal_executions": 1,
+        },
+    ]
+    assert cal.get_cost() == {"noisy_executions": 3, "ideal_executions": 1}
+
+
 def test_best_strategy():
     test_strategy_settings = Settings(
         benchmarks=[
@@ -282,6 +356,31 @@ def test_convert_to_expval_executor():
     assert np.isclose(rb_circuit_expval, 1.0)
 
 
+def test_convert_to_expval_executor_appends_measurements():
+    noiseless_bitstring_executor = Executor(
+        partial(damping_execute, noise_level=0)
+    )
+    noiseless_expval_executor = convert_to_expval_executor(
+        noiseless_bitstring_executor, bitstring="00"
+    )
+    rb_circuit = generate_rb_circuits(2, 10)[0]
+
+    rb_circuit_expval = noiseless_expval_executor.evaluate(rb_circuit)
+    assert np.isclose(rb_circuit_expval, 1.0)
+
+
+def test_ideal_cirq_executor():
+    cal = Calibrator(damping_execute, frontend="cirq")
+    assert cal.ideal_cirq_executor is None
+
+    cal_with_ideal = Calibrator(
+        damping_execute,
+        frontend="cirq",
+        ideal_executor=partial(damping_execute, noise_level=0),
+    )
+    assert cal_with_ideal.ideal_cirq_executor is not None
+
+
 def test_execute_with_mitigation(monkeypatch):
     cal = Calibrator(damping_execute, frontend="cirq")
 
@@ -298,6 +397,23 @@ def test_execute_with_mitigation(monkeypatch):
     )
     assert isinstance(expval, float)
     assert 0 <= expval <= 1.5
+
+
+def test_execute_with_mitigation_declined(monkeypatch):
+    cal = Calibrator(damping_execute, frontend="cirq")
+
+    expval_executor = convert_to_expval_executor(
+        Executor(damping_execute), bitstring="00"
+    )
+    rb_circuit = generate_rb_circuits(2, 10)[0]
+    rb_circuit.append(cirq.measure(rb_circuit.all_qubits()))
+
+    # override the def of `input` so that it returns "no"
+    monkeypatch.setattr("builtins.input", lambda _: "no")
+    assert (
+        execute_with_mitigation(rb_circuit, expval_executor, calibrator=cal)
+        is None
+    )
 
 
 def test_cal_execute_w_mitigation():

@@ -55,7 +55,7 @@ probability. To apply the sharpening step instead, pass
 
 Bitstrings are ordered to match `sorted(circuit.all_qubits())`: the first
 character corresponds to the first qubit in that sorted order, and so on. The
-same ordering is used by {func}`.construct_circuits` and
-{func}`.combine_results`, which is why the permutation returned by
+same ordering is used by {func}`~mitiq.experimental.deb.symmetrization.construct_circuits` and
+{func}`~mitiq.experimental.deb.deb.combine_results`, which is why the permutation returned by
 `construct_circuits` must be passed to `combine_results` so it can be undone on
 the measured bitstrings.

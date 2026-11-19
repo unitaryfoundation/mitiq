@@ -212,12 +212,14 @@ class Executor:
 
         # Get all required circuits to run.
         if observable is not None and self._result_category == "measurement":
+            result_step = observable.ngroups
+            if result_step == 0:
+                return [0.0] * len(circuits)
             all_circuits = [
                 circuit_with_measurements
                 for circuit in circuits
                 for circuit_with_measurements in observable.measure_in(circuit)
             ]
-            result_step = observable.ngroups
         else:
             all_circuits = circuits
             result_step = 1
@@ -246,7 +248,7 @@ class Executor:
                 observable._expectation_from_measurements(
                     all_results[i : i + result_step]
                 )
-                for i in range(len(all_results) // result_step)
+                for i in range(0, len(all_results), result_step)
             ]
 
         else:
