@@ -108,6 +108,24 @@ def test_shadow_quantum_processing_return_type():
     assert isinstance(result[1], list)
 
 
+@pytest.mark.parametrize(
+    "fidelities",
+    [
+        {"00": 1, "01": 1 / 3, "10": 1 / 3},
+        {"00": 1, "01": 1 / 3, "10": 1 / 3, "111": 1 / 9},
+        {},
+    ],
+    ids=["locality-one", "wrong-mask", "empty"],
+)
+def test_reconstruction_requires_all_support_masks(fidelities):
+    with pytest.raises(ValueError, match="locality=2"):
+        classical_post_processing(
+            (["00"], ["ZZ"]),
+            calibration_results=fidelities,
+            state_reconstruction=True,
+        )
+
+
 def test_classical_post_processing():
     # Call shadow_quantum_processing to get shadow_outcomes
     shadow_outcomes = (["11", "00"], ["ZZ", "XX"])

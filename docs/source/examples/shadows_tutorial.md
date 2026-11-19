@@ -24,13 +24,6 @@ The method creates an approximate classical description of a quantum state using
 The noise-robust extension of this protocol is demonstrated in the [following notebook](./rshadows_tutorial).
 
 ```{code-cell} ipython3
-:tags: [remove-cell]
-from functools import partialmethod
-import tqdm
-tqdm.tqdm.__init__ = partialmethod(tqdm.tqdm.__init__, disable=True)
-```
-
-```{code-cell} ipython3
 import cirq
 import numpy as np
 from mitiq.experimental.shadows.shadows import (
