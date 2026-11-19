@@ -103,13 +103,16 @@ def test_executors_can_batch():
     assert Executor(executor_measurements_batched).can_batch
 
 
-def test_executor_non_hermitian_observable():
+@pytest.mark.parametrize(
+    "execute", [executor_measurements_typed, executor_density_matrix_typed]
+)
+def test_executor_non_hermitian_observable(execute):
     obs = Observable(PauliString("Z", coeff=1j))
 
     q = cirq.LineQubit(0)
     circuits = [cirq.Circuit(cirq.I.on(q)), cirq.Circuit(cirq.X.on(q))]
 
-    executor = Executor(executor_measurements_typed)
+    executor = Executor(execute)
 
     with pytest.warns(UserWarning, match="hermitian"):
         results = executor.evaluate(circuits, obs)
