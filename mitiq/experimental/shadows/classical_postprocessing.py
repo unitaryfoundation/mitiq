@@ -151,6 +151,9 @@ def classical_snapshot(
 
     Returns:
         Reconstructed classical snapshot as a :math:`2^n \times 2^n` matrix.
+
+    Raises:
+        ValueError: If the calibration omits any qubit support mask.
     """
     # the calibrated inverse channel is diagonal in the PTM rep., so the
     # per-qubit factors are computed there and converted back to matrices
@@ -160,7 +163,17 @@ def classical_snapshot(
     pi_zero = np.diag(pi_zero)
     pi_one = np.diag(pi_one)
 
-    if fidelities:
+    if isinstance(fidelities, dict):
+        num_qubits = len(bitstring)
+        if len(fidelities) != 2**num_qubits or any(
+            len(mask) != num_qubits or not set(mask) <= {"0", "1"}
+            for mask in fidelities
+        ):
+            raise ValueError(
+                "Full state reconstruction requires a Pauli fidelity for "
+                "every qubit support mask. Re-run pauli_twirling_calibrate "
+                f"with locality={num_qubits}."
+            )
         elements = []
         for bits, fidelity in fidelities.items():
             local_rhos = []

@@ -199,11 +199,11 @@ print("Estimated Pauli fidelities:", fidelities)
 
 ### Apply calibration to state reconstruction and expectation values
 
-The estimated `fidelities` dictionary can be passed directly to `classical_snapshot`,
-`shadow_state_reconstruction`, and `expectation_estimation_shadow` via their
-`fidelities` argument.
-This replaces the ideal inverse channel $\mathcal{M}^{-1}$ with the calibrated
-inverse channel $\widehat{\mathcal{M}}^{-1}$:
+The `locality=2` calibration above covers the two-qubit $ZZ$ observable.
+Pass its fidelities to `expectation_estimation_shadow` to apply the calibrated inverse channel.
+To reconstruct the full three-qubit state with `classical_snapshot` or
+`shadow_state_reconstruction`, calibrate with `locality=3` so that all eight
+qubit support masks have a fidelity.
 
 ```{code-cell} ipython3
 # Collect shadow measurements with the noisy executor

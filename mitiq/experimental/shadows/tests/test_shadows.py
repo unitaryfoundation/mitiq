@@ -8,6 +8,7 @@
 from numbers import Number
 
 import cirq
+import pytest
 
 import mitiq
 from mitiq import MeasurementResult
@@ -77,6 +78,24 @@ def test_shadow_quantum_processing_return_type():
     assert len(result) == 2
     assert isinstance(result[0], list)
     assert isinstance(result[1], list)
+
+
+@pytest.mark.parametrize(
+    "fidelities",
+    [
+        {"00": 1, "01": 1 / 3, "10": 1 / 3},
+        {"00": 1, "01": 1 / 3, "10": 1 / 3, "111": 1 / 9},
+        {},
+    ],
+    ids=["locality-one", "wrong-mask", "empty"],
+)
+def test_reconstruction_requires_all_support_masks(fidelities):
+    with pytest.raises(ValueError, match="locality=2"):
+        classical_post_processing(
+            (["00"], ["ZZ"]),
+            calibration_results=fidelities,
+            state_reconstruction=True,
+        )
 
 
 def test_classical_post_processing():
