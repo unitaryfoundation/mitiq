@@ -50,8 +50,9 @@ def execute(circuit: cirq.Circuit) -> MeasurementResult:
 
 `shadows.shadow_quantum_processing` accepts two optional arguments beyond the required `circuit`, `executor`, and `num_total_measurements_shadow`.
 
-**`random_seed`** seeds NumPy's random number generator before sampling Pauli bases.
-This makes the measurement outcomes reproducible:
+**`random_seed`** makes the sequence of sampled Pauli bases reproducible.
+Measurement outcomes also depend on the executor. For reproducible simulated
+outcomes, set the simulator's seed as well.
 
 ```{code-cell} ipython3
 shadow_outcomes = shadows.shadow_quantum_processing(
@@ -67,8 +68,8 @@ Running again with the same seed produces the same bases:
 shadow_outcomes_2 = shadows.shadow_quantum_processing(
     circuit, execute, num_total_measurements_shadow=200, random_seed=42
 )
-assert shadow_outcomes_2[1][:5] == bases[:5]
-print("Bases match:", shadow_outcomes_2[1][:5] == bases[:5])
+assert shadow_outcomes_2[1] == bases
+print("Bases match:", shadow_outcomes_2[1] == bases)
 ```
 
 **`qubits`** explicitly specifies which qubits to measure.
