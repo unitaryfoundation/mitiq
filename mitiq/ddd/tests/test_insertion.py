@@ -334,7 +334,10 @@ def test_insert_ddd_sequences_logs_sequences_inserted(caplog):
     with caplog.at_level(logging.INFO, logger="mitiq.ddd.insertion"):
         insert_ddd_sequences(circuit, rule=xx)
 
-    assert "DDD inserted 1 sequence(s) into 1 idle window(s)." in caplog.text
+    assert (
+        "DDD found 1 idle windows of at least 2 moments "
+        "and inserted 1 sequences." in caplog.text
+    )
 
 
 def test_insert_ddd_sequences_logs_no_idle_windows(caplog):
@@ -350,7 +353,23 @@ def test_insert_ddd_sequences_logs_no_idle_windows(caplog):
         insert_ddd_sequences(circuit, rule=xx)
 
     assert (
-        "DDD found no idle windows; no sequences were inserted." in caplog.text
+        "DDD found 0 idle windows of at least 2 moments "
+        "and inserted 0 sequences." in caplog.text
+    )
+
+
+def test_insert_ddd_sequences_logs_one_moment_idle_gap(caplog):
+    """A one-moment gap is idle but too short to count for insertion."""
+    qubit = cirq.LineQubit(0)
+    circuit = cirq.Circuit(cirq.X(qubit), cirq.I(qubit), cirq.X(qubit))
+
+    with caplog.at_level(logging.INFO, logger="mitiq.ddd.insertion"):
+        result = insert_ddd_sequences(circuit, rule=xx)
+
+    assert result == circuit
+    assert (
+        "DDD found 0 idle windows of at least 2 moments "
+        "and inserted 0 sequences." in caplog.text
     )
 
 
@@ -369,4 +388,7 @@ def test_insert_ddd_sequences_logs_empty_sequences(caplog):
     with caplog.at_level(logging.INFO, logger="mitiq.ddd.insertion"):
         insert_ddd_sequences(circuit, rule=xyxy)
 
-    assert "DDD inserted 0 sequence(s) into 1 idle window(s)." in caplog.text
+    assert (
+        "DDD found 1 idle windows of at least 2 moments "
+        "and inserted 0 sequences." in caplog.text
+    )

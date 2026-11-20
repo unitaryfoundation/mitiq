@@ -172,12 +172,10 @@ def _insert_ddd_sequences(
                     circuit_with_ddd[moment_idx + idx] = moment.with_operation(
                         op
                     )
-    if num_idle_windows > 0:
-        logger.info(
-            "DDD inserted %d sequence(s) into %d idle window(s).",
-            num_sequences_inserted,
-            num_idle_windows,
-        )
-    else:
-        logger.info("DDD found no idle windows; no sequences were inserted.")
+    logger.info(
+        "DDD found %d idle windows of at least 2 moments "
+        "and inserted %d sequences.",
+        num_idle_windows,
+        num_sequences_inserted,
+    )
     return circuit_with_ddd
