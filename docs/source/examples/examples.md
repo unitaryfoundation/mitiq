@@ -8,6 +8,7 @@ You can also search for an example utilizing a specific QEM technique, frontend,
 ZNE Calibration with Qiskit <calibration-tutorial.md>
 ZNE on a Rigetti backend with Braket: Mirror circuits <braket_mirror_circuit.md>
 ZNE on IonQ backends with Braket <zne-braket-ionq.md>
+ZNE with Braket: Batching noise-scaled circuits with program sets <zne-braket-program-sets.md>
 ZNE on IBM Quantum backends with Qiskit <ibmq-backends.md>
 ZNE on IBM Quantum backends with Pennylane <pennylane-ibmq-backends.md>
 ZNE on IBM Quantum backends with Cirq <cirq-ibmq-backends.md>
