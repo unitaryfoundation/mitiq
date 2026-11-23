@@ -10,4 +10,5 @@ observables.md
 calibrators.md
 benchmarking-circuits.md
 resource-requirements.md
+composing-techniques.md
 ```
