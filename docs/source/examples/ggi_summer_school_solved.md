@@ -16,7 +16,7 @@ orphan: true
 
 +++
 
-This is a hands-on notebook created for the [`SQMS/GGI 2022 Summer School on Quantum Simulation of Field Theories`](https://sqmscenter.fnal.gov/opportunities/summer-schools/#2022). 
+This is a hands-on notebook created for the [`SQMS/GGI 2022 Summer School on Quantum Simulation of Field Theories`](https://www.ggi.infn.it/single-school.php?id=436).
 
 It is a guided tutorial on error mitigation with Mitiq and is focused on the zero-noise extrapolation (ZNE) technique. As this is
 intended to be a hands-on exercise, the solutions to the examples are provided in this notebook.  
