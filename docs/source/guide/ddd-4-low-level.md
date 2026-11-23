@@ -122,6 +122,34 @@ circuit_with_ddd = ddd.insert_ddd_sequences(circuit, rule=xyxy_rule)
 circuit_with_ddd
 ```
 
+To see how many windows are long enough to try a DDD rule and how many
+sequences are inserted, enable INFO logging in a fresh Python process:
+
+```{code-block} python
+import logging
+
+import cirq
+from mitiq import ddd
+
+logging.basicConfig()
+logging.getLogger("mitiq.ddd.insertion").setLevel(logging.INFO)
+
+q0, q1 = cirq.LineQubit.range(2)
+circuit = cirq.Circuit(
+    cirq.H.on_each(q0, q1),
+    cirq.H(q0),
+    cirq.H(q0),
+)
+ddd.insert_ddd_sequences(circuit, rule=ddd.rules.xyxy)
+```
+
+The two-moment gap on `q1` counts as one window. The `xyxy` rule needs
+four moments, so no sequence is inserted. The log output is:
+
+```text
+INFO:mitiq.ddd.insertion:DDD found 1 idle windows of at least 2 moments and inserted 0 sequences.
+```
+
 ```{note}
 In principle, the function {func}`.insert_ddd_sequences()` is all one needs to apply DDD.
 Indeed, since in DDD there is not a final post-processing step, one can simply insert DDD sequences before running the circuit on a noisy backend.
